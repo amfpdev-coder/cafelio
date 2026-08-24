@@ -1,0 +1,10 @@
+:root {
+    --color-cream: #F5ECD7;
+    --color-beige: #EDD9B4;
+    --color-coffee: #6B3F2A;
+    --color-moss: #5C7A5A;
+    --color-sepia: #3B2A1A;
+
+    --font-heading: Georgia, "Times New Roman", serif;
+    --font-body: system-ui, -apple-system, sans-serif;
+}

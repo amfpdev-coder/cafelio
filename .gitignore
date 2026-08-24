@@ -1,0 +1,8 @@
+# Editor / SO
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Documentos
+docs/Cafelio_Escopo.pdf
