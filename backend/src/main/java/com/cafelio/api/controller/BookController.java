@@ -1,6 +1,6 @@
 package com.cafelio.api.controller;
 
-import com.cafelio.api.dto.response.OpenLibrarySearchResponse;
+import com.cafelio.api.dto.response.BookSearchResponse;
 import com.cafelio.api.service.BookSearchService;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -24,7 +24,7 @@ public class BookController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<OpenLibrarySearchResponse> search(
+    public ResponseEntity<BookSearchResponse> search(
             @RequestParam
             @NotBlank(message = "O título é obrigatório")
             String titulo,
