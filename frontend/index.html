@@ -5,9 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Cafélio</title>
     <link rel="stylesheet" href="css/base.css" />
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
     <div id="app"></div>
+
+    <div id="g_id_onload"
+        data-client_id="855375286587-os7gcltnkq2npocs8sprtt1b17o2rvpr.apps.googleusercontent.com"
+        data-callback="handleGoogleLogin"
+        data-auto_prompt="false">
+    </div>
+    <div class="g_id_signin" data-type="standard"></div>
 
     <script src="js/api.js"></script>
     <script src="js/app.js"></script>

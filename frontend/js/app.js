@@ -18,3 +18,13 @@ async function renderWelcomeScreen() {
 }
 
 renderWelcomeScreen();
+
+async function handleGoogleLogin(response) {
+    try {
+        const result = await apiPost("/auth/google", { idToken: response.credential });
+        localStorage.setItem("cafelio_token", result.token);
+        alert("Login com Google realizado com sucesso!");
+    } catch (error) {
+        alert("Erro ao fazer login com Google.");
+    }
+}
