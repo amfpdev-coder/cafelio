@@ -17,9 +17,16 @@ async function apiPost(path, data) {
         body: JSON.stringify(data),
     });
 
+    const body = await response.json().catch(() => null);
+
     if (!response.ok) {
-        throw new Error(`Erro na API: ${response.status}`);
+        const message =
+            body?.error ||
+            Object.values(body || {})[0] ||
+            `Erro na API: ${response.status}`;
+
+        throw new Error(message);
     }
 
-    return response.json();
+    return body;
 }
