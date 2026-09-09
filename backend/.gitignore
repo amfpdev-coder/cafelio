@@ -33,3 +33,7 @@ build/
 .vscode/
 
 application-local.yaml
+
+### Environment variables ###
+.env
+.env.*
