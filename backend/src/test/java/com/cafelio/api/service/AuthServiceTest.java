@@ -2,6 +2,7 @@ package com.cafelio.api.service;
 
 import com.cafelio.api.model.User;
 import com.cafelio.api.repository.UserRepository;
+import com.cafelio.api.dto.LoginRequest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -11,6 +12,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -84,4 +86,79 @@ class AuthServiceTest {
 
         assertThat(result.getUsername()).isEqualTo("ana1");
     }
+
+    @Test
+    void loginComEmail_retornaUsuario() {
+        User user = new User();
+        user.setEmail("ana@example.com");
+        user.setPasswordHash("hash-da-senha");
+
+        when(userRepository.findByEmail("ana@example.com")).thenReturn(Optional.of(user));
+        when(passwordEncoder.matches("Senha123", "hash-da-senha")).thenReturn(true);
+
+        User result = authService.login(loginRequest("ana@example.com", "Senha123"));
+
+        assertThat(result).isSameAs(user);
+    }
+
+    @Test
+    void loginComUsername_retornaUsuario() {
+        User user = new User();
+        user.setUsername("ana");
+        user.setPasswordHash("hash-da-senha");
+
+        when(userRepository.findByEmail("ana")).thenReturn(Optional.empty());
+        when(userRepository.findByUsername("ana")).thenReturn(Optional.of(user));
+        when(passwordEncoder.matches("Senha123", "hash-da-senha")).thenReturn(true);
+
+        User result = authService.login(loginRequest("ana", "Senha123"));
+
+        assertThat(result).isSameAs(user);
+    }
+
+    @Test
+    void senhaIncorreta_lancaExcecao() {
+        User user = new User();
+        user.setPasswordHash("hash-da-senha");
+
+        when(userRepository.findByEmail("ana@example.com")).thenReturn(Optional.of(user));
+        when(passwordEncoder.matches("errada", "hash-da-senha")).thenReturn(false);
+
+        assertThatThrownBy(() -> authService.login(loginRequest("ana@example.com", "errada")))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("E-mail/usuário ou senha incorretos");
+    }
+
+    @Test
+    void usuarioInexistente_lancaExcecao() {
+        when(userRepository.findByEmail("naoexiste@example.com")).thenReturn(Optional.empty());
+        when(userRepository.findByUsername("naoexiste@example.com")).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> authService.login(loginRequest("naoexiste@example.com", "Senha123")))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("E-mail/usuário ou senha incorretos");
+    }
+
+    @Test
+    void contaCriadaComGoogle_naoPermiteLoginComSenha() {
+        User user = new User();
+        user.setEmail("ana@example.com");
+        user.setGoogleId("google-123");
+
+        when(userRepository.findByEmail("ana@example.com")).thenReturn(Optional.of(user));
+
+        assertThatThrownBy(() -> authService.login(loginRequest("ana@example.com", "Senha123")))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("E-mail/usuário ou senha incorretos");
+
+        verify(passwordEncoder, never()).matches(any(), any());
+    }
+
+    private LoginRequest loginRequest(String identifier, String password) {
+        LoginRequest request = new LoginRequest();
+        request.setIdentifier(identifier);
+        request.setPassword(password);
+        return request;
+    }
+
 }

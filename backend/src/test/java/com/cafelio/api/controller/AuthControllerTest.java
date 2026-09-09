@@ -85,4 +85,40 @@ class AuthControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").value("Token do Google inválido"));
     }
+
+        @Test
+    void credenciaisValidas_retornaJwt() throws Exception {
+        User user = new User();
+        user.setId(UUID.randomUUID());
+
+        when(authService.login(any())).thenReturn(user);
+        when(jwtService.generateToken(user.getId())).thenReturn("jwt-fake");
+
+        mockMvc.perform(post("/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"identifier\":\"ana@example.com\",\"password\":\"Senha123\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.token").value("jwt-fake"));
+    }
+
+    @Test
+    void credenciaisInvalidas_retorna400() throws Exception {
+        when(authService.login(any()))
+                .thenThrow(new IllegalArgumentException("E-mail/usuário ou senha incorretos"));
+
+        mockMvc.perform(post("/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"identifier\":\"ana@example.com\",\"password\":\"errada\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("E-mail/usuário ou senha incorretos"));
+    }
+
+    @Test
+    void loginSemCampos_retorna400() throws Exception {
+        mockMvc.perform(post("/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isBadRequest());
+    }
+
 }
