@@ -34,12 +34,15 @@ async function renderWelcomeScreen() {
 renderWelcomeScreen();
 
 async function handleGoogleLogin(response) {
+    const message = document.getElementById("login-message");
+    message.textContent = "Entrando...";
+
     try {
         const result = await apiPost("/auth/google", { idToken: response.credential });
         localStorage.setItem("cafelio_token", result.token);
-        alert("Login com Google realizado com sucesso!");
+        message.textContent = "Login com Google realizado com sucesso!";
     } catch (error) {
-        alert("Erro ao fazer login com Google.");
+        message.textContent = error.message;
     }
 }
 

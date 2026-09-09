@@ -46,10 +46,9 @@ public class AuthController {
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
         User user = authService.login(request);
         String token = jwtService.generateToken(user.getId());
-        
+
         return ResponseEntity.ok(new AuthResponse(token));
     }
-    
 
     @PostMapping("/google")
     public ResponseEntity<AuthResponse> loginWithGoogle(@Valid @RequestBody GoogleLoginRequest request) {
