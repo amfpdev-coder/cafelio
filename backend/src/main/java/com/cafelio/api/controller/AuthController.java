@@ -8,7 +8,9 @@ import com.cafelio.api.model.User;
 import com.cafelio.api.security.GoogleTokenVerifier;
 import com.cafelio.api.service.AuthService;
 import com.cafelio.api.service.JwtService;
+import com.cafelio.api.dto.LoginRequest;
 import jakarta.validation.Valid;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -38,6 +40,14 @@ public class AuthController {
     public ResponseEntity<UserResponse> register(@Valid @RequestBody RegisterRequest request) {
         var user = authService.register(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(new UserResponse(user));
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
+        User user = authService.login(request);
+        String token = jwtService.generateToken(user.getId());
+
+        return ResponseEntity.ok(new AuthResponse(token));
     }
 
     @PostMapping("/google")

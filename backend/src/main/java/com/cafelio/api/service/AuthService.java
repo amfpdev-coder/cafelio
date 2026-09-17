@@ -3,6 +3,7 @@ package com.cafelio.api.service;
 import com.cafelio.api.dto.RegisterRequest;
 import com.cafelio.api.model.User;
 import com.cafelio.api.repository.UserRepository;
+import com.cafelio.api.dto.LoginRequest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -55,6 +56,22 @@ public User loginOrRegisterWithGoogle(String googleId, String email, String name
                 newUser.setEmailVerified(true);
                 return userRepository.save(newUser);
             });
+}
+
+public User login(LoginRequest request) {
+    User user = userRepository.findByEmail(request.getIdentifier())
+            .or(() -> userRepository.findByUsername(request.getIdentifier()))
+            .orElseThrow(() -> new IllegalArgumentException("E-mail/usuário ou senha incorretos"));
+    
+    if (user.getPasswordHash() == null) {
+        throw new IllegalArgumentException("E-mail/usuário ou senha incorretos");
+    }
+
+    if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
+        throw new IllegalArgumentException("E-mail/usuário ou senha incorretos");
+    }
+
+    return user;
 }
 
 private String generateUniqueUsername(String email) {
