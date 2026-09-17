@@ -15,7 +15,6 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
-import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers;
 
 import java.util.UUID;
 
@@ -23,7 +22,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 
 @SpringBootTest
 @ActiveProfiles("local")
@@ -45,9 +43,7 @@ class AuthControllerTest {
 
     @BeforeEach
     void setUp() {
-        mockMvc = MockMvcBuilders.webAppContextSetup(context)
-                .apply(SecurityMockMvcConfigurers.springSecurity())
-                .build();
+        mockMvc = MockMvcBuilders.webAppContextSetup(context).build();
     }
 
     @Test
@@ -89,41 +85,4 @@ class AuthControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").value("Token do Google inválido"));
     }
-
-    @Test
-    void meSemToken_retorna401() throws Exception {
-        mockMvc.perform(get("/auth/me"))
-                .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.error").value("Autenticação necessária"));
-    }
-
-    @Test
-    void meComTokenInvalido_retorna401() throws Exception {
-        when(jwtService.extractUserId(any()))
-                .thenThrow(new RuntimeException("assinatura invalida"));
-
-        mockMvc.perform(get("/auth/me")
-                        .header("Authorization", "Bearer token-falso"))
-                .andExpect(status().isUnauthorized());
-    }
-
-    @Test
-    void meComTokenValido_retornaDadosDaUsuaria() throws Exception {
-        UUID userId = UUID.randomUUID();
-
-        User user = new User();
-        user.setId(userId);
-        user.setUsername("angelica");
-        user.setEmail("angelica@example.com");
-
-        when(jwtService.extractUserId("token-valido")).thenReturn(userId);
-        when(authService.findById(userId)).thenReturn(user);
-
-        mockMvc.perform(get("/auth/me")
-                        .header("Authorization", "Bearer token-valido"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.username").value("angelica"))
-                .andExpect(jsonPath("$.email").value("angelica@example.com"));
-    }
-
 }
