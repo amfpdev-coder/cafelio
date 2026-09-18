@@ -7,6 +7,8 @@ import com.cafelio.api.dto.LoginRequest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.UUID;
+
 @Service
 public class AuthService {
 
@@ -38,6 +40,11 @@ public class AuthService {
 
         return userRepository.save(user);
     }
+
+public User findById(UUID id) {
+    return userRepository.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado"));
+}
 
 public User loginOrRegisterWithGoogle(String googleId, String email, String name) {
     return userRepository.findByGoogleId(googleId)
