@@ -22,7 +22,7 @@ async function apiPost(path, data) {
     if (!response.ok) {
         const message =
             body?.error ||
-            Object.values(body || {})[0] ||
+            Object.values(body || {}).join("\n") ||
             `Erro na API: ${response.status}`;
 
         throw new Error(message);

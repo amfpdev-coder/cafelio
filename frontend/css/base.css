@@ -17,3 +17,15 @@ h1, h2, h3 {
     font-family: var(--font-heading);
     color: var(--color-coffee);
 }
+
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-width: 360px;
+    margin: 16px 0;
+}
+
+.form-message {
+    white-space: pre-line;
+}
