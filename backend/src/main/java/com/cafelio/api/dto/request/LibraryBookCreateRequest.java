@@ -8,25 +8,27 @@ import jakarta.validation.constraints.NotNull;
 import java.util.List;
 import java.util.Set;
 
-public class LibraryBookCreateRequest {
+public record LibraryBookCreateRequest (
+        @NotBlank
+        String openLibraryId,
 
-    @NotBlank
-    private String openLibraryId;
+        @NotBlank
+        String title,
 
-    @NotBlank
-    private String title;
+        @NotNull
+        Integer firstPublishYear,
 
-    @NotNull
-    private Integer firstPublishYear;
+        String coverUrl,
 
-    private String coverUrl;
+        @NotNull
+        ReadingStatus status,
 
-    @NotNull
-    private ReadingStatus status;
+        @NotBlank
+        List<String> authors,
 
-    @NotBlank
-    private List<String> authors;
+        @NotNull
+        Set<BookTag> tags
+) {
 
-    @NotNull
-    private Set<BookTag> tags;
+
 }

@@ -7,21 +7,24 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-public class LibraryBookResponse {
+public record LibraryBookResponse(
+        UUID id,
 
-    private UUID id;
+        String openLibraryId,
 
-    private String openLibraryId;
+        String title,
 
-    private String title;
+        Integer firstPublishYear,
 
-    private Integer firstPublishYear;
+        String coverUrl,
 
-    private String coverUrl;
+        ReadingStatus status,
 
-    private ReadingStatus status;
+        List<String> authors,
 
-    private List<String> authors;
+        Set<BookTag> tags
 
-    private Set<BookTag> tags;
+) {
+
+
 }
