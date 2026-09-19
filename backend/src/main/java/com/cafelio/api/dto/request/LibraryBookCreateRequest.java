@@ -3,6 +3,7 @@ package com.cafelio.api.dto.request;
 import com.cafelio.api.model.BookTag;
 import com.cafelio.api.model.ReadingStatus;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
 import java.util.List;
@@ -23,7 +24,7 @@ public record LibraryBookCreateRequest (
         @NotNull
         ReadingStatus status,
 
-        @NotBlank
+        @NotEmpty
         List<String> authors,
 
         @NotNull

@@ -9,6 +9,7 @@ import com.cafelio.api.security.GoogleTokenVerifier;
 import com.cafelio.api.service.AuthService;
 import com.cafelio.api.service.JwtService;
 import com.cafelio.api.dto.LoginRequest;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 
 import org.springframework.http.HttpStatus;
@@ -55,7 +56,7 @@ public class AuthController {
         return ResponseEntity.ok(new AuthResponse(token));
     }
 
-
+    @SecurityRequirement(name = "bearerAuth")
     @GetMapping("/me")
     public ResponseEntity<UserResponse> me(@AuthenticationPrincipal UUID userId) {
         User user = authService.findById(userId);

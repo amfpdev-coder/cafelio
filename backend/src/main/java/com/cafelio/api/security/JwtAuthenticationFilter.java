@@ -36,6 +36,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String header = request.getHeader(HEADER);
 
+        System.out.println(
+                request.getMethod() + " " +
+                        request.getRequestURI() +
+                        " - Authorization presente: " +
+                        (header != null)
+        );
+
         if (header != null && header.startsWith(PREFIX)) {
             String token = header.substring(PREFIX.length());
 
