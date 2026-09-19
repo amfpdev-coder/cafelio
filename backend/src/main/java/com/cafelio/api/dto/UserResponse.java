@@ -12,6 +12,7 @@ public class UserResponse {
     private String email;
     private boolean emailVerified;
     private Instant createdAt;
+    private boolean hasPassword;
 
     public UserResponse(User user) {
         this.id = user.getId();
@@ -19,6 +20,7 @@ public class UserResponse {
         this.email = user.getEmail();
         this.emailVerified = user.isEmailVerified();
         this.createdAt = user.getCreatedAt();
+        this.hasPassword = user.getPasswordHash() != null;
     }
 
     public UUID getId() { return id; }
@@ -26,4 +28,5 @@ public class UserResponse {
     public String getEmail() { return email; }
     public boolean isEmailVerified() { return emailVerified; }
     public Instant getCreatedAt() { return createdAt; }
+    public boolean isHasPassword() { return hasPassword; }
 }
