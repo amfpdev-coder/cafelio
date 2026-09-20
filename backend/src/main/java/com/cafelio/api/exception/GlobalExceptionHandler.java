@@ -91,4 +91,18 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.BAD_REQUEST)
                 .body(error);
     }
+
+    @ExceptionHandler(LibraryBookAlreadyExistsException.class)
+    public ResponseEntity<Map<String, String>> handleLibraryBookAlreadyExists(
+            LibraryBookAlreadyExistsException ex
+    ){
+        Map<String, String> error = Map.of(
+                "error",
+                ex.getMessage()
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(error);
+    }
 }

@@ -5,10 +5,9 @@ import com.cafelio.api.dto.response.LibraryBookResponse;
 import com.cafelio.api.service.LibraryBookService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @SecurityRequirement(name = "bearerAuth")
 @RestController
@@ -24,5 +23,10 @@ public class LibraryBookController {
     @PostMapping
     public LibraryBookResponse createLibraryBook(@Valid @RequestBody LibraryBookCreateRequest libraryBookCreateRequest){
         return libraryBookService.createLibraryBook(libraryBookCreateRequest);
+    }
+
+    @GetMapping
+    public List<LibraryBookResponse> listBooks(){
+        return libraryBookService.listBooks();
     }
 }
