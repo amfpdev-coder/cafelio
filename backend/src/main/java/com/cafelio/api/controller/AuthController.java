@@ -10,6 +10,7 @@ import com.cafelio.api.service.AuthService;
 import com.cafelio.api.service.JwtService;
 import com.cafelio.api.dto.LoginRequest;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import com.cafelio.api.dto.ChangePasswordRequest;
 import jakarta.validation.Valid;
 
 import org.springframework.http.HttpStatus;
@@ -20,8 +21,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 
 import java.util.UUID;
+
 
 @RestController
 @RequestMapping("/auth")
@@ -61,6 +64,15 @@ public class AuthController {
     public ResponseEntity<UserResponse> me(@AuthenticationPrincipal UUID userId) {
         User user = authService.findById(userId);
         return ResponseEntity.ok(new UserResponse(user));
+    }
+
+    @PutMapping("/password")
+    public ResponseEntity<Void> changePassword(
+        @AuthenticationPrincipal UUID userId,
+        @Valid @RequestBody ChangePasswordRequest request
+    ) {
+        authService.changePassword(userId, request);
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/google")
