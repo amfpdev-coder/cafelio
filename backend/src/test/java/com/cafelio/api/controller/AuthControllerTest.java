@@ -28,6 +28,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
 
 @SpringBootTest
 @ActiveProfiles("local")
@@ -145,6 +146,15 @@ class AuthControllerTest {
     }
 
     // GET /auth/me
+
+    @Test
+    void mePreflight_permitidoSemToken() throws Exception {
+        mockMvc.perform(options("/auth/me")
+                        .header("Origin", "http://127.0.0.1:5500")
+                        .header("Access-Control-Request-Method", "GET"))
+                .andExpect(status().isOk());
+    }
+
 
     @Test
     void meSemToken_retorna401() throws Exception {
