@@ -20,11 +20,15 @@ import org.springframework.web.context.WebApplicationContext;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
 
 @SpringBootTest
 @ActiveProfiles("local")
@@ -51,6 +55,8 @@ class AuthControllerTest {
                 .build();
     }
 
+    // POST /auth/google
+
     @Test
     void tokenValido_retornaJwt() throws Exception {
         GoogleIdToken.Payload payload = new GoogleIdToken.Payload();
@@ -62,14 +68,8 @@ class AuthControllerTest {
         user.setId(UUID.randomUUID());
 
         when(googleTokenVerifier.verify("token-falso")).thenReturn(payload);
-        when(authService.loginOrRegisterWithGoogle(
-                "google-123",
-                "ana@example.com",
-                "Ana"
-        )).thenReturn(user);
-
-        when(jwtService.generateToken(user.getId()))
-                .thenReturn("jwt-fake");
+        when(authService.loginOrRegisterWithGoogle("google-123", "ana@example.com", "Ana")).thenReturn(user);
+        when(jwtService.generateToken(user.getId())).thenReturn("jwt-fake");
 
         mockMvc.perform(post("/auth/google")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -89,17 +89,16 @@ class AuthControllerTest {
     @Test
     void tokenInvalido_retorna400() throws Exception {
         when(googleTokenVerifier.verify(any()))
-                .thenThrow(new IllegalArgumentException(
-                        "Token do Google inválido"
-                ));
+                .thenThrow(new IllegalArgumentException("Token do Google inválido"));
 
         mockMvc.perform(post("/auth/google")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"idToken\":\"token-invalido\"}"))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error")
-                        .value("Token do Google inválido"));
+                .andExpect(jsonPath("$.error").value("Token do Google inválido"));
     }
+
+    // POST /auth/login
 
     @Test
     void credenciaisValidas_retornaJwt() throws Exception {
@@ -107,15 +106,14 @@ class AuthControllerTest {
         user.setId(UUID.randomUUID());
 
         when(authService.login(any())).thenReturn(user);
-        when(jwtService.generateToken(user.getId()))
-                .thenReturn("jwt-fake");
+        when(jwtService.generateToken(user.getId())).thenReturn("jwt-fake");
 
         mockMvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
-                                  "identifier": "ana@example.com",
-                                  "password": "Senha123"
+                                "identifier": "ana@example.com",
+                                "password": "Senha123"
                                 }
                                 """))
                 .andExpect(status().isOk())
@@ -125,21 +123,18 @@ class AuthControllerTest {
     @Test
     void credenciaisInvalidas_retorna400() throws Exception {
         when(authService.login(any()))
-                .thenThrow(new IllegalArgumentException(
-                        "E-mail/usuário ou senha incorretos"
-                ));
+                .thenThrow(new IllegalArgumentException("E-mail/usuário ou senha incorretos"));
 
         mockMvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
-                                  "identifier": "ana@example.com",
-                                  "password": "errada"
+                                "identifier": "ana@example.com",
+                                "password": "errada"
                                 }
                                 """))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error")
-                        .value("E-mail/usuário ou senha incorretos"));
+                .andExpect(jsonPath("$.error").value("E-mail/usuário ou senha incorretos"));
     }
 
     @Test
@@ -150,12 +145,22 @@ class AuthControllerTest {
                 .andExpect(status().isBadRequest());
     }
 
+    // GET /auth/me
+
+    @Test
+    void mePreflight_permitidoSemToken() throws Exception {
+        mockMvc.perform(options("/auth/me")
+                        .header("Origin", "http://127.0.0.1:5500")
+                        .header("Access-Control-Request-Method", "GET"))
+                .andExpect(status().isOk());
+    }
+
+
     @Test
     void meSemToken_retorna401() throws Exception {
         mockMvc.perform(get("/auth/me"))
                 .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.error")
-                        .value("Autenticação necessária"));
+                .andExpect(jsonPath("$.error").value("Autenticação necessária"));
     }
 
     @Test
@@ -164,10 +169,7 @@ class AuthControllerTest {
                 .thenThrow(new RuntimeException("assinatura invalida"));
 
         mockMvc.perform(get("/auth/me")
-                        .header(
-                                "Authorization",
-                                "Bearer token-falso"
-                        ))
+                        .header("Authorization", "Bearer token-falso"))
                 .andExpect(status().isUnauthorized());
     }
 
@@ -180,21 +182,67 @@ class AuthControllerTest {
         user.setUsername("angelica");
         user.setEmail("angelica@example.com");
 
-        when(jwtService.extractUserId("token-valido"))
-                .thenReturn(userId);
-
-        when(authService.findById(userId))
-                .thenReturn(user);
+        when(jwtService.extractUserId("token-valido")).thenReturn(userId);
+        when(authService.findById(userId)).thenReturn(user);
 
         mockMvc.perform(get("/auth/me")
-                        .header(
-                                "Authorization",
-                                "Bearer token-valido"
-                        ))
+                        .header("Authorization", "Bearer token-valido"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.username")
-                        .value("angelica"))
-                .andExpect(jsonPath("$.email")
-                        .value("angelica@example.com"));
+                .andExpect(jsonPath("$.username").value("angelica"))
+                .andExpect(jsonPath("$.email").value("angelica@example.com"));
+    }
+
+    // PUT /auth/password
+
+    @Test
+    void alterarSenhaSemToken_retorna401() throws Exception {
+        mockMvc.perform(put("/auth/password")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "currentPassword": "Senha123",
+                                  "newPassword": "NovaSenha123",
+                                  "confirmNewPassword": "NovaSenha123"
+                                }
+                                """))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void alterarSenhaComToken_retorna204() throws Exception {
+        UUID userId = UUID.randomUUID();
+        when(jwtService.extractUserId("token-valido")).thenReturn(userId);
+
+        mockMvc.perform(put("/auth/password")
+                        .header("Authorization", "Bearer token-valido")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "currentPassword": "Senha123",
+                                  "newPassword": "NovaSenha123",
+                                  "confirmNewPassword": "NovaSenha123"
+                                }
+                                """))
+                .andExpect(status().isNoContent());
+
+        verify(authService).changePassword(eq(userId), any());
+    }
+
+    @Test
+    void alterarSenhaComSenhaFraca_retorna400() throws Exception {
+        when(jwtService.extractUserId("token-valido")).thenReturn(UUID.randomUUID());
+
+        mockMvc.perform(put("/auth/password")
+                        .header("Authorization", "Bearer token-valido")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "currentPassword": "Senha123",
+                                  "newPassword": "fraca",
+                                  "confirmNewPassword": "fraca"
+                                }
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.newPassword").exists());
     }
 }

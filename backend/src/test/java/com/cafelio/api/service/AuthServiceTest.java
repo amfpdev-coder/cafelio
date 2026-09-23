@@ -3,6 +3,7 @@ package com.cafelio.api.service;
 import com.cafelio.api.model.User;
 import com.cafelio.api.repository.UserRepository;
 import com.cafelio.api.dto.LoginRequest;
+import com.cafelio.api.dto.ChangePasswordRequest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -10,6 +11,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -158,6 +160,79 @@ class AuthServiceTest {
         LoginRequest request = new LoginRequest();
         request.setIdentifier(identifier);
         request.setPassword(password);
+        return request;
+    }
+
+    @Test
+    void alterarSenha_senhaAtualCorreta_salvaNovoHash() {
+        UUID userId = UUID.randomUUID();
+        User user = new User();
+        user.setPasswordHash("hash-antigo");
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(passwordEncoder.matches("Senha123", "hash-antigo")).thenReturn(true);
+        when(passwordEncoder.encode("NovaSenha123")).thenReturn("hash-novo");
+
+        authService.changePassword(userId, changePasswordRequest("Senha123", "NovaSenha123", "NovaSenha123"));
+
+        assertThat(user.getPasswordHash()).isEqualTo("hash-novo");
+        verify(userRepository).save(user);
+    }
+
+    @Test
+    void alterarSenha_senhaAtualIncorreta_lancaExcecao() {
+        UUID userId = UUID.randomUUID();
+        User user = new User();
+        user.setPasswordHash("hash-antigo");
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(passwordEncoder.matches("errada", "hash-antigo")).thenReturn(false);
+
+        assertThatThrownBy(() -> authService.changePassword(userId,
+                changePasswordRequest("errada", "NovaSenha123", "NovaSenha123")))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Senha atual incorreta");
+
+        verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    void alterarSenha_confirmacaoDiferente_lancaExcecao() {
+        UUID userId = UUID.randomUUID();
+        User user = new User();
+        user.setPasswordHash("hash-antigo");
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+
+        assertThatThrownBy(() -> authService.changePassword(userId,
+                changePasswordRequest("Senha123", "NovaSenha123", "OutraSenha123")))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("As senhas não coincidem");
+
+        verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    void definirSenha_contaGoogleSemSenha_naoExigeSenhaAtual() {
+        UUID userId = UUID.randomUUID();
+        User user = new User();
+        user.setGoogleId("google-123");
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(passwordEncoder.encode("NovaSenha123")).thenReturn("hash-novo");
+
+        authService.changePassword(userId, changePasswordRequest(null, "NovaSenha123", "NovaSenha123"));
+
+        assertThat(user.getPasswordHash()).isEqualTo("hash-novo");
+        verify(passwordEncoder, never()).matches(any(), any());
+        verify(userRepository).save(user);
+    }
+
+    private ChangePasswordRequest changePasswordRequest(String current, String newPassword, String confirmation) {
+        ChangePasswordRequest request = new ChangePasswordRequest();
+        request.setCurrentPassword(current);
+        request.setNewPassword(newPassword);
+        request.setConfirmNewPassword(confirmation);
         return request;
     }
 
