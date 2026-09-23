@@ -12,7 +12,7 @@ services:
       - .env
 
     ports:
-      - "8080:8080"
+      - "8080:8000"
 
     command: ./mvnw spring-boot:run
 
