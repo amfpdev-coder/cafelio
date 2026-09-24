@@ -41,6 +41,8 @@ public class SecurityConfig {
                     "/auth/register",
                     "/auth/login",
                     "/auth/google",
+                    "/auth/password/reset-request",
+                    "/auth/password/reset",
                     "/v3/api-docs/**",
                     "/swagger-ui/**",
                     "/swagger-ui.html"

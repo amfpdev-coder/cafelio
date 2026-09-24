@@ -4,11 +4,14 @@ import com.cafelio.api.dto.AuthResponse;
 import com.cafelio.api.dto.GoogleLoginRequest;
 import com.cafelio.api.dto.RegisterRequest;
 import com.cafelio.api.dto.UserResponse;
+import com.cafelio.api.dto.LoginRequest;
+import com.cafelio.api.dto.PasswordResetConfirmRequest;
+import com.cafelio.api.dto.PasswordResetRequest;
 import com.cafelio.api.model.User;
 import com.cafelio.api.security.GoogleTokenVerifier;
 import com.cafelio.api.service.AuthService;
 import com.cafelio.api.service.JwtService;
-import com.cafelio.api.dto.LoginRequest;
+import com.cafelio.api.service.PasswordResetService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import com.cafelio.api.dto.ChangePasswordRequest;
 import jakarta.validation.Valid;
@@ -33,15 +36,18 @@ public class AuthController {
     private final AuthService authService;
     private final GoogleTokenVerifier googleTokenVerifier;
     private final JwtService jwtService;
+    private final PasswordResetService passwordResetService;
 
-    public AuthController(
+        public AuthController(
             AuthService authService,
             GoogleTokenVerifier googleTokenVerifier,
-            JwtService jwtService
+            JwtService jwtService,
+            PasswordResetService passwordResetService
     ) {
         this.authService = authService;
         this.googleTokenVerifier = googleTokenVerifier;
         this.jwtService = jwtService;
+        this.passwordResetService = passwordResetService;
     }
 
     @PostMapping("/register")
@@ -49,7 +55,6 @@ public class AuthController {
         var user = authService.register(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(new UserResponse(user));
     }
-
 
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
@@ -72,6 +77,18 @@ public class AuthController {
         @Valid @RequestBody ChangePasswordRequest request
     ) {
         authService.changePassword(userId, request);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/password/reset-request")
+    public ResponseEntity<Void> requestPasswordReset(@Valid @RequestBody PasswordResetRequest request) {
+        passwordResetService.requestReset(request.getEmail());
+        return ResponseEntity.accepted().build();
+    }
+
+    @PostMapping("/password/reset")
+    public ResponseEntity<Void> resetPassword(@Valid @RequestBody PasswordResetConfirmRequest request) {
+        passwordResetService.resetPassword(request);
         return ResponseEntity.noContent().build();
     }
 
