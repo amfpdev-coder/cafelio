@@ -6,8 +6,6 @@ import com.cafelio.api.exception.LibraryBookAlreadyExistsException;
 import com.cafelio.api.model.LibraryBook;
 import com.cafelio.api.model.User;
 import com.cafelio.api.repository.LibraryBookRepository;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -24,10 +22,7 @@ public class LibraryBookService {
         this.libraryBookRepository = libraryBookRepository;
     }
 
-    public LibraryBookResponse createLibraryBook(LibraryBookCreateRequest book){
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Object principal = auth.getPrincipal();
-        UUID userId = (UUID) principal;
+    public LibraryBookResponse createLibraryBook(LibraryBookCreateRequest book, UUID userId){
         User user = authService.findById(userId);
 
         if(libraryBookRepository.existsByUserAndOpenLibraryId(user, book.openLibraryId())){
@@ -41,10 +36,7 @@ public class LibraryBookService {
         return libraryBookResponse;
     }
 
-    public List<LibraryBookResponse> listBooks(){
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Object principal = auth.getPrincipal();
-        UUID userId = (UUID) principal;
+    public List<LibraryBookResponse> listBooks(UUID userId){
         User user = authService.findById(userId);
 
         List<LibraryBook> listOfBooks = libraryBookRepository.findByUser(user);
