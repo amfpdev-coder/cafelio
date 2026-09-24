@@ -1,14 +1,17 @@
 package com.cafelio.api.service;
 
 import com.cafelio.api.dto.request.LibraryBookCreateRequest;
+import com.cafelio.api.dto.request.LibraryBookUpdateRequest;
 import com.cafelio.api.dto.response.LibraryBookResponse;
 import com.cafelio.api.exception.LibraryBookAlreadyExistsException;
+import com.cafelio.api.exception.LibraryBookNotFoundException;
 import com.cafelio.api.model.LibraryBook;
 import com.cafelio.api.model.User;
 import com.cafelio.api.repository.LibraryBookRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -53,5 +56,30 @@ public class LibraryBookService {
         )).toList();
 
         return list;
+    }
+
+    public LibraryBookResponse updateBook(UUID id, UUID userId, LibraryBookUpdateRequest libraryBookUpdateRequest){
+        User user = authService.findById(userId);
+        Optional<LibraryBook> optionalLibraryBook = libraryBookRepository.findByIdAndUser(id, user);
+
+        LibraryBook book = optionalLibraryBook.orElseThrow(
+                () -> new LibraryBookNotFoundException("Livro não encontrado na biblioteca")
+        );
+
+        book.setStatus(libraryBookUpdateRequest.status());
+        book.setTags(libraryBookUpdateRequest.tags());
+
+        LibraryBook updatedBook = libraryBookRepository.save(book);
+        LibraryBookResponse libraryBookResponse = new LibraryBookResponse(
+                updatedBook.getId(),
+                updatedBook.getOpenLibraryId(),
+                updatedBook.getTitle(),
+                updatedBook.getFirstPublishYear(),
+                updatedBook.getCoverUrl(),
+                updatedBook.getStatus(),
+                updatedBook.getAuthors(),
+                updatedBook.getTags());
+
+        return  libraryBookResponse;
     }
 }

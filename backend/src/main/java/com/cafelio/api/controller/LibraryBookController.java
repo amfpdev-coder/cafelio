@@ -1,6 +1,7 @@
 package com.cafelio.api.controller;
 
 import com.cafelio.api.dto.request.LibraryBookCreateRequest;
+import com.cafelio.api.dto.request.LibraryBookUpdateRequest;
 import com.cafelio.api.dto.response.LibraryBookResponse;
 import com.cafelio.api.service.LibraryBookService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -34,5 +35,12 @@ public class LibraryBookController {
         Object principal = authentication.getPrincipal();
         UUID userId = (UUID) principal;
         return libraryBookService.listBooks(userId);
+    };
+
+    @PutMapping("/{id}")
+    public LibraryBookResponse updateBook(@PathVariable UUID id, Authentication authentication, @RequestBody LibraryBookUpdateRequest libraryBookUpdateRequest){
+        Object principal = authentication.getPrincipal();
+        UUID userId = (UUID) principal;
+        return libraryBookService.updateBook(id, userId, libraryBookUpdateRequest);
     }
 }
