@@ -21,6 +21,13 @@ async function renderWelcomeScreen() {
 }
 
 async function loadSession() {
+    const tokenDoLink = new URLSearchParams(window.location.search).get("token");
+
+    if (tokenDoLink) {
+        renderResetPasswordForm(tokenDoLink);
+        return;
+    }
+
     if (!getToken()) {
         renderLoginForm();
         return;
@@ -57,6 +64,7 @@ function renderLoginForm(identifier = "") {
 
             <button type="submit">Entrar</button>
             <p id="login-message" class="form-message"></p>
+            <p><a href="#" id="show-forgot">Esqueci minha senha</a></p>
 
             <p>Não tem conta? <a href="#" id="show-register">Criar conta</a></p>
         </form>
@@ -64,9 +72,14 @@ function renderLoginForm(identifier = "") {
 
     document.getElementById("identifier").value = identifier;
     document.getElementById("login-form").addEventListener("submit", handleLogin);
-    document.getElementById("show-register").addEventListener("click", (event) => {
+        document.getElementById("show-register").addEventListener("click", (event) => {
         event.preventDefault();
         renderRegisterForm();
+    });
+
+    document.getElementById("show-forgot").addEventListener("click", (event) => {
+        event.preventDefault();
+        renderForgotPasswordForm();
     });
 }
 
@@ -165,6 +178,55 @@ function renderPasswordForm(user) {
 
 renderWelcomeScreen();
 
+function renderForgotPasswordForm() {
+    showGoogleButton(false);
+
+    document.getElementById("auth-area").innerHTML = `
+        <form id="forgot-form">
+            <h2>Esqueci minha senha</h2>
+            <p>Informe seu e-mail e enviaremos um link para você escolher uma senha nova.</p>
+
+            <label for="forgot-email">E-mail</label>
+            <input id="forgot-email" type="email" autocomplete="email" required />
+
+            <button type="submit">Enviar link</button>
+            <p id="forgot-message" class="form-message"></p>
+
+            <p><a href="#" id="back-to-login">Voltar para o login</a></p>
+        </form>
+    `;
+
+    document.getElementById("forgot-form").addEventListener("submit", handleForgotPassword);
+    document.getElementById("back-to-login").addEventListener("click", (event) => {
+        event.preventDefault();
+        renderLoginForm();
+    });
+}
+
+function renderResetPasswordForm(token) {
+    showGoogleButton(false);
+
+    document.getElementById("auth-area").innerHTML = `
+        <form id="reset-form">
+            <h2>Escolher nova senha</h2>
+
+            <label for="reset-password">Nova senha</label>
+            <input id="reset-password" type="password" autocomplete="new-password" required />
+            <small>Mínimo de 8 caracteres, com letra maiúscula, minúscula e número.</small>
+
+            <label for="reset-confirm">Confirmar nova senha</label>
+            <input id="reset-confirm" type="password" autocomplete="new-password" required />
+
+            <button type="submit">Salvar senha</button>
+            <p id="reset-message" class="form-message"></p>
+        </form>
+    `;
+
+    document.getElementById("reset-form").addEventListener("submit", (event) => {
+        handleResetPassword(event, token);
+    });
+}
+
 async function handleGoogleLogin(response) {
     if (!document.getElementById("login-message")) {
         renderLoginForm();
@@ -256,4 +318,46 @@ async function handleChangePassword(event, user) {
 function handleLogout() {
     clearToken();
     renderLoginForm();
+}
+
+async function handleForgotPassword(event) {
+    event.preventDefault();
+
+    const message = document.getElementById("forgot-message");
+    message.textContent = "Enviando...";
+
+    try {
+        await apiPost("/auth/password/reset-request", {
+            email: document.getElementById("forgot-email").value,
+        });
+
+        message.textContent =
+            "Se esse e-mail estiver cadastrado, enviamos um link para redefinir a senha. " +
+            "O link vale por 30 minutos.";
+    } catch (error) {
+        message.textContent = error.message;
+    }
+}
+
+async function handleResetPassword(event, token) {
+    event.preventDefault();
+
+    const message = document.getElementById("reset-message");
+    message.textContent = "Salvando...";
+
+    try {
+        await apiPost("/auth/password/reset", {
+            token: token,
+            newPassword: document.getElementById("reset-password").value,
+            confirmNewPassword: document.getElementById("reset-confirm").value,
+        });
+
+        window.history.replaceState({}, "", window.location.pathname);
+
+        renderLoginForm();
+        document.getElementById("login-message").textContent =
+            "Senha alterada! Agora é só entrar com a senha nova.";
+    } catch (error) {
+        message.textContent = error.message;
+    }
 }
