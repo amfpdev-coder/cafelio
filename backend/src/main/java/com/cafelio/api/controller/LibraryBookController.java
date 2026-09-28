@@ -6,6 +6,7 @@ import com.cafelio.api.dto.response.LibraryBookResponse;
 import com.cafelio.api.service.LibraryBookService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -49,5 +50,14 @@ public class LibraryBookController {
         Object principal = authentication.getPrincipal();
         UUID userId = (UUID) principal;
         return libraryBookService.getById(id, userId);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> deleteBook(@PathVariable UUID id, Authentication authentication){
+        Object principal = authentication.getPrincipal();
+        UUID userId = (UUID) principal;
+        libraryBookService.deleteBook(id, userId);
+        return ResponseEntity.ok ("Livro deletado com sucesso");
+
     }
 }

@@ -104,4 +104,15 @@ public class LibraryBookService {
 
         return response;
     }
+
+    public void deleteBook(UUID id, UUID userId){
+        User user = authService.findById(userId);
+        Optional<LibraryBook> optionalLibraryBook = libraryBookRepository.findByIdAndUser(id, user);
+        LibraryBook book = optionalLibraryBook.orElseThrow(
+                () -> new LibraryBookNotFoundException("Livro não encontrado na biblioteca")
+        );
+
+        libraryBookRepository.delete(book);
+
+    }
 }

@@ -15,4 +15,6 @@ public interface LibraryBookRepository extends JpaRepository<LibraryBook, UUID> 
    List<LibraryBook> findByUser(User user);
 
    Optional<LibraryBook> findByIdAndUser(UUID id, User user);
+
+
 }
