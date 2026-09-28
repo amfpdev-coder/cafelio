@@ -1,6 +1,5 @@
 package com.cafelio.api.service;
 
-import com.cafelio.api.controller.LibraryBookController;
 import com.cafelio.api.dto.request.LibraryBookCreateRequest;
 import com.cafelio.api.dto.request.LibraryBookUpdateRequest;
 import com.cafelio.api.dto.response.LibraryBookResponse;
@@ -9,6 +8,7 @@ import com.cafelio.api.exception.LibraryBookNotFoundException;
 import com.cafelio.api.model.LibraryBook;
 import com.cafelio.api.model.User;
 import com.cafelio.api.repository.LibraryBookRepository;
+import jakarta.validation.constraints.Null;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -67,8 +67,13 @@ public class LibraryBookService {
                 () -> new LibraryBookNotFoundException("Livro não encontrado na biblioteca")
         );
 
-        book.setStatus(libraryBookUpdateRequest.status());
-        book.setTags(libraryBookUpdateRequest.tags());
+        if (libraryBookUpdateRequest.status() != null){
+            book.setStatus(libraryBookUpdateRequest.status());
+        }
+
+        if (libraryBookUpdateRequest.tags() != null){
+            book.setTags(libraryBookUpdateRequest.tags());
+        }
 
         LibraryBook updatedBook = libraryBookRepository.save(book);
         LibraryBookResponse libraryBookResponse = new LibraryBookResponse(

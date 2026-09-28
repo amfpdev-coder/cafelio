@@ -38,7 +38,7 @@ public class LibraryBookController {
         return libraryBookService.listBooks(userId);
     };
 
-    @PutMapping("/{id}")
+    @PatchMapping("/{id}")
     public LibraryBookResponse updateBook(@PathVariable UUID id, Authentication authentication, @RequestBody LibraryBookUpdateRequest libraryBookUpdateRequest){
         Object principal = authentication.getPrincipal();
         UUID userId = (UUID) principal;
