@@ -1,5 +1,6 @@
 package com.cafelio.api.service;
 
+import com.cafelio.api.controller.LibraryBookController;
 import com.cafelio.api.dto.request.LibraryBookCreateRequest;
 import com.cafelio.api.dto.request.LibraryBookUpdateRequest;
 import com.cafelio.api.dto.response.LibraryBookResponse;
@@ -81,5 +82,26 @@ public class LibraryBookService {
                 updatedBook.getTags());
 
         return  libraryBookResponse;
+    }
+
+    public LibraryBookResponse getById(UUID id, UUID userId){
+        User user = authService.findById(userId);
+        Optional<LibraryBook> optionalLibraryBook = libraryBookRepository.findByIdAndUser(id, user);
+        LibraryBook book = optionalLibraryBook.orElseThrow(
+                () -> new LibraryBookNotFoundException("Livro não encontrado na biblioteca")
+        );
+
+        LibraryBookResponse response = new LibraryBookResponse(
+                book.getId(),
+                book.getOpenLibraryId(),
+                book.getTitle(),
+                book.getFirstPublishYear(),
+                book.getCoverUrl(),
+                book.getStatus(),
+                book.getAuthors(),
+                book.getTags()
+        );
+
+        return response;
     }
 }

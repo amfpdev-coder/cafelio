@@ -43,4 +43,11 @@ public class LibraryBookController {
         UUID userId = (UUID) principal;
         return libraryBookService.updateBook(id, userId, libraryBookUpdateRequest);
     }
+
+    @GetMapping("/{id}")
+    public LibraryBookResponse getById(@PathVariable UUID id, Authentication authentication){
+        Object principal = authentication.getPrincipal();
+        UUID userId = (UUID) principal;
+        return libraryBookService.getById(id, userId);
+    }
 }

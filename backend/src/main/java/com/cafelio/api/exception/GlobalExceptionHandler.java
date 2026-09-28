@@ -105,4 +105,19 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.CONFLICT)
                 .body(error);
     }
+
+    @ExceptionHandler(LibraryBookNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handleLibraryBookNotFound(
+            LibraryBookNotFoundException ex
+    ){
+        Map<String, String> error = Map.of(
+                "error",
+                ex.getMessage()
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(error);
+    }
+
 }
