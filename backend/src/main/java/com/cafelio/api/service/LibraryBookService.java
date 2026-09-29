@@ -5,7 +5,9 @@ import com.cafelio.api.dto.request.LibraryBookUpdateRequest;
 import com.cafelio.api.dto.response.LibraryBookResponse;
 import com.cafelio.api.exception.LibraryBookAlreadyExistsException;
 import com.cafelio.api.exception.LibraryBookNotFoundException;
+import com.cafelio.api.exception.NoReadingGoalBooksException;
 import com.cafelio.api.model.LibraryBook;
+import com.cafelio.api.model.ReadingStatus;
 import com.cafelio.api.model.User;
 import com.cafelio.api.repository.LibraryBookRepository;
 import jakarta.validation.constraints.Null;
@@ -13,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 import java.util.UUID;
 
 @Service
@@ -119,5 +122,32 @@ public class LibraryBookService {
 
         libraryBookRepository.delete(book);
 
+    }
+
+    public LibraryBookResponse readingGoal(UUID userId){
+        User user = authService.findById(userId);
+        List<LibraryBook> books = libraryBookRepository.findByUserAndStatus(user, ReadingStatus.READING_GOAL);
+
+        if (books.isEmpty()){
+            throw new NoReadingGoalBooksException("Nenhum livro encontrado na meta literária");
+        }
+
+        Random random = new Random();
+        int sorteado = random.nextInt(books.size());
+
+        LibraryBook livroSorteado = books.get(sorteado);
+
+        LibraryBookResponse readingGoalBook = new LibraryBookResponse(
+                livroSorteado.getId(),
+                livroSorteado.getOpenLibraryId(),
+                livroSorteado.getTitle(),
+                livroSorteado.getFirstPublishYear(),
+                livroSorteado.getCoverUrl(),
+                livroSorteado.getStatus(),
+                livroSorteado.getAuthors(),
+                livroSorteado.getTags()
+        );
+
+        return readingGoalBook;
     }
 }

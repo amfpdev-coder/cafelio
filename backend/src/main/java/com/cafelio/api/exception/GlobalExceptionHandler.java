@@ -120,4 +120,17 @@ public class GlobalExceptionHandler {
                 .body(error);
     }
 
+    @ExceptionHandler(NoReadingGoalBooksException.class)
+    public ResponseEntity<Map<String, String>> handleNoReadingGoalBooksException(
+            NoReadingGoalBooksException ex
+    ){
+        Map<String, String> error = Map.of(
+                "error",
+                ex.getMessage()
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(error);
+    }
 }

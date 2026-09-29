@@ -1,6 +1,7 @@
 package com.cafelio.api.repository;
 
 import com.cafelio.api.model.LibraryBook;
+import com.cafelio.api.model.ReadingStatus;
 import com.cafelio.api.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -16,5 +17,5 @@ public interface LibraryBookRepository extends JpaRepository<LibraryBook, UUID> 
 
    Optional<LibraryBook> findByIdAndUser(UUID id, User user);
 
-
+   List<LibraryBook> findByUserAndStatus(User user, ReadingStatus status);
 }

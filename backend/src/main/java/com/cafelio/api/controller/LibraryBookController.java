@@ -60,4 +60,11 @@ public class LibraryBookController {
         return ResponseEntity.ok ("Livro deletado com sucesso");
 
     }
+
+    @GetMapping("/reading-goal")
+    public LibraryBookResponse readingGoal(Authentication authentication){
+        Object principal = authentication.getPrincipal();
+        UUID userId = (UUID) principal;
+        return libraryBookService.readingGoal(userId);
+    }
 }
