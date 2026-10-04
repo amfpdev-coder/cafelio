@@ -10,7 +10,6 @@ import com.cafelio.api.model.LibraryBook;
 import com.cafelio.api.model.ReadingStatus;
 import com.cafelio.api.model.User;
 import com.cafelio.api.repository.LibraryBookRepository;
-import jakarta.validation.constraints.Null;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

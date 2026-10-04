@@ -1,6 +1,6 @@
 # Relatório de desenvolvimento — Etapa 4 (Biblioteca pessoal)
 
-**Data:** 28/09/2026  
+**Data:** 03/10/2026  
 **Responsável:** Amanda  
 **Branch de trabalho:** `feature/library-crud`
 
@@ -55,7 +55,7 @@ Foi criada uma restrição de unicidade composta por:
 user_id + open_library_id
 ```
 
-Assim, dois usuários diferentes podem adicionar a mesma obra, mas **a mesmo usuário não pode adicionar o mesmo livro duas vezes**.
+Assim, dois usuários diferentes podem adicionar a mesma obra, o mesmo usuário não pode adicionar o mesmo livro duas vezes**.
 
 ### Status de leitura
 
@@ -164,7 +164,7 @@ O repository utiliza:
 findByUser(User user)
 ```
 
-A própria consulta ao banco já é limitada à usuário proprietário dos registros.
+A própria consulta ao banco já é limitada o usuário proprietário dos registros.
 
 Cada entidade encontrada é convertida para `LibraryBookResponse` antes de ser enviada ao cliente.
 
@@ -186,7 +186,7 @@ A consulta utiliza:
 findByIdAndUser(UUID id, User user)
 ```
 
-A escolha garante que não basta o registro existir: **ele também precisa pertencer ao usuário autenticada**.
+A escolha garante que não basta o registro existir: **ele também precisa pertencer ao usuário autenticado**.
 
 Caso o livro não seja encontrado, é lançada:
 
@@ -285,7 +285,7 @@ Antes da exclusão, o backend consulta:
 findByIdAndUser(...)
 ```
 
-garantindo que a usuário só possa remover livros pertencentes à própria biblioteca.
+garantindo que o usuário só possa remover livros pertencentes à própria biblioteca.
 
 O service executa a exclusão através do método `delete()` herdado do `JpaRepository`.
 
@@ -388,7 +388,7 @@ findByUserAndStatus(User user, ReadingStatus status)
 
 O método retorna somente os livros:
 
-- pertencentes ao usuário autenticada;
+- pertencentes ao usuário autenticado;
 - com status `READING_GOAL`.
 
 No service, o fluxo é:
@@ -411,7 +411,7 @@ Foi criada:
 NoReadingGoalBooksException
 ```
 
-Caso a usuário não possua nenhum livro com status `READING_GOAL`, a exceção é lançada com uma mensagem informando que não há livros na Meta Literária.
+Caso o usuário não possua nenhum livro com status `READING_GOAL`, a exceção é lançada com uma mensagem informando que não há livros na Meta Literária.
 
 O `GlobalExceptionHandler` converte essa situação para:
 
@@ -488,7 +488,32 @@ O endpoint de sorteio foi executado repetidas vezes e retornou livros diferentes
 
 ---
 
-## 12. Tratamento de erros
+## 12. Testes automatizados
+
+Foram adicionados testes automatizados para as principais regras de negócio da Biblioteca Pessoal utilizando JUnit 5 e Mockito.
+
+Foram cobertos os seguintes cenários:
+
+- criação de livro com sucesso;
+- tentativa de adicionar livro duplicado, validando `LibraryBookAlreadyExistsException`;
+- confirmação de que livros de outro usuário não podem ser acessados;
+- atualização somente do status, preservando as tags existentes;
+- atualização somente das tags, preservando o status existente;
+- exclusão de livro existente;
+- sorteio de livro da Meta Literária;
+- tentativa de sorteio com Meta Literária vazia, validando `NoReadingGoalBooksException`.
+
+Os testes do `LibraryBookService` foram executados isoladamente com sucesso.
+
+Ao final, a suíte completa do projeto também foi executada no ambiente Docker:
+
+```bash
+docker compose run --rm backend ./mvnw test
+```
+
+---
+
+## 13. Tratamento de erros
 
 Foram adicionados tratamentos específicos para regras da biblioteca.
 
@@ -502,11 +527,11 @@ As exceções são centralizadas no `GlobalExceptionHandler`, mantendo os contro
 
 ---
 
-## 13. Decisões técnicas tomadas
+## 14. Decisões técnicas tomadas
 
 **UUID como identificador interno.** Cada `LibraryBook` possui um UUID próprio no Cafélio, independente do `openLibraryId`. O identificador interno é utilizado nas operações de consulta, edição e exclusão.
 
-**Usuário final não precisa manipular UUID manualmente.** O UUID aparece no Swagger porque a API está sendo testada diretamente. No frontend, ele será utilizado internamente quando a usuário clicar em ações como editar ou excluir.
+**Usuário final não precisa manipular UUID manualmente.** O UUID aparece no Swagger porque a API está sendo testada diretamente. No frontend, ele será utilizado internamente quando o usuário clicar em ações como editar ou excluir.
 
 **Consultas por ID também filtram pelo usuário.** Foi utilizado `findByIdAndUser` em vez de apenas `findById`. Isso impede que conhecer o UUID de um livro seja suficiente para acessar ou modificar um registro de outra conta.
 
@@ -522,46 +547,26 @@ As exceções são centralizadas no `GlobalExceptionHandler`, mantendo os contro
 
 ---
 
-## 14. Situação da Etapa 4
+## 15. Situação da Etapa 4
 
-| Recurso do escopo | Estado |
-|---|---|
-| Estrutura `LibraryBook` | Concluído |
-| Migration da biblioteca | Concluído |
-| Adicionar livro | Concluído |
-| Impedir duplicidade por usuário | Concluído |
-| Listar biblioteca | Concluído |
-| Buscar livro por ID | Concluído |
-| Atualizar status | Concluído |
-| Atualizar tags | Concluído |
-| Atualização parcial com PATCH | Concluído |
-| Excluir livro | Concluído |
-| Isolamento dos livros por usuário | Concluído na implementação |
-| Tratamento de livro inexistente | Concluído |
-| Sorteio da Meta Literária | Concluído |
-| Tratamento de Meta Literária vazia | Concluído |
-| Testes manuais via Swagger | Concluído |
-| Testes automatizados específicos da Etapa 4 | **Pendente** |
-
----
-
-## 15. Próximos passos
-
-A implementação funcional da Biblioteca Pessoal está concluída.
-
-O próximo passo recomendado é adicionar **testes automatizados específicos da Etapa 4**, principalmente para as regras de segurança e negócio.
-
-Prioridades:
-
-1. garantir por teste que a usuário A não consegue acessar um livro pertencente ao usuário B;
-2. garantir que adicionar o mesmo livro duas vezes pela mesmo usuário retorna `409 Conflict`;
-3. testar `GET /library-books/{id}`;
-4. testar atualização parcial com `PATCH`;
-5. testar exclusão;
-6. testar sorteio da Meta Literária;
-7. testar o comportamento quando a Meta Literária estiver vazia.
-
-Os dois primeiros são especialmente importantes por cobrirem as principais regras de isolamento e integridade da biblioteca.
+| Recurso do escopo | Estado                    |
+|---|---------------------------|
+| Estrutura `LibraryBook` | Concluído                 |
+| Migration da biblioteca | Concluído                 |
+| Adicionar livro | Concluído                 |
+| Impedir duplicidade por usuário | Concluído                 |
+| Listar biblioteca | Concluído                 |
+| Buscar livro por ID | Concluído                 |
+| Atualizar status | Concluído                 |
+| Atualizar tags | Concluído                 |
+| Atualização parcial com PATCH | Concluído                 |
+| Excluir livro | Concluído                 |
+| Isolamento dos livros por usuário | Concluído  |
+| Tratamento de livro inexistente | Concluído                 |
+| Sorteio da Meta Literária | Concluído                 |
+| Tratamento de Meta Literária vazia | Concluído                 |
+| Testes manuais via Swagger | Concluído                 |
+| Testes automatizados específicos da Etapa 4 | Concluído                 |
 
 ---
 
