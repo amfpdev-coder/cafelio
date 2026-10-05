@@ -67,6 +67,14 @@ public class LibraryBook {
         return tags;
     }
 
+    public void setStatus(ReadingStatus status){
+        this.status = status;
+    }
+
+    public void setTags(Set<BookTag> tags) {
+        this.tags = tags;
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
