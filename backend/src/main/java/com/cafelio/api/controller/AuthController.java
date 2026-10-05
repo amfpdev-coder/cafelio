@@ -7,13 +7,14 @@ import com.cafelio.api.dto.UserResponse;
 import com.cafelio.api.dto.LoginRequest;
 import com.cafelio.api.dto.PasswordResetConfirmRequest;
 import com.cafelio.api.dto.PasswordResetRequest;
+import com.cafelio.api.dto.ChangePasswordRequest;
+import com.cafelio.api.dto.PasswordResetCodeRequest;
 import com.cafelio.api.model.User;
 import com.cafelio.api.security.GoogleTokenVerifier;
 import com.cafelio.api.service.AuthService;
 import com.cafelio.api.service.JwtService;
 import com.cafelio.api.service.PasswordResetService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import com.cafelio.api.dto.ChangePasswordRequest;
 import jakarta.validation.Valid;
 
 import org.springframework.http.HttpStatus;
@@ -89,6 +90,12 @@ public class AuthController {
     @PostMapping("/password/reset")
     public ResponseEntity<Void> resetPassword(@Valid @RequestBody PasswordResetConfirmRequest request) {
         passwordResetService.resetPassword(request);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/password/reset-code")
+    public ResponseEntity<Void> resetPasswordByCode(@Valid @RequestBody PasswordResetCodeRequest request) {
+        passwordResetService.resetPasswordByCode(request);
         return ResponseEntity.noContent().build();
     }
 

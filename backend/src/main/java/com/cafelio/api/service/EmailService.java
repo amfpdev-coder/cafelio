@@ -19,7 +19,7 @@ public class EmailService {
         this.remetente = remetente;
     }
 
-    public void enviarRecuperacaoDeSenha(String destinatario, String link) {
+    public void enviarRecuperacaoDeSenha(String destinatario, String link, String codigo) {
         SimpleMailMessage mensagem = new SimpleMailMessage();
 
         mensagem.setFrom(remetente);
@@ -28,19 +28,24 @@ public class EmailService {
         mensagem.setText("""
                 Olá!
 
-                Recebemos um pedido para redefinir a sua senha no Cafélio.
+                Recebemos um pedido para redefinir a sua senha na conta do Cafélio.
+                Você pode escolher uma das duas formas abaixo.
 
-                Para escolher uma senha nova, acesse o link abaixo:
+                1) Clicar neste link:
 
                 %s
 
-                O link vale por 30 minutos e só pode ser usado uma vez.
+                2) Ou informar este código na tela de recuperação:
+
+                %s
+
+                Qualquer uma das duas vale por 30 minutos e só pode ser usada uma vez.
 
                 Se não foi você que pediu, pode ignorar esta mensagem — sua senha continua a mesma.
 
                 Até logo,
                 Cafélio
-                """.formatted(link));
+                """.formatted(link, codigo));
 
         mailSender.send(mensagem);
     }

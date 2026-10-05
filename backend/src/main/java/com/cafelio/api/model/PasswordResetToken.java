@@ -8,7 +8,9 @@ import java.util.UUID;
 @Entity
 @Table(name = "password_reset_tokens")
 public class PasswordResetToken {
-    
+
+    public static final int MAX_TENTATIVAS = 5;
+
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
@@ -19,6 +21,12 @@ public class PasswordResetToken {
 
     @Column(name = "token_hash", nullable = false, unique = true)
     private String tokenHash;
+
+    @Column(name = "code_hash")
+    private String codeHash;
+
+    @Column(name = "attempts", nullable = false)
+    private int attempts = 0;
 
     @Column(name = "expires_at", nullable = false)
     private Instant expiresAt;
@@ -37,6 +45,12 @@ public class PasswordResetToken {
     public String getTokenHash() { return tokenHash; }
     public void setTokenHash(String tokenHash) { this.tokenHash = tokenHash; }
 
+    public String getCodeHash() { return codeHash; }
+    public void setCodeHash(String codeHash) { this.codeHash = codeHash; }
+
+    public int getAttempts() { return attempts; }
+    public void setAttempts(int attempts) { this.attempts = attempts; }
+
     public Instant getExpiresAt() { return expiresAt; }
     public void setExpiresAt(Instant expiresAt) { this.expiresAt = expiresAt; }
 
@@ -51,5 +65,13 @@ public class PasswordResetToken {
 
     public boolean isUsado() {
         return usedAt != null;
+    }
+
+    public boolean isBloqueadoPorTentativas() {
+        return attempts >= MAX_TENTATIVAS;
+    }
+
+    public void registrarTentativaErrada() {
+        this.attempts++;
     }
 }

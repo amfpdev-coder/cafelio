@@ -1,5 +1,6 @@
 package com.cafelio.api.service;
 
+import com.cafelio.api.dto.PasswordResetCodeRequest;
 import com.cafelio.api.dto.PasswordResetConfirmRequest;
 import com.cafelio.api.model.PasswordResetToken;
 import com.cafelio.api.model.User;
@@ -7,10 +8,10 @@ import com.cafelio.api.repository.PasswordResetTokenRepository;
 import com.cafelio.api.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.beans.factory.annotation.Value;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -23,7 +24,7 @@ import java.util.HexFormat;
 
 @Service
 public class PasswordResetService {
-    
+
     private static final Logger log = LoggerFactory.getLogger(PasswordResetService.class);
     private static final Duration VALIDADE = Duration.ofMinutes(30);
     private static final SecureRandom RANDOM = new SecureRandom();
@@ -33,7 +34,6 @@ public class PasswordResetService {
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
     private final String frontendUrl;
-
 
     public PasswordResetService(
             UserRepository userRepository,
@@ -55,10 +55,12 @@ public class PasswordResetService {
             tokenRepository.deleteByUser(user);
 
             String token = gerarToken();
+            String codigo = gerarCodigo();
 
             PasswordResetToken resetToken = new PasswordResetToken();
             resetToken.setUser(user);
             resetToken.setTokenHash(hash(token));
+            resetToken.setCodeHash(hash(codigo));
             resetToken.setExpiresAt(Instant.now().plus(VALIDADE));
 
             tokenRepository.save(resetToken);
@@ -66,7 +68,7 @@ public class PasswordResetService {
             String link = frontendUrl + "/index.html?token=" + token;
 
             try {
-                emailService.enviarRecuperacaoDeSenha(email, link);
+                emailService.enviarRecuperacaoDeSenha(email, link, codigo);
                 log.info("E-mail de recuperacao enviado para {}", email);
             } catch (Exception e) {
                 log.error("Falha ao enviar e-mail de recuperacao para {}", email, e);
@@ -87,8 +89,36 @@ public class PasswordResetService {
             throw new IllegalArgumentException("Link inválido ou expirado");
         }
 
+        trocarSenha(resetToken, request.getNewPassword());
+    }
+
+    @Transactional(noRollbackFor = IllegalArgumentException.class)
+    public void resetPasswordByCode(PasswordResetCodeRequest request) {
+        if (!request.getNewPassword().equals(request.getConfirmNewPassword())) {
+            throw new IllegalArgumentException("As senhas não coincidem");
+        }
+
+        PasswordResetToken resetToken = userRepository.findByEmail(request.getEmail())
+                .flatMap(tokenRepository::findByUser)
+                .orElseThrow(() -> new IllegalArgumentException("Código inválido ou expirado"));
+
+        if (resetToken.isUsado() || resetToken.isExpirado() || resetToken.isBloqueadoPorTentativas()) {
+            throw new IllegalArgumentException("Código inválido ou expirado");
+        }
+
+        if (resetToken.getCodeHash() == null
+                || !resetToken.getCodeHash().equals(hash(request.getCode()))) {
+            resetToken.registrarTentativaErrada();
+            tokenRepository.save(resetToken);
+            throw new IllegalArgumentException("Código inválido ou expirado");
+        }
+
+        trocarSenha(resetToken, request.getNewPassword());
+    }
+
+    private void trocarSenha(PasswordResetToken resetToken, String novaSenha) {
         User user = resetToken.getUser();
-        user.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
+        user.setPasswordHash(passwordEncoder.encode(novaSenha));
         userRepository.save(user);
 
         resetToken.setUsedAt(Instant.now());
@@ -101,10 +131,14 @@ public class PasswordResetService {
         return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
     }
 
-    private String hash(String token) {
+    private String gerarCodigo() {
+        return String.format("%06d", RANDOM.nextInt(1_000_000));
+    }
+
+    private String hash(String valor) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] resumo = digest.digest(token.getBytes(StandardCharsets.UTF_8));
+            byte[] resumo = digest.digest(valor.getBytes(StandardCharsets.UTF_8));
             return HexFormat.of().formatHex(resumo);
         } catch (NoSuchAlgorithmException e) {
             throw new IllegalStateException("Algoritmo SHA-256 indisponivel", e);
