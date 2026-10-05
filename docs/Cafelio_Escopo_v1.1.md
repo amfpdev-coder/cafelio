@@ -28,7 +28,7 @@ Cafélio é um planner literário digital que une o clima de diário de viagem c
 | Cadastro próprio | Criar conta com nome de usuário único, e-mail e senha (com confirmação e validação de força) |
 | Login com Google | Entrada rápida via OAuth |
 | Login tradicional | Entrar com e-mail/usuário e senha |
-| Recuperação de senha | Link por e-mail, código por e-mail e código por telefone (SMS) |
+| Recuperação de senha | Link por e-mail e código de 6 dígitos por e-mail |
 | Alterar senha | Trocar a senha a qualquer momento nas configurações |
 | Foto de perfil | Upload de foto do usuário, armazenada no Cloudinary |
 | Tratamento de erros | Mensagens claras: login incorreto, e-mail já cadastrado, senha inválida |
@@ -45,7 +45,6 @@ Cafélio é um planner literário digital que une o clima de diário de viagem c
 | Migrations de banco | Flyway |
 | Testes | JUnit 5 + MockMvc |
 | E-mail | Spring Mail (SMTP) |
-| SMS | Twilio |
 | Imagens | Cloudinary |
 | Busca de livros | Open Library API |
 | Pagamentos | Stripe |
@@ -79,7 +78,7 @@ Cafélio é um planner literário digital que une o clima de diário de viagem c
 | Etapa | O que fazer | Detalhes |
 |---|---|---|
 | 1 | Setup | Spring Boot + PostgreSQL + estrutura de pacotes |
-| 2 | Autenticação completa | Cadastro próprio, Google, recuperação e-mail/SMS |
+| 2 | Autenticação completa | Cadastro próprio, Google, recuperação por e-mail |
 | 3 | Busca de livros | Integração Open Library API |
 | 4 | Biblioteca pessoal | CRUD + status + etiquetas + sorteio |
 | 5 | Cadernos | Capa + figurinhas + temas + Cloudinary |
@@ -100,6 +99,23 @@ Cafélio é um planner literário digital que une o clima de diário de viagem c
 |---|---|---|
 | Gratuito | Estante, 1 caderno, desafios básicos, ranking | R$ 0 |
 | Cafélio Plus | Cadernos ilimitados, temas visuais, relatório anual, recomendação | R$ 14,90/mês |
+
+## Fora do escopo
+
+Itens avaliados e deliberadamente **não** incluídos, com o motivo registrado para evitar retrabalho.
+
+### Recuperação de senha por SMS — removida em 05/10/2026
+
+A versão 1.1 previa três mecanismos de recuperação: link por e-mail, código por e-mail e código por SMS. Os dois primeiros estão implementados; o terceiro foi retirado.
+
+**Motivo.** Não existe envio programático de SMS gratuito — a cobrança vem da operadora, não do intermediário, e nenhum fornecedor a absorve. Todos os provedores (Twilio, Vonage, Zenvia, Amazon SNS) cobram por mensagem, em dólar, além de mensalidade do número remetente. Para um produto que ainda não tem receita, isso significa despesa fixa em moeda estrangeira sem retorno correspondente.
+
+**O que o substitui.** A recuperação por e-mail — link e código de 6 dígitos, enviados juntos — atende integralmente a necessidade: a pessoa que esqueceu a senha recupera o acesso. O SMS seria conveniência adicional, não capacidade nova.
+
+**Se for reavaliado no futuro**, duas observações valem registro:
+
+- O código, o hash, a expiração e o limite de tentativas já estão implementados e são agnósticos de canal. Adicionar SMS exigiria apenas o envio em si, mais um campo de telefone na tabela `users` com fluxo de confirmação — nada da lógica de segurança precisaria ser refeito.
+- No Brasil, a taxa de leitura do WhatsApp é muito superior à do SMS, e o TOTP (código gerado no próprio aparelho, via aplicativo autenticador) tem custo marginal zero e é imune a *SIM swap*. Qualquer reavaliação deveria comparar os três canais, não assumir o SMS.
 
 ## Resumo
 
