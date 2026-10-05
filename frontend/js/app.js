@@ -178,29 +178,77 @@ function renderPasswordForm(user) {
 
 renderWelcomeScreen();
 
-function renderForgotPasswordForm() {
+function renderForgotPasswordForm(email = "") {
     showGoogleButton(false);
 
     document.getElementById("auth-area").innerHTML = `
         <form id="forgot-form">
             <h2>Esqueci minha senha</h2>
-            <p>Informe seu e-mail e enviaremos um link para você escolher uma senha nova.</p>
+            <p>Informe seu e-mail. Enviaremos um link e um código de 6 dígitos — você escolhe qual usar.</p>
 
             <label for="forgot-email">E-mail</label>
             <input id="forgot-email" type="email" autocomplete="email" required />
 
-            <button type="submit">Enviar link</button>
+            <button type="submit">Enviar</button>
             <p id="forgot-message" class="form-message"></p>
 
+            <p><a href="#" id="have-code">Já tenho um código</a></p>
             <p><a href="#" id="back-to-login">Voltar para o login</a></p>
         </form>
     `;
 
+    document.getElementById("forgot-email").value = email;
     document.getElementById("forgot-form").addEventListener("submit", handleForgotPassword);
+
+    document.getElementById("have-code").addEventListener("click", (event) => {
+        event.preventDefault();
+        renderResetByCodeForm(document.getElementById("forgot-email").value);
+    });
+
     document.getElementById("back-to-login").addEventListener("click", (event) => {
         event.preventDefault();
         renderLoginForm();
     });
+}
+
+function renderResetByCodeForm(email = "") {
+    showGoogleButton(false);
+
+    document.getElementById("auth-area").innerHTML = `
+        <form id="code-form">
+            <h2>Usar o código</h2>
+            <p>Digite o código de 6 dígitos que enviamos para o seu e-mail.</p>
+
+            <label for="code-email">E-mail</label>
+            <input id="code-email" type="email" autocomplete="email" required />
+
+            <label for="code-value">Código</label>
+            <input id="code-value" type="text" inputmode="numeric" maxlength="6"
+                    pattern="\\d{6}" autocomplete="one-time-code" required />
+
+            <label for="code-password">Nova senha</label>
+            <input id="code-password" type="password" autocomplete="new-password" required />
+            <small>Mínimo de 8 caracteres, com letra maiúscula, minúscula e número.</small>
+
+            <label for="code-confirm">Confirmar nova senha</label>
+            <input id="code-confirm" type="password" autocomplete="new-password" required />
+
+            <button type="submit">Salvar senha</button>
+            <p id="code-message" class="form-message"></p>
+
+            <p><a href="#" id="back-to-forgot">Pedir um código novo</a></p>
+        </form>
+    `;
+
+    document.getElementById("code-email").value = email;
+    document.getElementById("code-form").addEventListener("submit", handleResetByCode);
+
+    document.getElementById("back-to-forgot").addEventListener("click", (event) => {
+        event.preventDefault();
+        renderForgotPasswordForm(document.getElementById("code-email").value);
+    });
+
+    document.getElementById(email ? "code-value" : "code-email").focus();
 }
 
 function renderResetPasswordForm(token) {
@@ -326,14 +374,15 @@ async function handleForgotPassword(event) {
     const message = document.getElementById("forgot-message");
     message.textContent = "Enviando...";
 
-    try {
-        await apiPost("/auth/password/reset-request", {
-            email: document.getElementById("forgot-email").value,
-        });
+    const email = document.getElementById("forgot-email").value;
 
-        message.textContent =
-            "Se esse e-mail estiver cadastrado, enviamos um link para redefinir a senha. " +
-            "O link vale por 30 minutos.";
+    try {
+        await apiPost("/auth/password/reset-request", { email: email });
+
+        renderResetByCodeForm(email);
+        document.getElementById("code-message").textContent =
+            "Se esse e-mail estiver cadastrado, enviamos um link e um código de 6 dígitos. " +
+            "Valem por 30 minutos.";
     } catch (error) {
         message.textContent = error.message;
     }
@@ -355,6 +404,30 @@ async function handleResetPassword(event, token) {
         window.history.replaceState({}, "", window.location.pathname);
 
         renderLoginForm();
+        document.getElementById("login-message").textContent =
+            "Senha alterada! Agora é só entrar com a senha nova.";
+    } catch (error) {
+        message.textContent = error.message;
+    }
+}
+
+async function handleResetByCode(event) {
+    event.preventDefault();
+
+    const message = document.getElementById("code-message");
+    message.textContent = "Salvando...";
+
+    const email = document.getElementById("code-email").value;
+
+    try {
+        await apiPost("/auth/password/reset-code", {
+            email: email,
+            code: document.getElementById("code-value").value,
+            newPassword: document.getElementById("code-password").value,
+            confirmNewPassword: document.getElementById("code-confirm").value,
+        });
+
+        renderLoginForm(email);
         document.getElementById("login-message").textContent =
             "Senha alterada! Agora é só entrar com a senha nova.";
     } catch (error) {
