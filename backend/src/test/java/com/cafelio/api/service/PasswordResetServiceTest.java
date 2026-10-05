@@ -1,6 +1,7 @@
 package com.cafelio.api.service;
 
 import com.cafelio.api.dto.PasswordResetConfirmRequest;
+import com.cafelio.api.dto.PasswordResetCodeRequest;
 import com.cafelio.api.model.PasswordResetToken;
 import com.cafelio.api.model.User;
 import com.cafelio.api.repository.PasswordResetTokenRepository;
@@ -72,11 +73,16 @@ class PasswordResetServiceTest {
         verify(tokenRepository).save(tokenSalvo.capture());
 
         ArgumentCaptor<String> link = ArgumentCaptor.forClass(String.class);
-        verify(emailService).enviarRecuperacaoDeSenha(eq("ana@example.com"), link.capture());
+        ArgumentCaptor<String> codigo = ArgumentCaptor.forClass(String.class);
+        verify(emailService).enviarRecuperacaoDeSenha(eq("ana@example.com"), link.capture(), codigo.capture());
+
 
         String tokenDoLink = link.getValue().substring(link.getValue().indexOf("token=") + 6);
 
         assertThat(tokenSalvo.getValue().getTokenHash()).isEqualTo(sha256(tokenDoLink));
+        assertThat(codigo.getValue()).matches("\\d{6}");
+        assertThat(tokenSalvo.getValue().getCodeHash()).isEqualTo(sha256(codigo.getValue()));
+        assertThat(tokenSalvo.getValue().getCodeHash()).isNotEqualTo(codigo.getValue());
         assertThat(tokenSalvo.getValue().getTokenHash()).isNotEqualTo(tokenDoLink);
         assertThat(tokenSalvo.getValue().getExpiresAt()).isAfter(Instant.now());
     }
@@ -88,7 +94,8 @@ class PasswordResetServiceTest {
         service.requestReset("naoexiste@example.com");
 
         verify(tokenRepository, never()).save(any());
-        verify(emailService, never()).enviarRecuperacaoDeSenha(any(), any());
+        verify(emailService, never()).enviarRecuperacaoDeSenha(any(), any(), any());
+
     }
 
     @Test
@@ -98,7 +105,7 @@ class PasswordResetServiceTest {
 
         when(userRepository.findByEmail("ana@example.com")).thenReturn(Optional.of(user));
         doThrow(new RuntimeException("servidor de e-mail fora do ar"))
-                .when(emailService).enviarRecuperacaoDeSenha(any(), any());
+                .when(emailService).enviarRecuperacaoDeSenha(any(), any(), any());
 
         assertThatCode(() -> service.requestReset("ana@example.com"))
                 .doesNotThrowAnyException();
@@ -193,5 +200,88 @@ class PasswordResetServiceTest {
         } catch (NoSuchAlgorithmException e) {
             throw new IllegalStateException(e);
         }
+    }
+
+    @Test
+    void porCodigo_codigoCorreto_trocaSenha() {
+        User user = new User();
+
+        PasswordResetToken token = new PasswordResetToken();
+        token.setUser(user);
+        token.setExpiresAt(Instant.now().plusSeconds(600));
+        token.setCodeHash(sha256("123456"));
+
+        when(userRepository.findByEmail("ana@example.com")).thenReturn(Optional.of(user));
+        when(tokenRepository.findByUser(user)).thenReturn(Optional.of(token));
+        when(passwordEncoder.encode("NovaSenha123")).thenReturn("hash-novo");
+
+        service.resetPasswordByCode(pedidoCodigo("ana@example.com", "123456", "NovaSenha123", "NovaSenha123"));
+
+        assertThat(user.getPasswordHash()).isEqualTo("hash-novo");
+        assertThat(token.getUsedAt()).isNotNull();
+    }
+
+    @Test
+    void porCodigo_codigoErrado_contaTentativa() {
+        User user = new User();
+
+        PasswordResetToken token = new PasswordResetToken();
+        token.setUser(user);
+        token.setExpiresAt(Instant.now().plusSeconds(600));
+        token.setCodeHash(sha256("123456"));
+
+        when(userRepository.findByEmail("ana@example.com")).thenReturn(Optional.of(user));
+        when(tokenRepository.findByUser(user)).thenReturn(Optional.of(token));
+
+        assertThatThrownBy(() -> service.resetPasswordByCode(
+                pedidoCodigo("ana@example.com", "999999", "NovaSenha123", "NovaSenha123")))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Código inválido ou expirado");
+
+        assertThat(token.getAttempts()).isEqualTo(1);
+        verify(tokenRepository).save(token);
+        verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    void porCodigo_bloqueadoPorTentativas_naoAceitaNemOCodigoCerto() {
+        User user = new User();
+
+        PasswordResetToken token = new PasswordResetToken();
+        token.setUser(user);
+        token.setExpiresAt(Instant.now().plusSeconds(600));
+        token.setCodeHash(sha256("123456"));
+        token.setAttempts(PasswordResetToken.MAX_TENTATIVAS);
+
+        when(userRepository.findByEmail("ana@example.com")).thenReturn(Optional.of(user));
+        when(tokenRepository.findByUser(user)).thenReturn(Optional.of(token));
+
+        assertThatThrownBy(() -> service.resetPasswordByCode(
+                pedidoCodigo("ana@example.com", "123456", "NovaSenha123", "NovaSenha123")))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Código inválido ou expirado");
+
+        verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    void porCodigo_emailSemPedidoDeRecuperacao_lancaExcecao() {
+        when(userRepository.findByEmail("ana@example.com")).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.resetPasswordByCode(
+                pedidoCodigo("ana@example.com", "123456", "NovaSenha123", "NovaSenha123")))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Código inválido ou expirado");
+
+        verify(userRepository, never()).save(any());
+    }
+
+    private PasswordResetCodeRequest pedidoCodigo(String email, String code, String nova, String confirmacao) {
+        PasswordResetCodeRequest request = new PasswordResetCodeRequest();
+        request.setEmail(email);
+        request.setCode(code);
+        request.setNewPassword(nova);
+        request.setConfirmNewPassword(confirmacao);
+        return request;
     }
 }
