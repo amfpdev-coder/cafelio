@@ -24,8 +24,8 @@ public class User {
     @Column(name = "google_id", unique = true)
     private String googleId;
 
-    @Column(name = "profile_picture_url")
-    private String profilePictureUrl;
+    @Column(name = "profile_picture_public_id")
+    private String profilePicturePublicId;
 
     @Column(name = "email_verified", nullable = false)
     private boolean emailVerified = false;
@@ -50,8 +50,9 @@ public class User {
     public String getGoogleId() { return googleId; }
     public void setGoogleId(String googleId) { this.googleId = googleId; }
 
-    public String getProfilePictureUrl() { return profilePictureUrl; }
-    public void setProfilePictureUrl(String profilePictureUrl) { this.profilePictureUrl = profilePictureUrl; }
+    public String getProfilePicturePublicId() { return profilePicturePublicId; }
+    public void setProfilePicturePublicId(String profilePicturePublicId) { this.profilePicturePublicId = profilePicturePublicId; }
+
 
     public boolean isEmailVerified() { return emailVerified; }
     public void setEmailVerified(boolean emailVerified) { this.emailVerified = emailVerified; }
