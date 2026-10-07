@@ -1,4 +1,4 @@
-/ Copie este arquivo para config.local.js e ajuste a URL da sua API.
+// Copie este arquivo para config.local.js e ajuste a URL da sua API.
 // config.local.js está no .gitignore e é individual de cada uma.
 
 window.APP_CONFIG = {
