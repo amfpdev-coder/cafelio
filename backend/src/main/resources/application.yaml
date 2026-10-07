@@ -1,6 +1,10 @@
 spring:
   application:
     name: api
+  servlet:
+    multipart:
+      max-file-size: 2MB
+      max-request-size: 2MB
   jpa:
     hibernate:
       ddl-auto: validate
