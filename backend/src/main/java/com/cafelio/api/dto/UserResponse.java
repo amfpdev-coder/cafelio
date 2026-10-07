@@ -13,14 +13,20 @@ public class UserResponse {
     private boolean emailVerified;
     private Instant createdAt;
     private boolean hasPassword;
+    private String profilePictureUrl;
 
     public UserResponse(User user) {
+        this(user, null);
+    }
+
+    public UserResponse(User user, String profilePictureUrl) {
         this.id = user.getId();
         this.username = user.getUsername();
         this.email = user.getEmail();
         this.emailVerified = user.isEmailVerified();
         this.createdAt = user.getCreatedAt();
         this.hasPassword = user.getPasswordHash() != null;
+        this.profilePictureUrl = profilePictureUrl;
     }
 
     public UUID getId() { return id; }
@@ -29,4 +35,6 @@ public class UserResponse {
     public boolean isEmailVerified() { return emailVerified; }
     public Instant getCreatedAt() { return createdAt; }
     public boolean isHasPassword() { return hasPassword; }
+    public String getProfilePictureUrl() { return profilePictureUrl; }
+
 }
