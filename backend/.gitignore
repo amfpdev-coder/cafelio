@@ -36,5 +36,5 @@ application-local.yaml
 
 ### Environment variables ###
 .env
-.env.example
+.env.*
 !.env.example
