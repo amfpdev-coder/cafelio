@@ -123,6 +123,18 @@ function renderLoggedInArea(user) {
     const acao = user.hasPassword ? "Alterar senha" : "Definir senha";
 
     document.getElementById("auth-area").innerHTML = `
+        <div id="profile-picture-area">
+            <img id="profile-picture" alt="Foto de perfil" />
+            <p id="no-picture">Você ainda não tem foto de perfil.</p>
+
+            <label for="picture-input">Escolher foto</label>
+            <input id="picture-input" type="file" accept="image/jpeg,image/png,image/webp" />
+            <small>JPG, PNG ou WebP, até 2 MB.</small>
+
+            <button id="remove-picture">Remover foto</button>
+            <p id="picture-message" class="form-message"></p>
+        </div>
+
         <h2 id="greeting"></h2>
         <p id="account-email"></p>
 
@@ -135,10 +147,33 @@ function renderLoggedInArea(user) {
     document.getElementById("greeting").textContent = `Olá, ${user.username}!`;
     document.getElementById("account-email").textContent = `Você entrou como ${user.email}.`;
 
+    mostrarFoto(user.profilePictureUrl);
+
+    document.getElementById("picture-input").addEventListener("change", handleUploadPicture);
+    document.getElementById("remove-picture").addEventListener("click", handleRemovePicture);
+
     document.getElementById("show-password-form").addEventListener("click", () => {
         renderPasswordForm(user);
     });
     document.getElementById("logout").addEventListener("click", handleLogout);
+}
+
+function mostrarFoto(url) {
+    const img = document.getElementById("profile-picture");
+    const aviso = document.getElementById("no-picture");
+    const botaoRemover = document.getElementById("remove-picture");
+
+    if (url) {
+        img.src = url;
+        img.style.display = "";
+        aviso.style.display = "none";
+        botaoRemover.style.display = "";
+    } else {
+        img.removeAttribute("src");
+        img.style.display = "none";
+        aviso.style.display = "";
+        botaoRemover.style.display = "none";
+    }
 }
 
 function renderPasswordForm(user) {
@@ -430,6 +465,43 @@ async function handleResetByCode(event) {
         renderLoginForm(email);
         document.getElementById("login-message").textContent =
             "Senha alterada! Agora é só entrar com a senha nova.";
+    } catch (error) {
+        message.textContent = error.message;
+    }
+}
+
+async function handleUploadPicture(event) {
+    const arquivo = event.target.files[0];
+
+    if (!arquivo) {
+        return;
+    }
+
+    const message = document.getElementById("picture-message");
+    message.textContent = "Enviando...";
+
+    const formData = new FormData();
+    formData.append("file", arquivo);
+
+    try {
+        const user = await apiUpload("/auth/profile-picture", formData);
+        mostrarFoto(user.profilePictureUrl);
+        message.textContent = "Foto atualizada!";
+    } catch (error) {
+        message.textContent = error.message;
+    } finally {
+        event.target.value = "";
+    }
+}
+
+async function handleRemovePicture() {
+    const message = document.getElementById("picture-message");
+    message.textContent = "Removendo...";
+
+    try {
+        const user = await apiDelete("/auth/profile-picture");
+        mostrarFoto(user.profilePictureUrl);
+        message.textContent = "Foto removida.";
     } catch (error) {
         message.textContent = error.message;
     }
