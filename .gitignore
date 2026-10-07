@@ -3,3 +3,5 @@
 .idea/
 .DS_Store
 Thumbs.db
+
+frontend/js/config.local.js
