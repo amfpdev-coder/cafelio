@@ -26,6 +26,11 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import com.cafelio.api.service.ProfileService;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.UUID;
 
@@ -38,17 +43,20 @@ public class AuthController {
     private final GoogleTokenVerifier googleTokenVerifier;
     private final JwtService jwtService;
     private final PasswordResetService passwordResetService;
+    private final ProfileService profileService;
 
-        public AuthController(
+    public AuthController(
             AuthService authService,
             GoogleTokenVerifier googleTokenVerifier,
             JwtService jwtService,
-            PasswordResetService passwordResetService
+            PasswordResetService passwordResetService,
+            ProfileService profileService
     ) {
         this.authService = authService;
         this.googleTokenVerifier = googleTokenVerifier;
         this.jwtService = jwtService;
         this.passwordResetService = passwordResetService;
+        this.profileService = profileService;
     }
 
     @PostMapping("/register")
@@ -69,7 +77,7 @@ public class AuthController {
     @GetMapping("/me")
     public ResponseEntity<UserResponse> me(@AuthenticationPrincipal UUID userId) {
         User user = authService.findById(userId);
-        return ResponseEntity.ok(new UserResponse(user));
+        return ResponseEntity.ok(new UserResponse(user, profileService.urlDaFoto(user)));
     }
 
     @PutMapping("/password")
@@ -111,5 +119,22 @@ public class AuthController {
         String token = jwtService.generateToken(user.getId());
 
         return ResponseEntity.ok(new AuthResponse(token));
+    }
+
+    @SecurityRequirement(name = "bearerAuth")
+    @PostMapping(value = "/profile-picture", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<UserResponse> uploadProfilePicture(
+            @AuthenticationPrincipal UUID userId,
+            @RequestParam("file") MultipartFile file
+    ) {
+        User user = profileService.atualizarFoto(userId, file);
+        return ResponseEntity.ok(new UserResponse(user, profileService.urlDaFoto(user)));
+    }
+
+    @SecurityRequirement(name = "bearerAuth")
+    @DeleteMapping("/profile-picture")
+    public ResponseEntity<UserResponse> removeProfilePicture(@AuthenticationPrincipal UUID userId) {
+        User user = profileService.removerFoto(userId);
+        return ResponseEntity.ok(new UserResponse(user, null));
     }
 }

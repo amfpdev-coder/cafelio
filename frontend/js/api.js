@@ -60,3 +60,39 @@ async function apiPost(path, data) {
 async function apiPut(path, data) {
     return apiRequest("PUT", path, data);
 }
+
+async function apiDelete(path) {
+    return apiRequest("DELETE", path);
+}
+
+async function apiUpload(path, formData) {
+    const headers = {};
+    const token = getToken();
+
+    if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+    }
+
+    const response = await fetch(`${API_BASE_URL}${path}`, {
+        method: "POST",
+        headers,
+        body: formData,
+    });
+
+    const body = await response.json().catch(() => null);
+
+    if (response.status === 401) {
+        clearToken();
+    }
+
+    if (!response.ok) {
+        const message =
+            body?.error ||
+            Object.values(body || {}).join("\n") ||
+            `Erro na API: ${response.status}`;
+        
+        throw new Error(message);
+    }
+
+    return body;
+}

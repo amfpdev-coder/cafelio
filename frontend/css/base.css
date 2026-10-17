@@ -30,6 +30,14 @@ form {
     white-space: pre-line;
 }
 
+#profile-picture {
+    width: 128px;
+    height: 128px;
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
+}
+
 .mostrar-senha {
     align-self: flex-end;
     background: none;
