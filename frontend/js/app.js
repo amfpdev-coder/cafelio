@@ -81,6 +81,8 @@ function renderLoginForm(identifier = "") {
         event.preventDefault();
         renderForgotPasswordForm();
     });
+
+    ativarMostrarSenha();
 }
 
 function renderRegisterForm() {
@@ -115,6 +117,8 @@ function renderRegisterForm() {
         event.preventDefault();
         renderLoginForm();
     });
+
+    ativarMostrarSenha();
 }
 
 function renderLoggedInArea(user) {
@@ -209,6 +213,8 @@ function renderPasswordForm(user) {
     document.getElementById("password-form").addEventListener("submit", (event) => {
         handleChangePassword(event, user);
     });
+
+    ativarMostrarSenha();
 }
 
 renderWelcomeScreen();
@@ -284,6 +290,8 @@ function renderResetByCodeForm(email = "") {
     });
 
     document.getElementById(email ? "code-value" : "code-email").focus();
+
+    ativarMostrarSenha();
 }
 
 function renderResetPasswordForm(token) {
@@ -308,6 +316,8 @@ function renderResetPasswordForm(token) {
     document.getElementById("reset-form").addEventListener("submit", (event) => {
         handleResetPassword(event, token);
     });
+
+    ativarMostrarSenha();
 }
 
 async function handleGoogleLogin(response) {
@@ -505,4 +515,37 @@ async function handleRemovePicture() {
     } catch (error) {
         message.textContent = error.message;
     }
+}
+
+
+function ativarMostrarSenha() {
+    const area = document.getElementById("auth-area");
+
+    if (!area) {
+        return;
+    }
+
+    area.querySelectorAll('input[type="password"]').forEach((campo) => {
+        if (campo.nextElementSibling?.classList.contains("mostrar-senha")) {
+            return;
+        }
+
+        const botao = document.createElement("button");
+        botao.type = "button";
+        botao.className = "mostrar-senha";
+        botao.textContent = "Mostrar";
+        botao.setAttribute("aria-label", "Mostrar senha");
+
+        campo.insertAdjacentElement("afterend", botao);
+
+        botao.addEventListener("click", () => {
+            const escondida = campo.type === "password";
+
+            campo.type = escondida ? "text" : "password";
+            botao.textContent = escondida ? "Ocultar" : "Mostrar";
+            botao.setAttribute("aria-label", escondida ? "Ocultar senha" : "Mostrar senha");
+
+            campo.focus();
+        });
+    });
 }
