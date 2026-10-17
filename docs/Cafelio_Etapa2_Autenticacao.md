@@ -18,7 +18,7 @@ Conforme a tabela "Autenticação e conta" do escopo v1.1, esta etapa entrega se
 | Autenticação por JWT (pré-requisito técnico) | Concluído |
 | Alterar senha | Concluído — endpoint e tela |
 | Recuperação de senha | Concluído — link e código de 6 dígitos, ambos por e-mail |
-| Foto de perfil | Concluído — aguardando revisão em Pull Request |
+| Foto de perfil | Concluído — upload no Cloudinary e tela |
 | Tratamento de erros | Concluído |
 
 **A etapa está entregue.** A recuperação por SMS, prevista na versão original do escopo, foi retirada — o motivo está registrado na seção "Fora do escopo" do `Cafelio_Escopo_v1.1.md`.
@@ -97,6 +97,12 @@ Validação no servidor: no máximo 2 MB, e só JPG, PNG ou WebP.
 
 O `GlobalExceptionHandler` centraliza a conversão de exceções em JSON. No frontend, o `apiRequest` lê o corpo da resposta de erro e exibe a mensagem do backend na tela.
 
+### Mostrar senha
+
+Todos os campos de senha têm um botão que alterna entre esconder e mostrar o que está sendo digitado — sugestão da Amanda. São 10 campos em 5 formulários, atendidos por uma única função, `ativarMostrarSenha()`, que encontra os `input[type="password"]` da área e acrescenta o botão a cada um.
+
+Ela é chamada no fim de cada `render`, porque cada um substitui o `innerHTML` da área e destrói os botões anteriores.
+
 ---
 
 ## Decisões técnicas
@@ -124,6 +130,8 @@ O `GlobalExceptionHandler` centraliza a conversão de exceções em JSON. No fro
 **401 em vez do 403 padrão.** O padrão do Spring Security para requisição não autenticada é 403 ("proibido"), que significa "sei quem você é, mas você não pode". O correto aqui é 401 ("não autenticado"). Configurado via `authenticationEntryPoint`.
 
 **`.cors(Customizer.withDefaults())` no `SecurityConfig`.** O `CorsConfig` é um `WebMvcConfigurer`, que roda *depois* do Spring Security. Sem essa linha, a requisição `OPTIONS` de preflight era rejeitada com 403 em toda rota protegida. Há um teste de regressão para isso.
+
+**O botão de mostrar senha é `type="button"`, explicitamente.** Dentro de um `<form>`, o padrão de um `<button>` é `type="submit"` — sem essa definição, clicar em "Mostrar" enviaria o formulário. A função também nunca lê nem guarda o valor digitado: ela apenas alterna o `type` do campo entre `password` e `text`.
 
 ---
 
