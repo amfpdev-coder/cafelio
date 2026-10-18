@@ -1,3 +1,26 @@
+// ---- Destinos da casca ----
+
+const DESTINOS_PRINCIPAIS = [
+    { id: "inicio", icone: "house", rotulo: "Início" },
+    { id: "estante", icone: "books", rotulo: "Estante" },
+    { id: "cadernos", icone: "notebook", rotulo: "Cadernos" },
+    { id: "desafios", icone: "medal", rotulo: "Desafios" },
+];
+
+const DESTINOS_EXPLORAR = [
+    { id: "citacoes", icone: "quotes", rotulo: "Citações" },
+    { id: "resenhas", icone: "chat-text", rotulo: "Resenhas" },
+    { id: "ranking", icone: "ranking", rotulo: "Ranking" },
+    { id: "estatisticas", icone: "chart-bar", rotulo: "Estatísticas" },
+    { id: "calendario", icone: "calendar-blank", rotulo: "Calendário" },
+    { id: "sorteio", icone: "shuffle", rotulo: "Sorteio" },
+];
+
+const DESTINO_PERFIL = { id: "perfil", icone: "user-circle", rotulo: "Perfil" };
+
+let usuarioAtual = null;
+let destinoAtual = "inicio";
+
 async function renderWelcomeScreen() {
     const app = document.getElementById("app");
 
@@ -160,61 +183,184 @@ function renderRegisterForm() {
 
 function renderLoggedInArea(user) {
     showGoogleButton(false);
+    usuarioAtual = user;
+    renderCasca();
+}
 
-    const acao = user.hasPassword ? "Alterar senha" : "Definir senha";
+function renderCasca() {
+    const user = usuarioAtual;
 
     document.getElementById("auth-area").innerHTML = `
-        <div id="profile-picture-area">
-            <img id="profile-picture" alt="Foto de perfil" />
-            <p id="no-picture">Você ainda não tem foto de perfil.</p>
+        <div class="casca">
+            <aside class="barra-lateral">
+                <div class="barra-lateral-marca">
+                    <i class="ph-light ph-coffee"></i>
+                    <span>Cafélio</span>
+                </div>
 
-            <label for="picture-input">Escolher foto</label>
-            <input id="picture-input" type="file" accept="image/jpeg,image/png,image/webp" />
-            <small>JPG, PNG ou WebP, até 2 MB.</small>
+                <nav>${DESTINOS_PRINCIPAIS.map((d) => itemDestino(d, "destino")).join("")}</nav>
 
-            <button id="remove-picture">Remover foto</button>
-            <p id="picture-message" class="form-message"></p>
+                <span class="overline">Explorar</span>
+
+                <nav>${DESTINOS_EXPLORAR.map((d) => itemDestino(d, "destino destino-secundario")).join("")}</nav>
+
+                <div class="barra-lateral-espaco"></div>
+
+                <div class="cartao-plus">
+                    <span class="cartao-plus-titulo">
+                        <i class="ph-light ph-crown-simple"></i>Cafélio Plus
+                    </span>
+                    <p>Temas, relatório anual e cadernos sem limite.</p>
+                </div>
+
+                <div class="barra-lateral-perfil" data-destino="perfil">
+                    ${avatarDoUsuario(user)}
+                    <div>
+                        <div class="perfil-nome">${user.username}</div>
+                        <div class="perfil-usuario">${user.email}</div>
+                    </div>
+                </div>
+            </aside>
+
+            <main class="conteudo" id="conteudo"></main>
+
+            <nav class="barra-abas">
+                ${[...DESTINOS_PRINCIPAIS, DESTINO_PERFIL].map((d) => itemDestino(d, "aba")).join("")}
+            </nav>
         </div>
-
-        <h2 id="greeting"></h2>
-        <p id="account-email"></p>
-
-        <button id="show-password-form">${acao}</button>
-        <button id="logout">Sair</button>
-
-        <div id="password-area"></div>
     `;
 
-    document.getElementById("greeting").textContent = `Olá, ${user.username}!`;
-    document.getElementById("account-email").textContent = `Você entrou como ${user.email}.`;
+    document.querySelector(".casca").addEventListener("click", (event) => {
+        const alvo = event.target.closest("[data-destino]");
 
-    mostrarFoto(user.profilePictureUrl);
+        if (!alvo) {
+            return;
+        }
+
+        event.preventDefault();
+        navegarPara(alvo.dataset.destino);
+    });
+
+    renderDestino();
+}
+
+function itemDestino(destino, classe) {
+    const ativo = destino.id === destinoAtual;
+    const marca = ativo ? ` aria-current="page"` : "";
+    const peso = ativo ? "ph-fill" : "ph-light";
+
+    return `
+        <a href="#" class="${classe}" data-destino="${destino.id}"${marca}>
+            <i class="${peso} ph-${destino.icone}"></i>
+            <span>${destino.rotulo}</span>
+        </a>
+    `;
+}
+
+function avatarDoUsuario(user) {
+    if (user.profilePictureUrl) {
+        return `<img class="avatar" src="${user.profilePictureUrl}" alt="" />`;
+    }
+
+    return `<span class="avatar">${(user.username || "?").slice(0, 2).toUpperCase()}</span>`;
+}
+
+function navegarPara(id) {
+    destinoAtual = id;
+    renderCasca();
+}
+
+function renderDestino() {
+    const conteudo = document.getElementById("conteudo");
+
+    if (destinoAtual === "perfil") {
+        renderPerfil(conteudo);
+        return;
+    }
+
+    const destino = [...DESTINOS_PRINCIPAIS, ...DESTINOS_EXPLORAR]
+        .find((d) => d.id === destinoAtual);
+
+    conteudo.innerHTML = `
+        <h2>${destino ? destino.rotulo : "Cafélio"}</h2>
+        <p class="rascunho">Esta tela ainda não foi construída.</p>
+    `;
+}
+
+function renderPerfil(conteudo) {
+    const user = usuarioAtual;
+    const acao = user.hasPassword ? "Alterar senha" : "Definir senha";
+    const temFoto = Boolean(user.profilePictureUrl);
+
+    conteudo.innerHTML = `
+        <h2>Perfil</h2>
+
+        <div class="perfil">
+            <div class="perfil-cartao">
+                ${fotoDePerfil(user)}
+
+                <span class="perfil-nome">${user.username}</span>
+                <span class="perfil-email">${user.email}</span>
+
+                <div class="perfil-acoes">
+                    <button type="button" id="escolher-foto">
+                        <i class="ph-light ph-camera"></i>${temFoto ? "Trocar foto" : "Adicionar foto"}
+                    </button>
+                    ${temFoto ? `<button type="button" id="remove-picture" class="btn-perigo">Remover</button>` : ""}
+                </div>
+
+                <input id="picture-input" type="file" accept="image/jpeg,image/png,image/webp" hidden />
+                <small>JPG, PNG ou WebP, até 2 MB.</small>
+                <p id="picture-message" class="form-message"></p>
+            </div>
+
+            <div class="perfil-coluna">
+                <div class="bloco">
+                    <span class="bloco-titulo"><i class="ph-light ph-key"></i>${acao}</span>
+                    <button type="button" id="show-password-form">${acao}</button>
+                    <div id="password-area"></div>
+                </div>
+
+                <div class="cartao-plano">
+                    <i class="ph-light ph-crown-simple"></i>
+                    <div>
+                        <div class="cartao-plano-titulo">Cafélio Plus</div>
+                        <p>Cadernos ilimitados, temas visuais e relatório anual.</p>
+                    </div>
+                </div>
+
+                <span class="link-sair" id="logout">
+                    <i class="ph-light ph-sign-out"></i>Sair da conta
+                </span>
+            </div>
+        </div>
+    `;
+
+    document.getElementById("escolher-foto").addEventListener("click", () => {
+        document.getElementById("picture-input").click();
+    });
 
     document.getElementById("picture-input").addEventListener("change", handleUploadPicture);
-    document.getElementById("remove-picture").addEventListener("click", handleRemovePicture);
+
+    const botaoRemover = document.getElementById("remove-picture");
+
+    if (botaoRemover) {
+        botaoRemover.addEventListener("click", handleRemovePicture);
+    }
 
     document.getElementById("show-password-form").addEventListener("click", () => {
         renderPasswordForm(user);
     });
+
     document.getElementById("logout").addEventListener("click", handleLogout);
 }
 
-function mostrarFoto(url) {
-    const img = document.getElementById("profile-picture");
-    const aviso = document.getElementById("no-picture");
-    const botaoRemover = document.getElementById("remove-picture");
-
-    if (url) {
-        img.src = url;
-        img.style.display = "";
-        aviso.style.display = "none";
-        botaoRemover.style.display = "";
-    } else {
-        img.removeAttribute("src");
-        img.style.display = "none";
-        aviso.style.display = "";
-        botaoRemover.style.display = "none";
+function fotoDePerfil(user) {
+    if (user.profilePictureUrl) {
+        return `<img class="perfil-foto" src="${user.profilePictureUrl}" alt="Foto de perfil" />`;
     }
+
+    return `<span class="perfil-foto">${(user.username || "?").slice(0, 2).toUpperCase()}</span>`;
 }
 
 function renderPasswordForm(user) {
@@ -446,6 +592,7 @@ async function handleChangePassword(event, user) {
 }
 
 function handleLogout() {
+    destinoAtual = "inicio";
     clearToken();
     renderLoginForm();
 }
@@ -531,9 +678,9 @@ async function handleUploadPicture(event) {
     formData.append("file", arquivo);
 
     try {
-        const user = await apiUpload("/auth/profile-picture", formData);
-        mostrarFoto(user.profilePictureUrl);
-        message.textContent = "Foto atualizada!";
+        usuarioAtual = await apiUpload("/auth/profile-picture", formData);
+        renderCasca();
+        document.getElementById("picture-message").textContent = "Foto atualizada!";
     } catch (error) {
         message.textContent = error.message;
     } finally {
@@ -546,9 +693,9 @@ async function handleRemovePicture() {
     message.textContent = "Removendo...";
 
     try {
-        const user = await apiDelete("/auth/profile-picture");
-        mostrarFoto(user.profilePictureUrl);
-        message.textContent = "Foto removida.";
+        usuarioAtual = await apiDelete("/auth/profile-picture");
+        renderCasca();
+        document.getElementById("picture-message").textContent = "Foto removida.";
     } catch (error) {
         message.textContent = error.message;
     }
