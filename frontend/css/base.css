@@ -8,15 +8,56 @@
 
 body {
     background-color: var(--color-cream);
+    /* Textura sutil de papel — pontos de 1px a cada 6px */
+    background-image: radial-gradient(rgba(107, 63, 42, .07) 1px, transparent 1.3px);
+    background-size: 6px 6px;
     color: var(--color-sepia);
     font-family: var(--font-body);
+    font-size: 16px;
     line-height: 1.5;
+}
+
+/* ---- Recuo da página ----
+   Provisório: a casca da Etapa 7 (barra lateral e abas) assume isso depois. */
+
+#app {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 32px 24px;
 }
 
 h1, h2, h3 {
     font-family: var(--font-heading);
+    font-weight: 400;
     color: var(--color-coffee);
+    line-height: 1.15;
 }
+
+h1 { font-size: 42px; }
+h2 { font-size: 28px; }
+h3 { font-size: 21px; }
+
+a {
+    color: var(--color-coffee);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+}
+
+a:hover {
+    color: var(--color-moss);
+}
+
+/* ---- Sobretítulo: o rótulo em caixa alta acima de cada bloco ---- */
+
+.overline {
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--color-overline);
+}
+
+/* ---- Formulários ---- */
 
 form {
     display: flex;
@@ -26,9 +67,84 @@ form {
     margin: 16px 0;
 }
 
+label {
+    font-size: 13px;
+    font-weight: 700;
+}
+
+input {
+    height: 46px;
+    padding: 0 14px;
+    border: 1.5px solid var(--color-border-input);
+    border-radius: var(--radius-field);
+    background: var(--color-paper);
+    color: var(--color-sepia);
+    font-family: inherit;
+    font-size: 15px;
+}
+
+input:focus {
+    outline: none;
+    border-color: var(--color-moss);
+    box-shadow: var(--shadow-focus);
+}
+
+input:disabled {
+    background: #E6D3AE;
+    border-style: dashed;
+    border-color: var(--color-border-faint);
+    color: var(--color-disabled-text);
+}
+
+small {
+    font-size: 12px;
+    color: var(--color-text-3);
+}
+
+/* ---- Botões ---- */
+
+button {
+    height: 46px;
+    padding: 0 18px;
+    border: none;
+    border-radius: var(--radius-field);
+    background: var(--color-coffee);
+    color: var(--color-cream);
+    box-shadow: var(--shadow-btn);
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+button:hover {
+    background: var(--color-coffee-hover);
+}
+
+button:active {
+    background: var(--color-coffee-active);
+    box-shadow: none;
+    transform: translateY(2px);
+}
+
+button:disabled {
+    background: var(--color-disabled-bg);
+    color: var(--color-disabled-text);
+    box-shadow: none;
+    cursor: default;
+    transform: none;
+}
+
+/* ---- Mensagens ---- */
+
 .form-message {
     white-space: pre-line;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-error);
 }
+
+/* ---- Foto de perfil ---- */
 
 #profile-picture {
     width: 128px;
@@ -36,15 +152,683 @@ form {
     border-radius: 50%;
     object-fit: cover;
     display: block;
+    box-shadow: 0 0 0 4px var(--color-cream), 0 0 0 6px var(--color-caramelo);
 }
+
+/* ---- Mostrar senha ---- */
 
 .mostrar-senha {
     align-self: flex-end;
+    height: auto;
+    padding: 0;
     background: none;
     border: none;
-    padding: 0;
-    font-size: 0.85rem;
+    box-shadow: none;
+    font-size: 13px;
+    font-weight: 800;
     color: var(--color-coffee);
     text-decoration: underline;
     cursor: pointer;
+}
+
+.mostrar-senha:hover,
+.mostrar-senha:active {
+    background: none;
+    box-shadow: none;
+    transform: none;
+    color: var(--color-moss);
+}
+
+/* ================================================================
+    TELA DE ENTRADA — painel à esquerda, formulário à direita
+   ================================================================ */
+
+.tela-entrada {
+    display: grid;
+    grid-template-columns: 600px 1fr;
+    gap: 28px;
+    align-items: stretch;
+    min-height: 620px;
+}
+
+/* ---- Painel listrado ---- */
+
+.painel-foto {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 32px;
+    border-radius: 20px;
+    background:
+        linear-gradient(
+            to bottom,
+            rgba(245, 236, 215, .88) 0%,
+            rgba(245, 236, 215, .20) 28%,
+            rgba(245, 236, 215, .20) 62%,
+            rgba(245, 236, 215, .92) 100%
+        ),
+        url("../img/entrada.jpg") center / cover;
+    box-shadow: inset 0 0 0 1px rgba(107, 63, 42, .15);
+}
+
+.painel-marca {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--font-heading);
+    font-size: 28px;
+    color: var(--color-coffee);
+}
+
+.painel-marca i {
+    font-size: 30px;
+}
+
+.painel-foto-espaco {
+    align-self: center;
+    padding: 6px 10px;
+    border-radius: 6px;
+    background: var(--color-cream);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--color-coffee);
+}
+
+.painel-frase {
+    max-width: 420px;
+    font-family: var(--font-hand);
+    font-size: 34px;
+    line-height: 1.15;
+    color: var(--color-sepia);
+}
+
+/* ---- Coluna do formulário ---- */
+
+.coluna-formulario {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.coluna-formulario form {
+    width: 400px;
+    max-width: 100%;
+    gap: 18px;
+    margin: 0;
+}
+
+.form-titulo {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.form-subtitulo {
+    font-size: 15px;
+    color: var(--color-text-2);
+}
+
+.campo {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+/* ---- Campo de senha com o botão dentro ---- */
+
+.campo-com-botao {
+    display: flex;
+    align-items: center;
+    height: 46px;
+    padding: 0 6px 0 14px;
+    border: 1.5px solid var(--color-border-input);
+    border-radius: var(--radius-field);
+    background: var(--color-paper);
+}
+
+.campo-com-botao:focus-within {
+    border-color: var(--color-moss);
+    box-shadow: var(--shadow-focus);
+}
+
+.campo-com-botao input {
+    flex: 1;
+    min-width: 0;
+    height: auto;
+    padding: 0;
+    border: none;
+    background: transparent;
+}
+
+.campo-com-botao input:focus {
+    box-shadow: none;
+}
+
+.campo-com-botao .mostrar-senha {
+    align-self: auto;
+    height: 34px;
+    padding: 0 12px;
+    border-radius: 9px;
+    background: var(--color-beige);
+    color: var(--color-coffee);
+    font-size: 13px;
+    font-weight: 800;
+    text-decoration: none;
+}
+
+.campo-com-botao .mostrar-senha:hover {
+    background: var(--color-border-input);
+    color: var(--color-coffee);
+}
+
+.link-discreto {
+    align-self: flex-end;
+    margin-top: -6px;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+/* ---- Divisor "ou" ---- */
+
+.divisor {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 13px;
+    color: var(--color-text-3);
+}
+
+.divisor::before,
+.divisor::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--color-border-input);
+}
+
+/* ---- Botão do Google ---- */
+
+.btn-google {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    height: 48px;
+    border: 1.5px solid var(--color-border-input);
+    background: var(--color-beige);
+    color: var(--color-sepia);
+    box-shadow: none;
+}
+
+.btn-google:hover {
+    background: var(--color-border-input);
+}
+
+.btn-google:active {
+    background: var(--color-border-input);
+    transform: translateY(2px);
+}
+
+.btn-google i {
+    font-size: 20px;
+    color: var(--color-coffee);
+}
+
+.rodape-form {
+    font-size: 14px;
+    text-align: center;
+    color: var(--color-text-2);
+}
+
+.rodape-form a {
+    font-weight: 800;
+}
+
+/* ---- Celular: empilha, foto em cima ---- */
+
+@media (max-width: 900px) {
+    .tela-entrada {
+        grid-template-columns: 1fr;
+        min-height: 0;
+    }
+
+    .painel-foto {
+        min-height: 150px;
+        padding: 20px;
+        gap: 14px;
+    }
+
+    .painel-frase {
+        font-size: 24px;
+    }
+
+    .coluna-formulario form {
+        width: 100%;
+    }
+}
+
+/* ---- Celular: toque mínimo de 48px e corpo de 16px ---- */
+
+@media (max-width: 767px) {
+    input,
+    button {
+        height: 52px;
+        font-size: 16px;
+    }
+
+    label {
+        font-size: 14px;
+    }
+
+    h1 { font-size: 32px; }
+    h2 { font-size: 24px; }
+    h3 { font-size: 19px; }
+}
+
+/* ================================================================
+    CASCA — barra lateral na web, barra de abas no celular
+   ================================================================ */
+
+/* A casca ocupa a tela inteira, sem o recuo que as telas de fora usam */
+#app:has(.casca) {
+    max-width: none;
+    padding: 0;
+}
+
+.casca {
+    display: grid;
+    grid-template-columns: var(--sidebar-width) 1fr;
+    min-height: 100vh;
+}
+
+/* ---- Barra lateral ---- */
+
+.barra-lateral {
+    display: flex;
+    flex-direction: column;
+    padding: 22px 14px 16px;
+    background: var(--color-beige);
+    border-right: 1px solid rgba(107, 63, 42, .16);
+}
+
+.barra-lateral-marca {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 10px 22px;
+    font-family: var(--font-heading);
+    font-size: 24px;
+    color: var(--color-coffee);
+}
+
+.barra-lateral-marca i {
+    font-size: 26px;
+}
+
+.barra-lateral nav {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.barra-lateral .overline {
+    padding: 20px 12px 8px;
+    font-size: 11px;
+}
+
+.barra-lateral-espaco {
+    flex: 1;
+}
+
+/* ---- Destinos ---- */
+
+.destino {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 9px 12px;
+    border-radius: 10px;
+    color: var(--color-text-2);
+    font-size: 15px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.destino i {
+    font-size: 20px;
+}
+
+.destino:hover {
+    background: rgba(245, 236, 215, .55);
+    color: var(--color-coffee);
+}
+
+.destino[aria-current="page"] {
+    background: var(--color-cream);
+    color: var(--color-coffee);
+    font-weight: 800;
+    box-shadow: 0 4px 10px -6px rgba(107, 63, 42, .45);
+}
+
+.destino-secundario {
+    padding: 7px 12px;
+    font-size: 14px;
+}
+
+.destino-secundario i {
+    font-size: 18px;
+}
+
+/* ---- Cartão do Plus e perfil ---- */
+
+.cartao-plus {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    background: var(--color-cream);
+    box-shadow: 0 6px 14px -10px rgba(107, 63, 42, .5);
+}
+
+.cartao-plus-titulo {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-heading);
+    font-size: 15px;
+    color: var(--color-coffee);
+}
+
+.cartao-plus p {
+    font-size: 12px;
+    line-height: 1.35;
+    color: var(--color-text-2);
+}
+
+.barra-lateral-perfil {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 12px;
+    padding: 14px 8px 0;
+    border-top: 1px solid rgba(107, 63, 42, .16);
+    cursor: pointer;
+}
+
+.avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: var(--color-caramelo);
+    color: var(--color-sepia);
+    font-family: var(--font-heading);
+    font-size: 14px;
+    object-fit: cover;
+}
+
+.barra-lateral-perfil > div {
+    min-width: 0;
+}
+
+.perfil-nome,
+.perfil-usuario {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.perfil-nome {
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.perfil-usuario {
+    font-size: 12px;
+    color: var(--color-text-3);
+}
+
+/* ---- Área de conteúdo ---- */
+
+.conteudo {
+    min-width: 0;
+    padding: 28px 36px;
+}
+
+/* ---- Barra de abas: só existe no celular ---- */
+
+.barra-abas {
+    display: none;
+}
+
+@media (max-width: 899px) {
+    .casca {
+        grid-template-columns: 1fr;
+    }
+
+    .barra-lateral {
+        display: none;
+    }
+
+    .conteudo {
+        padding: 16px 18px calc(var(--tabbar-height) + 16px);
+    }
+
+    .barra-abas {
+        position: fixed;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        display: flex;
+        justify-content: space-around;
+        height: var(--tabbar-height);
+        padding: 8px 6px 0;
+        background: var(--color-beige);
+        border-top: 1px solid rgba(107, 63, 42, .16);
+    }
+
+    .aba {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 3px;
+        width: 64px;
+        color: var(--color-text-3);
+        font-size: 11px;
+        font-weight: 600;
+        text-decoration: none;
+    }
+
+    .aba i {
+        font-size: 24px;
+    }
+
+    .aba[aria-current="page"] {
+        color: var(--color-coffee);
+        font-weight: 800;
+    }
+}
+
+.rascunho {
+    margin-top: 12px;
+    color: var(--color-text-2);
+}
+
+/* ================================================================
+    TELA DE PERFIL
+    ================================================================ */
+
+.perfil {
+    display: grid;
+    grid-template-columns: 320px minmax(0, 1fr);
+    gap: 32px;
+    align-items: start;
+    margin-top: 24px;
+}
+
+.perfil-cartao {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    padding: 32px 24px;
+    border-radius: var(--radius-card-lg);
+    background: var(--color-beige);
+    box-shadow: var(--shadow-card);
+}
+
+.perfil-foto {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 144px;
+    height: 144px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: var(--color-caramelo);
+    box-shadow: 0 0 0 4px var(--color-cream), 0 0 0 6px var(--color-caramelo);
+    font-family: var(--font-heading);
+    font-size: 48px;
+    color: var(--color-sepia);
+}
+
+.perfil-cartao .perfil-nome {
+    font-family: var(--font-heading);
+    font-size: 24px;
+    color: var(--color-coffee);
+}
+
+.perfil-cartao .perfil-email {
+    margin-top: -10px;
+    font-size: 14px;
+    color: var(--color-text-2);
+}
+
+.perfil-acoes {
+    display: flex;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.perfil-acoes button {
+    height: 40px;
+    padding: 0 14px;
+    font-size: 13px;
+}
+
+.btn-perigo {
+    background: transparent;
+    border: 1.5px solid var(--color-terracota);
+    color: var(--color-error);
+    box-shadow: none;
+}
+
+.btn-perigo:hover {
+    background: rgba(168, 85, 58, .08);
+}
+
+.btn-perigo:active {
+    background: rgba(168, 85, 58, .12);
+    box-shadow: none;
+}
+
+.perfil-coluna {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.bloco {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 20px 22px;
+    border-radius: 18px;
+    background: var(--color-paper);
+    box-shadow: inset 0 0 0 1px var(--color-border-soft);
+}
+
+.bloco-titulo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--font-heading);
+    font-size: 19px;
+    color: var(--color-coffee);
+}
+
+.bloco-titulo i {
+    font-size: 22px;
+}
+
+.bloco form {
+    margin: 0;
+    max-width: none;
+    width: 100%;
+}
+
+.cartao-plano {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 20px 22px;
+    border-radius: 18px;
+    background: var(--color-coffee);
+    color: var(--color-cream);
+}
+
+.cartao-plano i {
+    font-size: 28px;
+    color: var(--color-caramelo);
+}
+
+.cartao-plano-titulo {
+    font-family: var(--font-heading);
+    font-size: 19px;
+}
+
+.cartao-plano p {
+    font-size: 13px;
+    color: var(--color-beige);
+}
+
+.link-sair {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    align-self: flex-start;
+    font-size: 14px;
+    font-weight: 800;
+    color: var(--color-error);
+    cursor: pointer;
+}
+
+.link-sair i {
+    font-size: 18px;
+}
+
+@media (max-width: 899px) {
+    .perfil {
+        grid-template-columns: 1fr;
+        gap: 22px;
+    }
+
+    .perfil-cartao {
+        padding: 8px 0 0;
+        background: transparent;
+        box-shadow: none;
+    }
+
+    .perfil-foto {
+        width: 108px;
+        height: 108px;
+        font-size: 36px;
+    }
 }
