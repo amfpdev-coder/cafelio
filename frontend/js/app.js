@@ -283,6 +283,11 @@ function renderDestino() {
         return;
     }
 
+    if (destinoAtual === "inicio") {
+        renderInicio(conteudo);
+        return;
+    }
+
     const destino = [...DESTINOS_PRINCIPAIS, ...DESTINOS_EXPLORAR]
         .find((d) => d.id === destinoAtual);
 
@@ -752,6 +757,14 @@ async function renderDesafios(conteudo) {
         </div>
     `;
 
+    document.getElementById("flamme-grade").addEventListener("click", (event) => {
+        const celula = event.target.closest("[data-dia]");
+
+        if (celula) {
+            alternarDia(celula.dataset.dia, celula.classList.contains("flamme-dia-lido"));
+        }
+    });
+
     try {
         preencherFlamme(await apiGet("/challenges/flamme"));
     } catch (error) {
@@ -820,14 +833,32 @@ function preencherFlamme(flamme) {
 
     while (dia <= hoje) {
         const iso = emIso(dia);
-        const classe = lidos.has(iso) ? "flamme-dia flamme-dia-lido" : "flamme-dia";
+        const lido = lidos.has(iso);
+        const classe = lido ? "flamme-dia flamme-dia-lido" : "flamme-dia";
+        const titulo = lido ? `${iso} — clique para remover` : `${iso} — clique para marcar`;
 
-        celulas.push(`<span class="${classe}" title="${iso}"></span>`);
+        celulas.push(`<span class="${classe}" title="${titulo}" data-dia="${iso}"></span>`);
         dia.setDate(dia.getDate() + 1);
     }
 
-    document.getElementById("flamme-grade").innerHTML = celulas.join("");
+    const grade = document.getElementById("flamme-grade");
+
+    grade.innerHTML = celulas.join("");
     document.getElementById("flamme-meses").innerHTML = mesesDaGrade(inicio, hoje);
+}
+
+async function alternarDia(dia, estaMarcado) {
+    if (estaMarcado && !confirm(`Remover o registro de leitura de ${dia}?`)) {
+        return;
+    }
+
+    const caminho = `/challenges/flamme/days/${dia}`;
+
+    try {
+        preencherFlamme(estaMarcado ? await apiDelete(caminho) : await apiPost(caminho));
+    } catch (error) {
+        document.getElementById("flamme-estado").textContent = error.message;
+    }
 }
 
 function emIso(data) {
@@ -936,4 +967,96 @@ function cartaoTematicos() {
             </p>
         </div>
     `;
+}
+
+// ---- Tela de Início ----
+
+async function renderInicio(conteudo) {
+    const user = usuarioAtual;
+
+    conteudo.innerHTML = `
+        <div class="inicio-saudacao">
+            ${avatarDoUsuario(user).replace('class="avatar"', 'class="avatar avatar-grande"')}
+            <div>
+                <h2>${saudacaoDoDia()}, ${user.username}</h2>
+                <span class="inicio-data">${dataPorExtenso(new Date())}</span>
+            </div>
+        </div>
+
+        <div class="inicio-cartoes">
+            <div class="cartao-sequencia" id="cartao-sequencia">
+                <span class="overline">Sequência</span>
+                <p class="rascunho">Carregando…</p>
+            </div>
+        </div>
+
+        <p class="aviso-rascunho">
+            <i class="ph-light ph-wrench"></i>O resto da tela — páginas lidas, livro em andamento e recomendação — ainda não foi construído.
+        </p>
+    `;
+
+    try {
+        preencherSequencia(await apiGet("/challenges/flamme"));
+    } catch (error) {
+        document.getElementById("cartao-sequencia").innerHTML =
+            `<p class="form-message">${error.message}</p>`;
+    }
+}
+
+function preencherSequencia(flamme) {
+    const registrado = flamme.dias.includes(emIso(new Date()));
+
+    // A chama cresce com a sequência, até um teto de 45 dias
+    const tamanho = Math.round(40 + Math.min(flamme.sequenciaAtual, 45) * 1.5);
+
+    const acao = registrado
+        ? `<div class="btn-li-hoje btn-li-hoje-feito">
+               <i class="ph-light ph-check"></i>Leitura de hoje registrada
+           </div>`
+        : `<button type="button" id="li-hoje" class="btn-li-hoje">
+               <i class="ph-light ph-fire"></i>Li hoje
+           </button>`;
+
+    document.getElementById("cartao-sequencia").innerHTML = `
+        <span class="overline">Sequência</span>
+
+        <div class="sequencia-chama">
+            <i class="ph-fill ph-fire" style="font-size:${tamanho}px"></i>
+            <div>
+                <span class="sequencia-valor">${emDias(flamme.sequenciaAtual)}</span>
+                <span class="sequencia-rotulo">lendo sem parar · recorde ${emDias(flamme.maiorSequencia)}</span>
+            </div>
+        </div>
+
+        ${acao}
+    `;
+
+    const botao = document.getElementById("li-hoje");
+
+    if (botao) {
+        botao.addEventListener("click", handleLiHoje);
+    }
+}
+
+async function handleLiHoje() {
+    try {
+        preencherSequencia(await apiPost("/challenges/flamme/today"));
+    } catch (error) {
+        document.getElementById("cartao-sequencia")
+            .insertAdjacentHTML("beforeend", `<p class="form-message">${error.message}</p>`);
+    }
+}
+
+function saudacaoDoDia() {
+    const hora = new Date().getHours();
+
+    if (hora < 12) {
+        return "Bom dia";
+    }
+
+    return hora < 18 ? "Boa tarde" : "Boa noite";
+}
+
+function dataPorExtenso(data) {
+    return data.toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" });
 }

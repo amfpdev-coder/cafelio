@@ -37,14 +37,31 @@ public class FlammeService {
 
     @Transactional
     public void marcarHoje(UUID userId) {
-        User user = buscar(userId);
-        LocalDate hoje = hoje();
+        marcar(userId, hoje());
+    }
 
-        if (readingDayRepository.existsByUserAndDay(user, hoje)) {
+    @Transactional
+    public void marcar(UUID userId, LocalDate dia) {
+        if (dia.isAfter(hoje())) {
+            throw new IllegalArgumentException("Não é possível alterar um dia futuro");
+        }
+
+        User user = buscar(userId);
+
+        if (readingDayRepository.existsByUserAndDay(user, dia)) {
             return;
         }
 
-        readingDayRepository.save(new ReadingDay(user, hoje));
+        readingDayRepository.save(new ReadingDay(user, dia));
+    }
+
+    @Transactional
+    public void desmarcar(UUID userId, LocalDate dia) {
+        if (dia.isAfter(hoje())) {
+            throw new IllegalArgumentException("Não é possível alterar um dia futuro");
+        }
+
+        readingDayRepository.deleteByUserAndDay(buscar(userId), dia);
     }
 
     public FlammeResponse consultar(UUID userId) {

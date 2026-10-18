@@ -12,4 +12,6 @@ public interface ReadingDayRepository extends JpaRepository<ReadingDay, UUID> {
     boolean existsByUserAndDay(User user, LocalDate day);
 
     List<ReadingDay> findByUserOrderByDayDesc(User user);
+
+    void deleteByUserAndDay(User user, LocalDate day);
 }

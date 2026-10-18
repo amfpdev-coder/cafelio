@@ -147,6 +147,62 @@ class FlammeServiceTest {
                 .hasMessage("Usuário não encontrado");
     }
 
+    @Test
+    void desmarcar_diaPassado_apagaORegistro() {
+        quandoBuscarUsuaria();
+
+        service.desmarcar(userId, HOJE.minusDays(3));
+
+        verify(readingDayRepository).deleteByUserAndDay(user, HOJE.minusDays(3));
+    }
+
+    @Test
+    void desmarcar_hoje_apagaORegistro() {
+        quandoBuscarUsuaria();
+
+        service.desmarcar(userId, HOJE);
+
+        verify(readingDayRepository).deleteByUserAndDay(user, HOJE);
+    }
+
+    @Test
+    void desmarcar_diaFuturo_lancaExcecaoENaoApagaNada() {
+        assertThatThrownBy(() -> service.desmarcar(userId, HOJE.plusDays(1)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Não é possível alterar um dia futuro");
+
+        verify(readingDayRepository, never()).deleteByUserAndDay(any(), any());
+    }
+
+    @Test
+    void marcar_diaPassado_salvaORegistro() {
+        quandoBuscarUsuaria();
+        when(readingDayRepository.existsByUserAndDay(user, HOJE.minusDays(3))).thenReturn(false);
+
+        service.marcar(userId, HOJE.minusDays(3));
+
+        verify(readingDayRepository).save(any(ReadingDay.class));
+    }
+
+    @Test
+    void marcar_diaJaRegistrado_naoSalvaDeNovo() {
+        quandoBuscarUsuaria();
+        when(readingDayRepository.existsByUserAndDay(user, HOJE.minusDays(3))).thenReturn(true);
+
+        service.marcar(userId, HOJE.minusDays(3));
+
+        verify(readingDayRepository, never()).save(any());
+    }
+
+    @Test
+    void marcar_diaFuturo_lancaExcecaoENaoSalvaNada() {
+        assertThatThrownBy(() -> service.marcar(userId, HOJE.plusDays(1)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Não é possível alterar um dia futuro");
+
+        verify(readingDayRepository, never()).save(any());
+    }
+
     private void quandoBuscarUsuaria() {
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
     }
