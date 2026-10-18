@@ -1,10 +1,94 @@
 :root {
+    /* ---- Identidade (fixa, não alterar) ---- */
     --color-cream: #F5ECD7;
     --color-beige: #EDD9B4;
     --color-coffee: #6B3F2A;
     --color-moss: #5C7A5A;
     --color-sepia: #3B2A1A;
 
-    --font-heading: Georgia, "Times New Roman", serif;
-    --font-body: system-ui, -apple-system, sans-serif;
+    /* ---- Derivadas ---- */
+    --color-terracota: #A8553A;
+    --color-error: #9A4529;
+    --color-caramelo: #C99A5B;
+    --color-oliva: #8A8F5A;
+    --color-vinho: #7D4E57;
+    --color-areia: #D9B98A;
+
+    --color-paper: #FBF6EA;
+    --color-border-input: #D9BF92;
+    --color-border-soft: #E0C79C;
+    --color-border-faint: #CDB286;
+
+    --color-text-2: #5A4535;
+    --color-text-3: #7A6452;
+    --color-overline: #8A6A50;
+
+    --color-disabled-bg: #DCC7A3;
+    --color-disabled-text: #9C8467;
+
+    /* Estados do botão primário */
+    --color-coffee-hover: #7E4C34;
+    --color-coffee-active: #55311F;
+
+    /* ---- Selos de status ---- */
+    --status-lendo-bg: #DDE5D6;
+    --status-lendo-fg: #3F5A3E;
+    --status-lendo-dot: #5C7A5A;
+
+    --status-lido-bg: #E8D3C4;
+    --status-lido-fg: #6B3F2A;
+    --status-lido-dot: #6B3F2A;
+
+    --status-quero-bg: #F0DDB5;
+    --status-quero-fg: #7A5420;
+    --status-quero-dot: #C99A5B;
+
+    --status-meta-bg: #EFCDBE;
+    --status-meta-fg: #8E3F28;
+    --status-meta-dot: #A8553A;
+
+    --status-relendo-bg: #E3E2C6;
+    --status-relendo-fg: #5E6236;
+    --status-relendo-dot: #8A8F5A;
+
+    --status-abandonei-bg: #E2D9CF;
+    --status-abandonei-fg: #6E5F52;
+    --status-abandonei-dot: #9C8B7B;
+
+    /* ---- Grade do desafio Flamme ---- */
+    --flamme-0: #E3CDA3;
+    --flamme-1: #C8D0B0;
+    --flamme-2: #9FB08F;
+    --flamme-3: #7A9375;
+    --flamme-4: #5C7A5A;
+
+    /* ---- Tipografia ---- */
+    --font-heading: "Young Serif", Georgia, serif;
+    --font-body: "Nunito Sans", system-ui, -apple-system, sans-serif;
+    --font-hand: "Caveat", cursive;
+    --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+    /* ---- Raios ---- */
+    --radius-field: 12px;
+    --radius-card: 16px;
+    --radius-card-lg: 22px;
+    --radius-pill: 999px;
+
+    /* ---- Sombras (sempre quentes, nunca cinza-azuladas) ---- */
+    --shadow-card: 0 12px 24px -16px rgba(107, 63, 42, .55);
+    --shadow-dark: 0 18px 30px -20px rgba(59, 42, 26, .8);
+    --shadow-btn: 0 2px 0 #4A2A1B;
+    --shadow-btn-moss: 0 2px 0 #435C42;
+    --shadow-focus: 0 0 0 3px rgba(92, 122, 90, .22);
+
+    /* ---- Medidas da casca ---- */
+    --sidebar-width: 232px;
+    --tabbar-height: 84px;
+}
+
+/* No celular os campos e botões crescem para o toque mínimo de 48px */
+@media (max-width: 767px) {
+    :root {
+        --radius-field: 14px;
+    }
 }
