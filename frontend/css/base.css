@@ -425,3 +425,893 @@ button:disabled {
     h2 { font-size: 24px; }
     h3 { font-size: 19px; }
 }
+
+/* ================================================================
+    CASCA — barra lateral na web, barra de abas no celular
+   ================================================================ */
+
+/* A casca ocupa a tela inteira, sem o recuo que as telas de fora usam */
+#app:has(.casca) {
+    max-width: none;
+    padding: 0;
+}
+
+.casca {
+    display: grid;
+    grid-template-columns: var(--sidebar-width) 1fr;
+    min-height: 100vh;
+}
+
+/* ---- Barra lateral ---- */
+
+.barra-lateral {
+    display: flex;
+    flex-direction: column;
+    padding: 22px 14px 16px;
+    background: var(--color-beige);
+    border-right: 1px solid rgba(107, 63, 42, .16);
+}
+
+.barra-lateral-marca {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 10px 22px;
+    font-family: var(--font-heading);
+    font-size: 24px;
+    color: var(--color-coffee);
+}
+
+.barra-lateral-marca i {
+    font-size: 26px;
+}
+
+.barra-lateral nav {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.barra-lateral .overline {
+    padding: 20px 12px 8px;
+    font-size: 11px;
+}
+
+.barra-lateral-espaco {
+    flex: 1;
+}
+
+/* ---- Destinos ---- */
+
+.destino {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 9px 12px;
+    border-radius: 10px;
+    color: var(--color-text-2);
+    font-size: 15px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.destino i {
+    font-size: 20px;
+}
+
+.destino:hover {
+    background: rgba(245, 236, 215, .55);
+    color: var(--color-coffee);
+}
+
+.destino[aria-current="page"] {
+    background: var(--color-cream);
+    color: var(--color-coffee);
+    font-weight: 800;
+    box-shadow: 0 4px 10px -6px rgba(107, 63, 42, .45);
+}
+
+.destino-secundario {
+    padding: 7px 12px;
+    font-size: 14px;
+}
+
+.destino-secundario i {
+    font-size: 18px;
+}
+
+/* ---- Cartão do Plus e perfil ---- */
+
+.cartao-plus {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    background: var(--color-cream);
+    box-shadow: 0 6px 14px -10px rgba(107, 63, 42, .5);
+}
+
+.cartao-plus-titulo {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-heading);
+    font-size: 15px;
+    color: var(--color-coffee);
+}
+
+.cartao-plus p {
+    font-size: 12px;
+    line-height: 1.35;
+    color: var(--color-text-2);
+}
+
+.barra-lateral-perfil {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 12px;
+    padding: 14px 8px 0;
+    border-top: 1px solid rgba(107, 63, 42, .16);
+    cursor: pointer;
+}
+
+.avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: var(--color-caramelo);
+    color: var(--color-sepia);
+    font-family: var(--font-heading);
+    font-size: 14px;
+    object-fit: cover;
+}
+
+.barra-lateral-perfil > div {
+    min-width: 0;
+}
+
+.perfil-nome,
+.perfil-usuario {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.perfil-nome {
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.perfil-usuario {
+    font-size: 12px;
+    color: var(--color-text-3);
+}
+
+/* ---- Área de conteúdo ---- */
+
+.conteudo {
+    min-width: 0;
+    padding: 28px 36px;
+}
+
+/* ---- Barra de abas: só existe no celular ---- */
+
+.barra-abas {
+    display: none;
+}
+
+@media (max-width: 899px) {
+    .casca {
+        grid-template-columns: 1fr;
+    }
+
+    .barra-lateral {
+        display: none;
+    }
+
+    .conteudo {
+        padding: 16px 18px calc(var(--tabbar-height) + 16px);
+    }
+
+    .barra-abas {
+        position: fixed;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        display: flex;
+        justify-content: space-around;
+        height: var(--tabbar-height);
+        padding: 8px 6px 0;
+        background: var(--color-beige);
+        border-top: 1px solid rgba(107, 63, 42, .16);
+    }
+
+    .aba {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 3px;
+        width: 64px;
+        color: var(--color-text-3);
+        font-size: 11px;
+        font-weight: 600;
+        text-decoration: none;
+    }
+
+    .aba i {
+        font-size: 24px;
+    }
+
+    .aba[aria-current="page"] {
+        color: var(--color-coffee);
+        font-weight: 800;
+    }
+}
+
+.rascunho {
+    margin-top: 12px;
+    color: var(--color-text-2);
+}
+
+/* ================================================================
+    TELA DE PERFIL
+    ================================================================ */
+
+.perfil {
+    display: grid;
+    grid-template-columns: 320px minmax(0, 1fr);
+    gap: 32px;
+    align-items: start;
+    margin-top: 24px;
+}
+
+.perfil-cartao {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    padding: 32px 24px;
+    border-radius: var(--radius-card-lg);
+    background: var(--color-beige);
+    box-shadow: var(--shadow-card);
+}
+
+.perfil-foto {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 144px;
+    height: 144px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: var(--color-caramelo);
+    box-shadow: 0 0 0 4px var(--color-cream), 0 0 0 6px var(--color-caramelo);
+    font-family: var(--font-heading);
+    font-size: 48px;
+    color: var(--color-sepia);
+}
+
+.perfil-cartao .perfil-nome {
+    font-family: var(--font-heading);
+    font-size: 24px;
+    color: var(--color-coffee);
+}
+
+.perfil-cartao .perfil-email {
+    margin-top: -10px;
+    font-size: 14px;
+    color: var(--color-text-2);
+}
+
+.perfil-acoes {
+    display: flex;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.perfil-acoes button {
+    height: 40px;
+    padding: 0 14px;
+    font-size: 13px;
+}
+
+.btn-perigo {
+    background: transparent;
+    border: 1.5px solid var(--color-terracota);
+    color: var(--color-error);
+    box-shadow: none;
+}
+
+.btn-perigo:hover {
+    background: rgba(168, 85, 58, .08);
+}
+
+.btn-perigo:active {
+    background: rgba(168, 85, 58, .12);
+    box-shadow: none;
+}
+
+.perfil-coluna {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.bloco {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 20px 22px;
+    border-radius: 18px;
+    background: var(--color-paper);
+    box-shadow: inset 0 0 0 1px var(--color-border-soft);
+}
+
+.bloco-titulo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--font-heading);
+    font-size: 19px;
+    color: var(--color-coffee);
+}
+
+.bloco-titulo i {
+    font-size: 22px;
+}
+
+.bloco form {
+    margin: 0;
+    max-width: none;
+    width: 100%;
+}
+
+.cartao-plano {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 20px 22px;
+    border-radius: 18px;
+    background: var(--color-coffee);
+    color: var(--color-cream);
+}
+
+.cartao-plano i {
+    font-size: 28px;
+    color: var(--color-caramelo);
+}
+
+.cartao-plano-titulo {
+    font-family: var(--font-heading);
+    font-size: 19px;
+}
+
+.cartao-plano p {
+    font-size: 13px;
+    color: var(--color-beige);
+}
+
+.link-sair {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    align-self: flex-start;
+    font-size: 14px;
+    font-weight: 800;
+    color: var(--color-error);
+    cursor: pointer;
+}
+
+.link-sair i {
+    font-size: 18px;
+}
+
+@media (max-width: 899px) {
+    .perfil {
+        grid-template-columns: 1fr;
+        gap: 22px;
+    }
+
+    .perfil-cartao {
+        padding: 8px 0 0;
+        background: transparent;
+        box-shadow: none;
+    }
+
+    .perfil-foto {
+        width: 108px;
+        height: 108px;
+        font-size: 36px;
+    }
+}
+
+/* ================================================================
+    TELA DE DESAFIOS
+   ================================================================ */
+
+.desafios {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr);
+    gap: 20px;
+    margin-top: 24px;
+}
+
+.cartao-desafio {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 22px 24px;
+    border-radius: 20px;
+    background: var(--color-beige);
+    box-shadow: var(--shadow-card);
+}
+
+.cartao-desafio-escuro {
+    background: var(--color-sepia);
+    color: var(--color-cream);
+    box-shadow: var(--shadow-dark);
+}
+
+.cartao-desafio-escuro h3 {
+    color: var(--color-cream);
+}
+
+.cartao-desafio-cabecalho {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.cartao-desafio h3 {
+    font-size: 28px;
+}
+
+.selo {
+    padding: 3px 10px;
+    border-radius: var(--radius-pill);
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.selo-gratuito {
+    background: var(--color-cream);
+    color: var(--color-coffee);
+}
+
+.cartao-desafio-escuro .selo-gratuito {
+    background: rgba(245, 236, 215, .14);
+    color: var(--color-beige);
+}
+
+.selo-plus {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: var(--color-coffee);
+    color: var(--color-cream);
+}
+
+.cartao-desafio-descricao {
+    font-size: 13px;
+    color: var(--color-beige);
+}
+
+/* ---- Allumez!: as velas ---- */
+
+.velas {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    height: 140px;
+    padding: 0 4px;
+    border-bottom: 2px solid var(--color-coffee);
+}
+
+.vela {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 26px;
+}
+
+.vela i {
+    font-size: 22px;
+    color: var(--color-caramelo);
+    filter: drop-shadow(0 0 6px rgba(201, 154, 91, .9));
+}
+
+.vela-apagada i {
+    color: transparent;
+    filter: none;
+}
+
+.vela-pavio {
+    width: 2px;
+    height: 6px;
+    background: #9C8B7B;
+}
+
+.vela-corpo {
+    width: 18px;
+    border-radius: 5px 5px 2px 2px;
+    background: var(--color-paper);
+    box-shadow: inset -4px 0 0 rgba(107, 63, 42, .15);
+}
+
+.vela-apagada .vela-corpo {
+    background: #E6D3AE;
+}
+
+.velas-contagem {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+}
+
+.velas-numero {
+    font-family: var(--font-heading);
+    font-size: 30px;
+    color: var(--color-caramelo);
+}
+
+.velas-numero small {
+    font-size: 16px;
+    color: var(--color-beige);
+}
+
+/* ---- Flamme ---- */
+
+.flamme-numeros {
+    display: flex;
+    gap: 28px;
+}
+
+.flamme-numero {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.flamme-numero i {
+    font-size: 30px;
+    color: var(--color-terracota);
+}
+
+.flamme-numero-recorde i {
+    font-size: 28px;
+    color: var(--color-coffee);
+}
+
+.flamme-numero-valor {
+    display: block;
+    font-family: var(--font-heading);
+    font-size: 24px;
+    line-height: 1;
+    color: var(--color-coffee);
+}
+
+.flamme-numero-rotulo {
+    font-size: 12px;
+    color: var(--color-text-2);
+}
+
+.cartao-desafio,
+.cartao-tematicos {
+    min-width: 0;
+}
+
+.flamme-rolagem {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+    overflow-x: auto;
+    padding-bottom: 6px;
+}
+
+.flamme-meses {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 15px;
+    gap: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--color-text-3);
+    white-space: nowrap;
+}
+
+.flamme-grade {
+    display: grid;
+    grid-template-rows: repeat(7, 15px);
+    grid-auto-flow: column;
+    grid-auto-columns: 15px;
+    gap: 4px;
+}
+
+.flamme-dia {
+    border-radius: 3px;
+    background: var(--flamme-0);
+}
+
+.flamme-dia-lido {
+    background: var(--flamme-4);
+}
+
+.flamme-legenda {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    color: var(--color-text-3);
+}
+
+.flamme-legenda span {
+    width: 11px;
+    height: 11px;
+    border-radius: 2px;
+}
+
+/* ---- Temáticos ---- */
+
+.cartao-tematicos {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 22px 24px;
+    border-radius: 20px;
+    background: var(--color-paper);
+    box-shadow: inset 0 0 0 1px var(--color-border-soft);
+}
+
+.tematicos {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.tematico {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 18px;
+    border-radius: var(--radius-card);
+    background: var(--color-beige);
+}
+
+.tematico i {
+    font-size: 34px;
+    color: var(--color-coffee);
+}
+
+.tematico h4 {
+    font-family: var(--font-heading);
+    font-size: 19px;
+    font-weight: 400;
+    color: var(--color-coffee);
+}
+
+.tematico p {
+    flex: 1;
+    font-size: 13px;
+    line-height: 1.4;
+    color: var(--color-text-2);
+}
+
+.barra-progresso {
+    height: 8px;
+    border-radius: 4px;
+    background: var(--color-border-soft);
+    overflow: hidden;
+}
+
+.barra-progresso span {
+    display: block;
+    height: 100%;
+    border-radius: 4px;
+    background: var(--color-moss);
+}
+
+.tematico-contagem {
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--status-lendo-fg);
+}
+
+/* ---- Aviso de rascunho ---- */
+
+.aviso-rascunho {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--color-text-3);
+}
+
+/* ---- Celular ---- */
+
+@media (max-width: 899px) {
+    .desafios {
+        grid-template-columns: 1fr;
+    }
+
+    .cartao-desafio h3 {
+        font-size: 20px;
+    }
+
+    .velas {
+        height: 74px;
+    }
+
+    .vela {
+        width: 20px;
+    }
+
+    .vela i {
+        font-size: 14px;
+    }
+
+    .vela-corpo {
+        width: 12px;
+    }
+
+    .flamme-meses {
+        grid-auto-columns: 9px;
+        gap: 2px;
+    }
+
+    .flamme-grade {
+        grid-template-rows: repeat(7, 9px);
+        grid-auto-columns: 9px;
+        gap: 2px;
+    }
+
+    .flamme-dia {
+        border-radius: 2px;
+    }
+
+    .tematicos {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ================================================================
+    TELA DE INÍCIO
+   ================================================================ */
+
+.inicio-saudacao {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.avatar-grande {
+    width: 64px;
+    height: 64px;
+    font-size: 22px;
+    box-shadow: 0 0 0 3px var(--color-cream), 0 0 0 4.5px var(--color-caramelo);
+}
+
+.inicio-data {
+    font-size: 14px;
+    color: var(--color-text-2);
+}
+
+.inicio-cartoes {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 340px));
+    gap: 20px;
+    margin: 24px 0;
+}
+
+.cartao-sequencia {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 22px 24px;
+    border-radius: 20px;
+    background: var(--color-beige);
+    box-shadow: var(--shadow-card);
+}
+
+.sequencia-chama {
+    display: flex;
+    align-items: flex-end;
+    gap: 12px;
+    min-height: 80px;
+}
+
+.sequencia-chama i {
+    color: var(--color-terracota);
+    line-height: 1;
+    transition: font-size .4s;
+}
+
+.sequencia-chama > div {
+    padding-bottom: 6px;
+}
+
+.sequencia-valor {
+    display: block;
+    font-family: var(--font-heading);
+    font-size: 34px;
+    line-height: 1;
+    color: var(--color-coffee);
+}
+
+.sequencia-rotulo {
+    font-size: 13px;
+    color: var(--color-text-2);
+}
+
+.btn-li-hoje {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 44px;
+    border: none;
+    border-radius: var(--radius-field);
+    background: var(--color-moss);
+    color: var(--color-cream);
+    box-shadow: var(--shadow-btn-moss);
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.btn-li-hoje:hover {
+    background: #4F6A4D;
+}
+
+.btn-li-hoje:active {
+    background: #435C42;
+    box-shadow: none;
+    transform: translateY(2px);
+}
+
+.btn-li-hoje i {
+    font-size: 18px;
+}
+
+.btn-li-hoje-feito {
+    background: var(--color-cream);
+    color: var(--status-lendo-fg);
+    box-shadow: none;
+    cursor: default;
+}
+
+@media (max-width: 899px) {
+    .inicio-cartoes {
+        grid-template-columns: 1fr;
+    }
+
+    .avatar-grande {
+        width: 48px;
+        height: 48px;
+        font-size: 18px;
+    }
+
+    .btn-li-hoje {
+        height: 52px;
+        font-size: 15px;
+    }
+}
+
+.flamme-grade .flamme-dia {
+    cursor: pointer;
+}
+
+.flamme-grade .flamme-dia:hover {
+    box-shadow: 0 0 0 2px var(--color-coffee);
+}

@@ -1,3 +1,26 @@
+// ---- Destinos da casca ----
+
+const DESTINOS_PRINCIPAIS = [
+    { id: "inicio", icone: "house", rotulo: "Início" },
+    { id: "estante", icone: "books", rotulo: "Estante" },
+    { id: "cadernos", icone: "notebook", rotulo: "Cadernos" },
+    { id: "desafios", icone: "medal", rotulo: "Desafios" },
+];
+
+const DESTINOS_EXPLORAR = [
+    { id: "citacoes", icone: "quotes", rotulo: "Citações" },
+    { id: "resenhas", icone: "chat-text", rotulo: "Resenhas" },
+    { id: "ranking", icone: "ranking", rotulo: "Ranking" },
+    { id: "estatisticas", icone: "chart-bar", rotulo: "Estatísticas" },
+    { id: "calendario", icone: "calendar-blank", rotulo: "Calendário" },
+    { id: "sorteio", icone: "shuffle", rotulo: "Sorteio" },
+];
+
+const DESTINO_PERFIL = { id: "perfil", icone: "user-circle", rotulo: "Perfil" };
+
+let usuarioAtual = null;
+let destinoAtual = "inicio";
+
 async function renderWelcomeScreen() {
     const app = document.getElementById("app");
 
@@ -160,61 +183,194 @@ function renderRegisterForm() {
 
 function renderLoggedInArea(user) {
     showGoogleButton(false);
+    usuarioAtual = user;
+    renderCasca();
+}
 
-    const acao = user.hasPassword ? "Alterar senha" : "Definir senha";
+function renderCasca() {
+    const user = usuarioAtual;
 
     document.getElementById("auth-area").innerHTML = `
-        <div id="profile-picture-area">
-            <img id="profile-picture" alt="Foto de perfil" />
-            <p id="no-picture">Você ainda não tem foto de perfil.</p>
+        <div class="casca">
+            <aside class="barra-lateral">
+                <div class="barra-lateral-marca">
+                    <i class="ph-light ph-coffee"></i>
+                    <span>Cafélio</span>
+                </div>
 
-            <label for="picture-input">Escolher foto</label>
-            <input id="picture-input" type="file" accept="image/jpeg,image/png,image/webp" />
-            <small>JPG, PNG ou WebP, até 2 MB.</small>
+                <nav>${DESTINOS_PRINCIPAIS.map((d) => itemDestino(d, "destino")).join("")}</nav>
 
-            <button id="remove-picture">Remover foto</button>
-            <p id="picture-message" class="form-message"></p>
+                <span class="overline">Explorar</span>
+
+                <nav>${DESTINOS_EXPLORAR.map((d) => itemDestino(d, "destino destino-secundario")).join("")}</nav>
+
+                <div class="barra-lateral-espaco"></div>
+
+                <div class="cartao-plus">
+                    <span class="cartao-plus-titulo">
+                        <i class="ph-light ph-crown-simple"></i>Cafélio Plus
+                    </span>
+                    <p>Temas, relatório anual e cadernos sem limite.</p>
+                </div>
+
+                <div class="barra-lateral-perfil" data-destino="perfil">
+                    ${avatarDoUsuario(user)}
+                    <div>
+                        <div class="perfil-nome">${user.username}</div>
+                        <div class="perfil-usuario">${user.email}</div>
+                    </div>
+                </div>
+            </aside>
+
+            <main class="conteudo" id="conteudo"></main>
+
+            <nav class="barra-abas">
+                ${[...DESTINOS_PRINCIPAIS, DESTINO_PERFIL].map((d) => itemDestino(d, "aba")).join("")}
+            </nav>
         </div>
-
-        <h2 id="greeting"></h2>
-        <p id="account-email"></p>
-
-        <button id="show-password-form">${acao}</button>
-        <button id="logout">Sair</button>
-
-        <div id="password-area"></div>
     `;
 
-    document.getElementById("greeting").textContent = `Olá, ${user.username}!`;
-    document.getElementById("account-email").textContent = `Você entrou como ${user.email}.`;
+    document.querySelector(".casca").addEventListener("click", (event) => {
+        const alvo = event.target.closest("[data-destino]");
 
-    mostrarFoto(user.profilePictureUrl);
+        if (!alvo) {
+            return;
+        }
+
+        event.preventDefault();
+        navegarPara(alvo.dataset.destino);
+    });
+
+    renderDestino();
+}
+
+function itemDestino(destino, classe) {
+    const ativo = destino.id === destinoAtual;
+    const marca = ativo ? ` aria-current="page"` : "";
+    const peso = ativo ? "ph-fill" : "ph-light";
+
+    return `
+        <a href="#" class="${classe}" data-destino="${destino.id}"${marca}>
+            <i class="${peso} ph-${destino.icone}"></i>
+            <span>${destino.rotulo}</span>
+        </a>
+    `;
+}
+
+function avatarDoUsuario(user) {
+    if (user.profilePictureUrl) {
+        return `<img class="avatar" src="${user.profilePictureUrl}" alt="" />`;
+    }
+
+    return `<span class="avatar">${(user.username || "?").slice(0, 2).toUpperCase()}</span>`;
+}
+
+function navegarPara(id) {
+    destinoAtual = id;
+    renderCasca();
+}
+
+function renderDestino() {
+    const conteudo = document.getElementById("conteudo");
+
+    if (destinoAtual === "perfil") {
+        renderPerfil(conteudo);
+        return;
+    }
+
+    if (destinoAtual === "desafios") {
+        renderDesafios(conteudo);
+        return;
+    }
+
+    if (destinoAtual === "inicio") {
+        renderInicio(conteudo);
+        return;
+    }
+
+    const destino = [...DESTINOS_PRINCIPAIS, ...DESTINOS_EXPLORAR]
+        .find((d) => d.id === destinoAtual);
+
+    conteudo.innerHTML = `
+        <h2>${destino ? destino.rotulo : "Cafélio"}</h2>
+        <p class="rascunho">Esta tela ainda não foi construída.</p>
+    `;
+}
+
+function renderPerfil(conteudo) {
+    const user = usuarioAtual;
+    const acao = user.hasPassword ? "Alterar senha" : "Definir senha";
+    const temFoto = Boolean(user.profilePictureUrl);
+
+    conteudo.innerHTML = `
+        <h2>Perfil</h2>
+
+        <div class="perfil">
+            <div class="perfil-cartao">
+                ${fotoDePerfil(user)}
+
+                <span class="perfil-nome">${user.username}</span>
+                <span class="perfil-email">${user.email}</span>
+
+                <div class="perfil-acoes">
+                    <button type="button" id="escolher-foto">
+                        <i class="ph-light ph-camera"></i>${temFoto ? "Trocar foto" : "Adicionar foto"}
+                    </button>
+                    ${temFoto ? `<button type="button" id="remove-picture" class="btn-perigo">Remover</button>` : ""}
+                </div>
+
+                <input id="picture-input" type="file" accept="image/jpeg,image/png,image/webp" hidden />
+                <small>JPG, PNG ou WebP, até 2 MB.</small>
+                <p id="picture-message" class="form-message"></p>
+            </div>
+
+            <div class="perfil-coluna">
+                <div class="bloco">
+                    <span class="bloco-titulo"><i class="ph-light ph-key"></i>${acao}</span>
+                    <button type="button" id="show-password-form">${acao}</button>
+                    <div id="password-area"></div>
+                </div>
+
+                <div class="cartao-plano">
+                    <i class="ph-light ph-crown-simple"></i>
+                    <div>
+                        <div class="cartao-plano-titulo">Cafélio Plus</div>
+                        <p>Cadernos ilimitados, temas visuais e relatório anual.</p>
+                    </div>
+                </div>
+
+                <span class="link-sair" id="logout">
+                    <i class="ph-light ph-sign-out"></i>Sair da conta
+                </span>
+            </div>
+        </div>
+    `;
+
+    document.getElementById("escolher-foto").addEventListener("click", () => {
+        document.getElementById("picture-input").click();
+    });
 
     document.getElementById("picture-input").addEventListener("change", handleUploadPicture);
-    document.getElementById("remove-picture").addEventListener("click", handleRemovePicture);
+
+    const botaoRemover = document.getElementById("remove-picture");
+
+    if (botaoRemover) {
+        botaoRemover.addEventListener("click", handleRemovePicture);
+    }
 
     document.getElementById("show-password-form").addEventListener("click", () => {
         renderPasswordForm(user);
     });
+
     document.getElementById("logout").addEventListener("click", handleLogout);
 }
 
-function mostrarFoto(url) {
-    const img = document.getElementById("profile-picture");
-    const aviso = document.getElementById("no-picture");
-    const botaoRemover = document.getElementById("remove-picture");
-
-    if (url) {
-        img.src = url;
-        img.style.display = "";
-        aviso.style.display = "none";
-        botaoRemover.style.display = "";
-    } else {
-        img.removeAttribute("src");
-        img.style.display = "none";
-        aviso.style.display = "";
-        botaoRemover.style.display = "none";
+function fotoDePerfil(user) {
+    if (user.profilePictureUrl) {
+        return `<img class="perfil-foto" src="${user.profilePictureUrl}" alt="Foto de perfil" />`;
     }
+
+    return `<span class="perfil-foto">${(user.username || "?").slice(0, 2).toUpperCase()}</span>`;
 }
 
 function renderPasswordForm(user) {
@@ -446,6 +602,7 @@ async function handleChangePassword(event, user) {
 }
 
 function handleLogout() {
+    destinoAtual = "inicio";
     clearToken();
     renderLoginForm();
 }
@@ -531,9 +688,9 @@ async function handleUploadPicture(event) {
     formData.append("file", arquivo);
 
     try {
-        const user = await apiUpload("/auth/profile-picture", formData);
-        mostrarFoto(user.profilePictureUrl);
-        message.textContent = "Foto atualizada!";
+        usuarioAtual = await apiUpload("/auth/profile-picture", formData);
+        renderCasca();
+        document.getElementById("picture-message").textContent = "Foto atualizada!";
     } catch (error) {
         message.textContent = error.message;
     } finally {
@@ -546,9 +703,9 @@ async function handleRemovePicture() {
     message.textContent = "Removendo...";
 
     try {
-        const user = await apiDelete("/auth/profile-picture");
-        mostrarFoto(user.profilePictureUrl);
-        message.textContent = "Foto removida.";
+        usuarioAtual = await apiDelete("/auth/profile-picture");
+        renderCasca();
+        document.getElementById("picture-message").textContent = "Foto removida.";
     } catch (error) {
         message.textContent = error.message;
     }
@@ -585,4 +742,321 @@ function ativarMostrarSenha() {
             campo.focus();
         });
     });
+}
+
+// ---- Tela de Desafios ----
+
+async function renderDesafios(conteudo) {
+    conteudo.innerHTML = `
+        <h2>Desafios</h2>
+
+        <div class="desafios">
+            ${cartaoAllumez()}
+            ${cartaoFlamme()}
+            ${cartaoTematicos()}
+        </div>
+    `;
+
+    document.getElementById("flamme-grade").addEventListener("click", (event) => {
+        const celula = event.target.closest("[data-dia]");
+
+        if (celula) {
+            alternarDia(celula.dataset.dia, celula.classList.contains("flamme-dia-lido"));
+        }
+    });
+
+    try {
+        preencherFlamme(await apiGet("/challenges/flamme"));
+    } catch (error) {
+        document.getElementById("flamme-estado").textContent = error.message;
+    }
+}
+
+function cartaoFlamme() {
+    return `
+        <div class="cartao-desafio">
+            <div class="cartao-desafio-cabecalho">
+                <h3>Flamme</h3>
+                <span class="selo selo-gratuito">Gratuito</span>
+            </div>
+
+            <div class="flamme-numeros">
+                <div class="flamme-numero">
+                    <i class="ph-fill ph-fire"></i>
+                    <div>
+                        <span class="flamme-numero-valor" id="flamme-atual">—</span>
+                        <span class="flamme-numero-rotulo">sequência atual</span>
+                    </div>
+                </div>
+
+                <div class="flamme-numero flamme-numero-recorde">
+                    <i class="ph-light ph-trophy"></i>
+                    <div>
+                        <span class="flamme-numero-valor" id="flamme-recorde">—</span>
+                        <span class="flamme-numero-rotulo">maior sequência</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flamme-rolagem">
+                <div class="flamme-meses" id="flamme-meses"></div>
+                <div class="flamme-grade" id="flamme-grade"></div>
+            </div>
+
+            <div class="flamme-legenda">
+                <span class="flamme-dia"></span>sem leitura
+                <span class="flamme-dia flamme-dia-lido"></span>com leitura
+            </div>
+
+            <p class="form-message" id="flamme-estado"></p>
+        </div>
+    `;
+}
+
+function preencherFlamme(flamme) {
+    document.getElementById("flamme-atual").textContent = emDias(flamme.sequenciaAtual);
+    document.getElementById("flamme-recorde").textContent = emDias(flamme.maiorSequencia);
+
+    const lidos = new Set(flamme.dias);
+    const hoje = new Date();
+
+    // A grade mostra semanas em colunas, então ela precisa começar num domingo
+    const inicio = new Date(hoje);
+    inicio.setDate(hoje.getDate() - 181);
+
+    while (inicio.getDay() !== 0) {
+        inicio.setDate(inicio.getDate() - 1);
+    }
+
+    const celulas = [];
+    const dia = new Date(inicio);
+
+    while (dia <= hoje) {
+        const iso = emIso(dia);
+        const lido = lidos.has(iso);
+        const classe = lido ? "flamme-dia flamme-dia-lido" : "flamme-dia";
+        const titulo = lido ? `${iso} — clique para remover` : `${iso} — clique para marcar`;
+
+        celulas.push(`<span class="${classe}" title="${titulo}" data-dia="${iso}"></span>`);
+        dia.setDate(dia.getDate() + 1);
+    }
+
+    const grade = document.getElementById("flamme-grade");
+
+    grade.innerHTML = celulas.join("");
+    document.getElementById("flamme-meses").innerHTML = mesesDaGrade(inicio, hoje);
+}
+
+async function alternarDia(dia, estaMarcado) {
+    if (estaMarcado && !confirm(`Remover o registro de leitura de ${dia}?`)) {
+        return;
+    }
+
+    const caminho = `/challenges/flamme/days/${dia}`;
+
+    try {
+        preencherFlamme(estaMarcado ? await apiDelete(caminho) : await apiPost(caminho));
+    } catch (error) {
+        document.getElementById("flamme-estado").textContent = error.message;
+    }
+}
+
+function emIso(data) {
+    const ano = data.getFullYear();
+    const mes = String(data.getMonth() + 1).padStart(2, "0");
+    const dia = String(data.getDate()).padStart(2, "0");
+
+    return `${ano}-${mes}-${dia}`;
+}
+
+function emDias(quantidade) {
+    return quantidade === 1 ? "1 dia" : `${quantidade} dias`;
+}
+
+function mesesDaGrade(inicio, fim) {
+    const nomes = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"];
+    const blocos = [];
+    const cursor = new Date(inicio);
+
+    // Uma coluna por semana: cada mês ocupa tantas colunas quantas semanas comecam nele
+    while (cursor <= fim) {
+        const mes = cursor.getMonth();
+        const ultimo = blocos[blocos.length - 1];
+
+        if (ultimo && ultimo.mes === mes) {
+            ultimo.semanas++;
+        } else {
+            blocos.push({ mes, semanas: 1 });
+        }
+
+        cursor.setDate(cursor.getDate() + 7);
+    }
+
+    return blocos
+        .map(({ mes, semanas }) => {
+            // Um mês com uma semana só não tem largura para o rótulo caber
+            const nome = semanas > 1 ? nomes[mes] : "";
+
+            return `<span style="grid-column: span ${semanas}">${nome}</span>`;
+        })
+        .join("");
+}
+
+function cartaoAllumez() {
+    const alturas = [64, 80, 56, 72, 88, 60, 76, 68, 84, 58, 74, 66];
+
+    const velas = alturas
+        .map((altura) => `
+            <div class="vela vela-apagada">
+                <i class="ph-fill ph-flame"></i>
+                <span class="vela-pavio"></span>
+                <span class="vela-corpo" style="height:${altura}px"></span>
+            </div>
+        `)
+        .join("");
+
+    return `
+        <div class="cartao-desafio cartao-desafio-escuro">
+            <div class="cartao-desafio-cabecalho">
+                <h3>Allumez!</h3>
+                <span class="selo selo-gratuito">Gratuito</span>
+            </div>
+
+            <p class="cartao-desafio-descricao">Uma vela acende a cada livro concluído da meta do ano.</p>
+
+            <div class="velas">${velas}</div>
+
+            <p class="aviso-rascunho">
+                <i class="ph-light ph-wrench"></i>Ainda não construído — as velas são ilustrativas.
+            </p>
+        </div>
+    `;
+}
+
+function cartaoTematicos() {
+    const temas = [
+        { icone: "globe-hemisphere-west", nome: "Volta ao mundo", texto: "Um livro de cada país." },
+        { icone: "pen-nib", nome: "Autoras em foco", texto: "Doze autoras diferentes no ano." },
+        { icone: "map-trifold", nome: "Brasil que lê", texto: "Autoria de cada estado brasileiro." },
+        { icone: "compass", nome: "Fora da zona", texto: "Gêneros que você nunca leu." },
+    ];
+
+    const cartoes = temas
+        .map((tema) => `
+            <div class="tematico">
+                <i class="ph-light ph-${tema.icone}"></i>
+                <h4>${tema.nome}</h4>
+                <p>${tema.texto}</p>
+                <div class="barra-progresso"><span style="width:0%"></span></div>
+                <span class="tematico-contagem">ainda não começou</span>
+            </div>
+        `)
+        .join("");
+
+    return `
+        <div class="cartao-tematicos">
+            <div class="cartao-desafio-cabecalho">
+                <h3>Temáticos</h3>
+                <span class="selo selo-plus"><i class="ph-light ph-crown-simple"></i>Plus</span>
+            </div>
+
+            <div class="tematicos">${cartoes}</div>
+
+            <p class="aviso-rascunho">
+                <i class="ph-light ph-wrench"></i>Ainda não construídos — os quatro dependem de dados que o Cafélio não guarda hoje.
+            </p>
+        </div>
+    `;
+}
+
+// ---- Tela de Início ----
+
+async function renderInicio(conteudo) {
+    const user = usuarioAtual;
+
+    conteudo.innerHTML = `
+        <div class="inicio-saudacao">
+            ${avatarDoUsuario(user).replace('class="avatar"', 'class="avatar avatar-grande"')}
+            <div>
+                <h2>${saudacaoDoDia()}, ${user.username}</h2>
+                <span class="inicio-data">${dataPorExtenso(new Date())}</span>
+            </div>
+        </div>
+
+        <div class="inicio-cartoes">
+            <div class="cartao-sequencia" id="cartao-sequencia">
+                <span class="overline">Sequência</span>
+                <p class="rascunho">Carregando…</p>
+            </div>
+        </div>
+
+        <p class="aviso-rascunho">
+            <i class="ph-light ph-wrench"></i>O resto da tela — páginas lidas, livro em andamento e recomendação — ainda não foi construído.
+        </p>
+    `;
+
+    try {
+        preencherSequencia(await apiGet("/challenges/flamme"));
+    } catch (error) {
+        document.getElementById("cartao-sequencia").innerHTML =
+            `<p class="form-message">${error.message}</p>`;
+    }
+}
+
+function preencherSequencia(flamme) {
+    const registrado = flamme.dias.includes(emIso(new Date()));
+
+    // A chama cresce com a sequência, até um teto de 45 dias
+    const tamanho = Math.round(40 + Math.min(flamme.sequenciaAtual, 45) * 1.5);
+
+    const acao = registrado
+        ? `<div class="btn-li-hoje btn-li-hoje-feito">
+               <i class="ph-light ph-check"></i>Leitura de hoje registrada
+           </div>`
+        : `<button type="button" id="li-hoje" class="btn-li-hoje">
+               <i class="ph-light ph-fire"></i>Li hoje
+           </button>`;
+
+    document.getElementById("cartao-sequencia").innerHTML = `
+        <span class="overline">Sequência</span>
+
+        <div class="sequencia-chama">
+            <i class="ph-fill ph-fire" style="font-size:${tamanho}px"></i>
+            <div>
+                <span class="sequencia-valor">${emDias(flamme.sequenciaAtual)}</span>
+                <span class="sequencia-rotulo">lendo sem parar · recorde ${emDias(flamme.maiorSequencia)}</span>
+            </div>
+        </div>
+
+        ${acao}
+    `;
+
+    const botao = document.getElementById("li-hoje");
+
+    if (botao) {
+        botao.addEventListener("click", handleLiHoje);
+    }
+}
+
+async function handleLiHoje() {
+    try {
+        preencherSequencia(await apiPost("/challenges/flamme/today"));
+    } catch (error) {
+        document.getElementById("cartao-sequencia")
+            .insertAdjacentHTML("beforeend", `<p class="form-message">${error.message}</p>`);
+    }
+}
+
+function saudacaoDoDia() {
+    const hora = new Date().getHours();
+
+    if (hora < 12) {
+        return "Bom dia";
+    }
+
+    return hora < 18 ? "Boa tarde" : "Boa noite";
+}
+
+function dataPorExtenso(data) {
+    return data.toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" });
 }
