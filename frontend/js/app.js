@@ -278,6 +278,11 @@ function renderDestino() {
         return;
     }
 
+    if (destinoAtual === "desafios") {
+        renderDesafios(conteudo);
+        return;
+    }
+
     const destino = [...DESTINOS_PRINCIPAIS, ...DESTINOS_EXPLORAR]
         .find((d) => d.id === destinoAtual);
 
@@ -732,4 +737,203 @@ function ativarMostrarSenha() {
             campo.focus();
         });
     });
+}
+
+// ---- Tela de Desafios ----
+
+async function renderDesafios(conteudo) {
+    conteudo.innerHTML = `
+        <h2>Desafios</h2>
+
+        <div class="desafios">
+            ${cartaoAllumez()}
+            ${cartaoFlamme()}
+            ${cartaoTematicos()}
+        </div>
+    `;
+
+    try {
+        preencherFlamme(await apiGet("/challenges/flamme"));
+    } catch (error) {
+        document.getElementById("flamme-estado").textContent = error.message;
+    }
+}
+
+function cartaoFlamme() {
+    return `
+        <div class="cartao-desafio">
+            <div class="cartao-desafio-cabecalho">
+                <h3>Flamme</h3>
+                <span class="selo selo-gratuito">Gratuito</span>
+            </div>
+
+            <div class="flamme-numeros">
+                <div class="flamme-numero">
+                    <i class="ph-fill ph-fire"></i>
+                    <div>
+                        <span class="flamme-numero-valor" id="flamme-atual">—</span>
+                        <span class="flamme-numero-rotulo">sequência atual</span>
+                    </div>
+                </div>
+
+                <div class="flamme-numero flamme-numero-recorde">
+                    <i class="ph-light ph-trophy"></i>
+                    <div>
+                        <span class="flamme-numero-valor" id="flamme-recorde">—</span>
+                        <span class="flamme-numero-rotulo">maior sequência</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flamme-rolagem">
+                <div class="flamme-meses" id="flamme-meses"></div>
+                <div class="flamme-grade" id="flamme-grade"></div>
+            </div>
+
+            <div class="flamme-legenda">
+                <span class="flamme-dia"></span>sem leitura
+                <span class="flamme-dia flamme-dia-lido"></span>com leitura
+            </div>
+
+            <p class="form-message" id="flamme-estado"></p>
+        </div>
+    `;
+}
+
+function preencherFlamme(flamme) {
+    document.getElementById("flamme-atual").textContent = emDias(flamme.sequenciaAtual);
+    document.getElementById("flamme-recorde").textContent = emDias(flamme.maiorSequencia);
+
+    const lidos = new Set(flamme.dias);
+    const hoje = new Date();
+
+    // A grade mostra semanas em colunas, então ela precisa começar num domingo
+    const inicio = new Date(hoje);
+    inicio.setDate(hoje.getDate() - 181);
+
+    while (inicio.getDay() !== 0) {
+        inicio.setDate(inicio.getDate() - 1);
+    }
+
+    const celulas = [];
+    const dia = new Date(inicio);
+
+    while (dia <= hoje) {
+        const iso = emIso(dia);
+        const classe = lidos.has(iso) ? "flamme-dia flamme-dia-lido" : "flamme-dia";
+
+        celulas.push(`<span class="${classe}" title="${iso}"></span>`);
+        dia.setDate(dia.getDate() + 1);
+    }
+
+    document.getElementById("flamme-grade").innerHTML = celulas.join("");
+    document.getElementById("flamme-meses").innerHTML = mesesDaGrade(inicio, hoje);
+}
+
+function emIso(data) {
+    const ano = data.getFullYear();
+    const mes = String(data.getMonth() + 1).padStart(2, "0");
+    const dia = String(data.getDate()).padStart(2, "0");
+
+    return `${ano}-${mes}-${dia}`;
+}
+
+function emDias(quantidade) {
+    return quantidade === 1 ? "1 dia" : `${quantidade} dias`;
+}
+
+function mesesDaGrade(inicio, fim) {
+    const nomes = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"];
+    const blocos = [];
+    const cursor = new Date(inicio);
+
+    // Uma coluna por semana: cada mês ocupa tantas colunas quantas semanas comecam nele
+    while (cursor <= fim) {
+        const mes = cursor.getMonth();
+        const ultimo = blocos[blocos.length - 1];
+
+        if (ultimo && ultimo.mes === mes) {
+            ultimo.semanas++;
+        } else {
+            blocos.push({ mes, semanas: 1 });
+        }
+
+        cursor.setDate(cursor.getDate() + 7);
+    }
+
+    return blocos
+        .map(({ mes, semanas }) => {
+            // Um mês com uma semana só não tem largura para o rótulo caber
+            const nome = semanas > 1 ? nomes[mes] : "";
+
+            return `<span style="grid-column: span ${semanas}">${nome}</span>`;
+        })
+        .join("");
+}
+
+function cartaoAllumez() {
+    const alturas = [64, 80, 56, 72, 88, 60, 76, 68, 84, 58, 74, 66];
+
+    const velas = alturas
+        .map((altura) => `
+            <div class="vela vela-apagada">
+                <i class="ph-fill ph-flame"></i>
+                <span class="vela-pavio"></span>
+                <span class="vela-corpo" style="height:${altura}px"></span>
+            </div>
+        `)
+        .join("");
+
+    return `
+        <div class="cartao-desafio cartao-desafio-escuro">
+            <div class="cartao-desafio-cabecalho">
+                <h3>Allumez!</h3>
+                <span class="selo selo-gratuito">Gratuito</span>
+            </div>
+
+            <p class="cartao-desafio-descricao">Uma vela acende a cada livro concluído da meta do ano.</p>
+
+            <div class="velas">${velas}</div>
+
+            <p class="aviso-rascunho">
+                <i class="ph-light ph-wrench"></i>Ainda não construído — as velas são ilustrativas.
+            </p>
+        </div>
+    `;
+}
+
+function cartaoTematicos() {
+    const temas = [
+        { icone: "globe-hemisphere-west", nome: "Volta ao mundo", texto: "Um livro de cada país." },
+        { icone: "pen-nib", nome: "Autoras em foco", texto: "Doze autoras diferentes no ano." },
+        { icone: "map-trifold", nome: "Brasil que lê", texto: "Autoria de cada estado brasileiro." },
+        { icone: "compass", nome: "Fora da zona", texto: "Gêneros que você nunca leu." },
+    ];
+
+    const cartoes = temas
+        .map((tema) => `
+            <div class="tematico">
+                <i class="ph-light ph-${tema.icone}"></i>
+                <h4>${tema.nome}</h4>
+                <p>${tema.texto}</p>
+                <div class="barra-progresso"><span style="width:0%"></span></div>
+                <span class="tematico-contagem">ainda não começou</span>
+            </div>
+        `)
+        .join("");
+
+    return `
+        <div class="cartao-tematicos">
+            <div class="cartao-desafio-cabecalho">
+                <h3>Temáticos</h3>
+                <span class="selo selo-plus"><i class="ph-light ph-crown-simple"></i>Plus</span>
+            </div>
+
+            <div class="tematicos">${cartoes}</div>
+
+            <p class="aviso-rascunho">
+                <i class="ph-light ph-wrench"></i>Ainda não construídos — os quatro dependem de dados que o Cafélio não guarda hoje.
+            </p>
+        </div>
+    `;
 }
