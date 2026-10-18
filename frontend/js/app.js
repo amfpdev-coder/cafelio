@@ -1,22 +1,15 @@
 async function renderWelcomeScreen() {
     const app = document.getElementById("app");
 
-    app.innerHTML = `
-        <h1>Bem-vindo ao Cafélio ☕</h1>
-        <p>Seu planner literário está quase pronto...</p>
-        <p id="api-status">Verificando conexão com a API...</p>
-        <div id="auth-area"></div>
-    `;
+    app.innerHTML = `<div id="auth-area"></div>`;
 
     await loadSession();
 
     try {
         const health = await apiGet("/health");
-        document.getElementById("api-status").textContent =
-        `API conectada — status: ${health.status}`;
+        console.info(`Cafélio: API conectada — status: ${health.status}`);
     } catch (error) {
-        document.getElementById("api-status").textContent =
-        "Não foi possível conectar à API.";
+        console.warn("Cafélio: não foi possível conectar à API.");
     }
 }
 
@@ -44,8 +37,24 @@ async function loadSession() {
 function showGoogleButton(visible) {
     const button = document.querySelector(".g_id_signin");
 
-    if (button) {
-        button.style.display = visible ? "" : "none";
+    if (!button) {
+        return;
+    }
+
+    // O botão do Google é criado uma única vez pela biblioteca deles. Como a
+    // tela de entrada o aloja dentro do formulário, ele precisa voltar para o
+    // corpo da página antes de cada troca de tela — senão o innerHTML seguinte
+    // o destruiria e não haveria como recriá-lo.
+    document.body.appendChild(button);
+    button.style.display = visible ? "" : "none";
+}
+
+function moverBotaoDoGoogle() {
+    const slot = document.getElementById("google-slot");
+    const button = document.querySelector(".g_id_signin");
+
+    if (slot && button) {
+        slot.appendChild(button);
     }
 }
 
@@ -53,23 +62,51 @@ function renderLoginForm(identifier = "") {
     showGoogleButton(true);
 
     document.getElementById("auth-area").innerHTML = `
-        <form id="login-form">
-            <h2>Entrar</h2>
+        <div class="tela-entrada">
+            <div class="painel-foto">
+                <div class="painel-marca">
+                    <i class="ph-light ph-coffee"></i>
+                    <span>Cafélio</span>
+                </div>
 
-            <label for="identifier">E-mail ou nome de usuário</label>
-            <input id="identifier" type="text" autocomplete="username" required />
+                <p class="painel-frase">seu diário de leituras, guardado entre um café e outro</p>
+            </div>
 
-            <label for="password">Senha</label>
-            <input id="password" type="password" autocomplete="current-password" required />
+            <div class="coluna-formulario">
+                <form id="login-form">
+                    <div class="form-titulo">
+                        <h2>Que bom te ver de novo</h2>
+                        <span class="form-subtitulo">Entre para continuar de onde parou.</span>
+                    </div>
 
-            <button type="submit">Entrar</button>
-            <p id="login-message" class="form-message"></p>
-            <p><a href="#" id="show-forgot">Esqueci minha senha</a></p>
+                    <div class="campo">
+                        <label for="identifier">E-mail ou nome de usuário</label>
+                        <input id="identifier" type="text" autocomplete="username" required />
+                    </div>
 
-            <p>Não tem conta? <a href="#" id="show-register">Criar conta</a></p>
-        </form>
+                    <div class="campo">
+                        <label for="password">Senha</label>
+                        <div class="campo-com-botao">
+                            <input id="password" type="password" autocomplete="current-password" required />
+                        </div>
+                    </div>
+
+                    <a href="#" id="show-forgot" class="link-discreto">Esqueci minha senha</a>
+
+                    <button type="submit">Entrar</button>
+                    <p id="login-message" class="form-message"></p>
+
+                    <div class="divisor">ou</div>
+
+                    <div id="google-slot"></div>
+
+                    <p class="rodape-form">Ainda não tem conta? <a href="#" id="show-register">Criar conta</a></p>
+                </form>
+            </div>
+        </div>
     `;
 
+    moverBotaoDoGoogle();
     document.getElementById("identifier").value = identifier;
     document.getElementById("login-form").addEventListener("submit", handleLogin);
         document.getElementById("show-register").addEventListener("click", (event) => {
@@ -86,7 +123,7 @@ function renderLoginForm(identifier = "") {
 }
 
 function renderRegisterForm() {
-    showGoogleButton(true);
+    showGoogleButton(false);
 
     document.getElementById("auth-area").innerHTML = `
         <form id="register-form">
