@@ -7,6 +7,10 @@ import jakarta.validation.constraints.Size;
 
 public class RegisterRequest {
 
+    @NotBlank(message = "Nome é obrigatório")
+    @Size(min = 2, max = 80, message = "Nome deve ter entre 2 e 80 caracteres")
+    private String name;
+
     @NotBlank(message = "Nome de usuário é obrigatório")
     @Size(min = 3, max = 50, message = "Nome de usuário deve ter entre 3 e 50 caracteres")
     private String username;
@@ -24,6 +28,9 @@ public class RegisterRequest {
 
     @NotBlank(message = "Confirmação de senha é obrigatória")
     private String confirmPassword;
+
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
 
     public String getUsername() { return username; }
     public void setUsername(String username) { this.username = username; }

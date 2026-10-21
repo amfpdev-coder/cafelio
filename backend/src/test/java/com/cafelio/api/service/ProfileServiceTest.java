@@ -41,6 +41,48 @@ class ProfileServiceTest {
     }
 
     @Test
+    void atualizarDados_nomeDeUsuarioLivre_salva() {
+        User user = new User();
+        user.setUsername("angelica");
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(userRepository.existsByUsername("angel")).thenReturn(false);
+
+        service.atualizarDados(userId, "  Angélica  ", "  angel  ");
+
+        assertThat(user.getName()).isEqualTo("Angélica");
+        assertThat(user.getUsername()).isEqualTo("angel");
+    }
+
+    @Test
+    void atualizarDados_mesmoNomeDeUsuario_naoAcusaDuplicidade() {
+        User user = new User();
+        user.setUsername("angelica");
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+
+        service.atualizarDados(userId, "Angélica Mariana", "angelica");
+
+        assertThat(user.getName()).isEqualTo("Angélica Mariana");
+        verify(userRepository, never()).existsByUsername(any());
+    }
+
+    @Test
+    void atualizarDados_nomeDeUsuarioDeOutraPessoa_lancaExcecao() {
+        User user = new User();
+        user.setUsername("angelica");
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(userRepository.existsByUsername("amanda")).thenReturn(true);
+
+        assertThatThrownBy(() -> service.atualizarDados(userId, "Angélica", "amanda"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Esse nome de usuário já está em uso");
+
+        verify(userRepository, never()).save(any());
+    }
+
+    @Test
     void atualizarFoto_semFotoAnterior_salvaENaoApagaNada() {
         User user = new User();
 
