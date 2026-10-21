@@ -116,8 +116,8 @@ function showGoogleButton(visible) {
     button.style.display = visible ? "" : "none";
 }
 
-function moverBotaoDoGoogle() {
-    const slot = document.getElementById("google-slot");
+function moverBotaoDoGoogle(slotId = "google-slot") {
+    const slot = document.getElementById(slotId);
     const button = document.querySelector(".g_id_signin");
 
     if (slot && button) {
@@ -343,6 +343,9 @@ function navegarPara(id) {
 function renderDestino() {
     const conteudo = document.getElementById("conteudo");
 
+    // Só o Perfil hospeda o botão do Google; qualquer outra tela o esconde
+    showGoogleButton(false);
+
     if (destinoAtual === "perfil") {
         renderPerfil(conteudo);
         return;
@@ -430,6 +433,12 @@ function renderPerfil(conteudo) {
                     ${botaoDeTema("botao-tema botao-tema-perfil")}
                 </div>
 
+                <div class="bloco">
+                    <span class="bloco-titulo"><i class="ph-light ph-link-simple"></i>Conta Google</span>
+                    ${blocoDoGoogle(user)}
+                    <p class="form-message" id="google-message"></p>
+                </div>
+
                 <div class="cartao-plano">
                     <i class="ph-light ph-crown-simple"></i>
                     <div>
@@ -468,6 +477,15 @@ function renderPerfil(conteudo) {
 
     renderPasswordForm(user);
 
+    const botaoDesvincular = document.getElementById("google-desvincular");
+
+    if (botaoDesvincular) {
+        botaoDesvincular.addEventListener("click", desvincularGoogle);
+    } else {
+        showGoogleButton(true);
+        moverBotaoDoGoogle("google-slot-perfil");
+    }
+
     document.getElementById("logout").addEventListener("click", handleLogout);
 }
 
@@ -486,6 +504,55 @@ async function handleDados(event) {
         // Redesenha a casca para o nome novo aparecer na barra lateral
         renderCasca();
         document.getElementById("dados-message").textContent = "Dados salvos.";
+    } catch (error) {
+        message.textContent = error.message;
+    }
+}
+
+function blocoDoGoogle(user) {
+    if (user.googleLinked) {
+        return `
+            <p class="google-estado">
+                <i class="ph-fill ph-check-circle"></i>
+                Vinculada. Você pode entrar no Cafélio pelo Google.
+            </p>
+            <button type="button" class="botao-link" id="google-desvincular">Desvincular</button>
+        `;
+    }
+
+    return `
+        <p class="google-estado">Não vinculada. Vincule para poder entrar pelo Google.</p>
+        <div id="google-slot-perfil"></div>
+    `;
+}
+
+async function desvincularGoogle() {
+    const message = document.getElementById("google-message");
+
+    if (!confirm("Desvincular sua conta Google do Cafélio?")) {
+        return;
+    }
+
+    message.textContent = "Desvinculando...";
+
+    try {
+        usuarioAtual = await apiDelete("/auth/google/link");
+        renderCasca();
+        document.getElementById("google-message").textContent = "Conta Google desvinculada.";
+    } catch (error) {
+        message.textContent = error.message;
+    }
+}
+
+async function vincularGoogle(idToken) {
+    const message = document.getElementById("google-message");
+
+    message.textContent = "Vinculando...";
+
+    try {
+        usuarioAtual = await apiPost("/auth/google/link", { idToken });
+        renderCasca();
+        document.getElementById("google-message").textContent = "Conta Google vinculada.";
     } catch (error) {
         message.textContent = error.message;
     }
@@ -846,6 +913,13 @@ function renderResetPasswordForm(token) {
 }
 
 async function handleGoogleLogin(response) {
+    // O mesmo botão serve para entrar e para vincular: se já há sessão,
+    // o clique veio da tela de Perfil.
+    if (getToken() && usuarioAtual) {
+        vincularGoogle(response.credential);
+        return;
+    }
+
     if (!document.getElementById("login-message")) {
         renderLoginForm();
     }

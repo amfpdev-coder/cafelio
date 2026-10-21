@@ -174,4 +174,23 @@ public class AuthController {
         User user = emailChangeService.confirmar(userId, request.code());
         return ResponseEntity.ok(new UserResponse(user, profileService.urlDaFoto(user)));
     }
+
+    @SecurityRequirement(name = "bearerAuth")
+    @PostMapping("/google/link")
+    public ResponseEntity<UserResponse> linkGoogle(
+            @AuthenticationPrincipal UUID userId,
+            @Valid @RequestBody GoogleLoginRequest request
+    ) {
+        var payload = googleTokenVerifier.verify(request.getIdToken());
+
+        User user = authService.vincularGoogle(userId, payload.getSubject());
+        return ResponseEntity.ok(new UserResponse(user, profileService.urlDaFoto(user)));
+    }
+
+    @SecurityRequirement(name = "bearerAuth")
+    @DeleteMapping("/google/link")
+    public ResponseEntity<UserResponse> unlinkGoogle(@AuthenticationPrincipal UUID userId) {
+        User user = authService.desvincularGoogle(userId);
+        return ResponseEntity.ok(new UserResponse(user, profileService.urlDaFoto(user)));
+    }
 }

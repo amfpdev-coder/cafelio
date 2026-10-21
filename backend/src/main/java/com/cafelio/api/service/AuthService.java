@@ -7,6 +7,7 @@ import com.cafelio.api.repository.UserRepository;
 import com.cafelio.api.dto.LoginRequest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
@@ -67,25 +68,62 @@ public class AuthService {
     }
 
     public User loginOrRegisterWithGoogle(String googleId, String email, String name) {
-        return userRepository.findByGoogleId(googleId)
-                .orElseGet(() -> {
-                    var existingByEmail = userRepository.findByEmail(email);
-                    if (existingByEmail.isPresent()) {
-                        User user = existingByEmail.get();
-                        user.setGoogleId(googleId);
-                        return userRepository.save(user);
-                    }
+        var porGoogle = userRepository.findByGoogleId(googleId);
 
-                    User newUser = new User();
-                    String usernameGerado = generateUniqueUsername(email);
+        if (porGoogle.isPresent()) {
+            return porGoogle.get();
+        }
 
-                    newUser.setName(name != null && !name.isBlank() ? name : usernameGerado);
-                    newUser.setUsername(usernameGerado);
-                    newUser.setEmail(email);
-                    newUser.setGoogleId(googleId);
-                    newUser.setEmailVerified(true);
-                    return userRepository.save(newUser);
-                });
+        // Antes o vínculo era adivinhado pelo e-mail. Isso quebrava assim que
+        // a pessoa trocava de endereço, e deixava qualquer um se apossar de
+        // conta alheia por coincidência. Agora o vínculo é explícito, no Perfil.
+        if (userRepository.existsByEmail(email)) {
+            throw new IllegalArgumentException(
+                    "Já existe uma conta com esse e-mail. Entre com sua senha e vincule o Google no Perfil."
+            );
+        }
+
+        User newUser = new User();
+        String usernameGerado = generateUniqueUsername(email);
+
+        newUser.setName(name != null && !name.isBlank() ? name : usernameGerado);
+        newUser.setUsername(usernameGerado);
+        newUser.setEmail(email);
+        newUser.setGoogleId(googleId);
+        newUser.setEmailVerified(true);
+
+        return userRepository.save(newUser);
+    }
+
+    @Transactional
+    public User vincularGoogle(UUID userId, String googleId) {
+        User user = findById(userId);
+
+        userRepository.findByGoogleId(googleId).ifPresent(outra -> {
+            if (!outra.getId().equals(userId)) {
+                throw new IllegalArgumentException(
+                        "Essa conta Google já está vinculada a outra conta do Cafélio"
+                );
+            }
+        });
+
+        user.setGoogleId(googleId);
+        return userRepository.save(user);
+    }
+
+    @Transactional
+    public User desvincularGoogle(UUID userId) {
+        User user = findById(userId);
+
+        // Sem senha e sem Google, a pessoa ficaria trancada para fora da conta
+        if (user.getPasswordHash() == null) {
+            throw new IllegalArgumentException(
+                    "Defina uma senha antes de desvincular o Google — sem ela você ficaria sem como entrar."
+            );
+        }
+
+        user.setGoogleId(null);
+        return userRepository.save(user);
     }
 
     public User login(LoginRequest request) {

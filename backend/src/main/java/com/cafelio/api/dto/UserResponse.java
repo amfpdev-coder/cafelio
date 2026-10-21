@@ -14,6 +14,7 @@ public class UserResponse {
     private boolean emailVerified;
     private Instant createdAt;
     private boolean hasPassword;
+    private boolean googleLinked;
     private String profilePictureUrl;
 
     public UserResponse(User user) {
@@ -28,6 +29,7 @@ public class UserResponse {
         this.emailVerified = user.isEmailVerified();
         this.createdAt = user.getCreatedAt();
         this.hasPassword = user.getPasswordHash() != null;
+        this.googleLinked = user.getGoogleId() != null;
         this.profilePictureUrl = profilePictureUrl;
     }
 
@@ -38,6 +40,7 @@ public class UserResponse {
     public boolean isEmailVerified() { return emailVerified; }
     public Instant getCreatedAt() { return createdAt; }
     public boolean isHasPassword() { return hasPassword; }
+    public boolean isGoogleLinked() { return googleLinked; }
     public String getProfilePictureUrl() { return profilePictureUrl; }
 
 }
