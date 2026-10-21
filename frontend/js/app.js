@@ -21,6 +21,50 @@ const DESTINO_PERFIL = { id: "perfil", icone: "user-circle", rotulo: "Perfil" };
 let usuarioAtual = null;
 let destinoAtual = "inicio";
 
+// ---- Tema claro / escuro ----
+
+const TEMA_KEY = "cafelio_tema";
+
+function temaSalvo() {
+    try {
+        return localStorage.getItem(TEMA_KEY);
+    } catch (error) {
+        return null;
+    }
+}
+
+function temaDoSistema() {
+    return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+}
+
+function aplicarTema(tema) {
+    document.documentElement.dataset.theme = tema;
+
+    try {
+        localStorage.setItem(TEMA_KEY, tema);
+    } catch (error) {
+        // Navegação privada bloqueia a gravação; o tema ainda vale nesta sessão.
+    }
+}
+
+function alternarTema() {
+    aplicarTema(document.documentElement.dataset.theme === "dark" ? "light" : "dark");
+    renderCasca();
+}
+
+function botaoDeTema(classe) {
+    const escuro = document.documentElement.dataset.theme === "dark";
+
+    return `
+        <button type="button" class="${classe}" data-tema="alternar">
+            <i class="ph-light ph-${escuro ? "sun" : "moon"}"></i>
+            <span>${escuro ? "Modo claro" : "Modo escuro"}</span>
+        </button>
+    `;
+}
+
+aplicarTema(temaSalvo() || temaDoSistema());
+
 async function renderWelcomeScreen() {
     const app = document.getElementById("app");
 
@@ -206,6 +250,8 @@ function renderCasca() {
 
                 <div class="barra-lateral-espaco"></div>
 
+                ${botaoDeTema("botao-tema")}
+
                 <div class="cartao-plus">
                     <span class="cartao-plus-titulo">
                         <i class="ph-light ph-crown-simple"></i>Cafélio Plus
@@ -231,6 +277,11 @@ function renderCasca() {
     `;
 
     document.querySelector(".casca").addEventListener("click", (event) => {
+        if (event.target.closest("[data-tema]")) {
+            alternarTema();
+            return;
+        }
+
         const alvo = event.target.closest("[data-destino]");
 
         if (!alvo) {
@@ -329,6 +380,11 @@ function renderPerfil(conteudo) {
                     <span class="bloco-titulo"><i class="ph-light ph-key"></i>${acao}</span>
                     <button type="button" id="show-password-form">${acao}</button>
                     <div id="password-area"></div>
+                </div>
+
+                <div class="bloco">
+                    <span class="bloco-titulo"><i class="ph-light ph-palette"></i>Aparência</span>
+                    ${botaoDeTema("botao-tema botao-tema-perfil")}
                 </div>
 
                 <div class="cartao-plano">
@@ -765,6 +821,23 @@ async function renderDesafios(conteudo) {
         }
     });
 
+    document.getElementById("allumez-conteudo").addEventListener("click", (event) => {
+        if (event.target.closest("#allumez-definir")) {
+            definirMetaAllumez();
+        }
+
+        if (event.target.closest("#allumez-alterar")) {
+            document.getElementById("allumez-conteudo").innerHTML =
+                formularioDeMeta(allumezAtual.ano, allumezAtual.meta);
+        }
+    });
+
+    try {
+        preencherAllumez(await apiGet("/challenges/allumez"));
+    } catch (error) {
+        document.getElementById("allumez-estado").textContent = error.message;
+    }
+
     try {
         preencherFlamme(await apiGet("/challenges/flamme"));
     } catch (error) {
@@ -903,34 +976,113 @@ function mesesDaGrade(inicio, fim) {
 }
 
 function cartaoAllumez() {
-    const alturas = [64, 80, 56, 72, 88, 60, 76, 68, 84, 58, 74, 66];
-
-    const velas = alturas
-        .map((altura) => `
-            <div class="vela vela-apagada">
-                <i class="ph-fill ph-flame"></i>
-                <span class="vela-pavio"></span>
-                <span class="vela-corpo" style="height:${altura}px"></span>
-            </div>
-        `)
-        .join("");
-
     return `
         <div class="cartao-desafio cartao-desafio-escuro">
             <div class="cartao-desafio-cabecalho">
                 <h3>Allumez!</h3>
                 <span class="selo selo-gratuito">Gratuito</span>
             </div>
-
+            
             <p class="cartao-desafio-descricao">Uma vela acende a cada livro concluído da meta do ano.</p>
 
-            <div class="velas">${velas}</div>
+            <div id="allumez-conteudo"></div>
 
-            <p class="aviso-rascunho">
-                <i class="ph-light ph-wrench"></i>Ainda não construído — as velas são ilustrativas.
-            </p>
+            <p class="form-message" id="allumez-estado"></p>
         </div>
     `;
+}
+
+let allumezAtual = null;
+
+function preencherAllumez(allumez) {
+    allumezAtual = allumez;
+
+    document.getElementById("allumez-conteudo").innerHTML =
+        allumez.meta === 0 ? formularioDeMeta(allumez.ano, 12) : velasDaMeta(allumez);
+
+    document.getElementById("allumez-estado").textContent = "";
+}
+
+function formularioDeMeta(ano, sugestao) {
+    return `
+        <div class="allumez-meta">
+            <label for="allumez-quantidade">Quantos livros você quer ler em ${ano}?</label>
+
+            <div class="allumez-meta-linha">
+                <input type="number" id="allumez-quantidade" min="1" max="365" value="${sugestao}">
+                <button type="button" id="allumez-definir">Definir meta</button>
+            </div>
+        </div>
+    `;
+}
+
+const VELAS_POR_BLOCO = 5;
+
+// A prateleira mostra só o bloco de cinco em que a pessoa está.
+// Ao fechar um bloco ele fica inteiro aceso, e o próximo livro abre o seguinte.
+function blocoAtual(allumez) {
+    const cheios = Math.floor(allumez.concluidos / VELAS_POR_BLOCO);
+    const sobra = allumez.concluidos % VELAS_POR_BLOCO;
+    const fechado = sobra === 0 && allumez.concluidos > 0;
+
+    const inicio = (fechado ? cheios - 1 : cheios) * VELAS_POR_BLOCO;
+    const acesas = fechado ? VELAS_POR_BLOCO : sobra;
+
+    return {
+        inicio,
+        acesas,
+        tamanho: Math.max(Math.min(VELAS_POR_BLOCO, allumez.meta - inicio), acesas),
+    };
+}
+
+function velasDaMeta(allumez) {
+    const bloco = blocoAtual(allumez);
+    const velas = [];
+
+    for (let i = 0; i < bloco.tamanho; i++) {
+        const classe = i < bloco.acesas ? "vela" : "vela vela-apagada";
+        const altura = 56 + (((bloco.inicio + i) * 37) % 33);
+
+        velas.push(`
+            <div class="${classe}">
+                <i class="ph-fill ph-flame"></i>
+                <span class="vela-pavio"></span>
+                <span class="vela-corpo" style="--altura:${altura}px"></span>
+            </div>
+        `);
+    }
+
+    const faltam = Math.max(allumez.meta - allumez.concluidos, 0);
+    const porcentagem = Math.round((allumez.concluidos / allumez.meta) * 100);
+
+    return `
+        <div class="velas-prateleira">
+            <div class="velas">${velas.join("")}</div>
+        </div>
+
+        <span class="velas-bloco">livros ${bloco.inicio + 1} a ${bloco.inicio + bloco.tamanho}</span>
+
+        <div class="velas-contagem">
+            <span class="velas-numero">${allumez.concluidos}<small> de ${allumez.meta} · ${porcentagem}%</small></span>
+            <button type="button" class="link-discreto" id="allumez-alterar">alterar meta</button>
+        </div>
+
+        <p class="cartao-desafio-descricao">
+            ${faltam === 0
+                ? `Meta de ${allumez.ano} alcançada.`
+                : `Faltam ${faltam} ${faltam === 1 ? "livro" : "livros"} para a meta de ${allumez.ano}.`}
+        </p>
+    `;
+}
+
+async function definirMetaAllumez() {
+    const quantidade = Number(document.getElementById("allumez-quantidade").value);
+
+    try {
+        preencherAllumez(await apiPut("/challenges/allumez/goal", { quantidade }));
+    } catch (error) {
+        document.getElementById("allumez-estado").textContent = error.message;
+    }
 }
 
 function cartaoTematicos() {

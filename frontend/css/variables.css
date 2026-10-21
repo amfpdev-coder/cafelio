@@ -1,10 +1,18 @@
 :root {
-    /* ---- Identidade (fixa, não alterar) ---- */
+    /* ---- Identidade (fixa, não alterar) ----
+       cream e beige são TINTA CLARA: texto sobre superfície escura.
+       Para fundos claros use --color-surface-1 e --color-surface-2. */
     --color-cream: #F5ECD7;
     --color-beige: #EDD9B4;
     --color-coffee: #6B3F2A;
     --color-moss: #5C7A5A;
     --color-sepia: #3B2A1A;
+
+    /* ---- Superfícies (mudam com o tema) ---- */
+    --color-surface-1: #F5ECD7;
+    --color-surface-2: #EDD9B4;
+    --color-surface-dark: #3B2A1A;
+    --paper-dot: rgba(107, 63, 42, .07);
 
     /* ---- Derivadas ---- */
     --color-terracota: #A8553A;
@@ -84,6 +92,51 @@
     /* ---- Medidas da casca ---- */
     --sidebar-width: 232px;
     --tabbar-height: 84px;
+}
+
+/* ---- Tema escuro ----
+   Só as cores mudam. Tipografia, raios e medidas continuam as mesmas.
+   A madrugada do Cafélio é café queimado, não cinza de escritório. */
+
+:root[data-theme="dark"] {
+    --color-surface-1: #1E150F;
+    --color-surface-2: #2A1E15;
+    --color-surface-dark: #3D2C1E;
+    --color-paper: #33251A;
+    --paper-dot: rgba(245, 236, 215, .045);
+
+    --color-sepia: #F0E3CC;
+    --color-text-2: #CDBBA3;
+    --color-text-3: #A8937C;
+    --color-overline: #BE9E7B;
+
+    --color-border-input: #4E3A29;
+    --color-border-soft: #443224;
+    --color-border-faint: #3A2A1E;
+
+    --color-coffee: #8B5536;
+    --color-coffee-hover: #9C6342;
+    --color-coffee-active: #70452B;
+
+    --color-moss: #7FA37C;
+    --color-caramelo: #D8AE72;
+    --color-terracota: #C06A4B;
+    --color-error: #D4785C;
+
+    --color-disabled-bg: #3A2A1E;
+    --color-disabled-text: #7A6752;
+
+    --flamme-0: #35271B;
+    --flamme-1: #42543E;
+    --flamme-2: #5A7154;
+    --flamme-3: #6F8C69;
+    --flamme-4: #8FAE89;
+
+    --shadow-card: 0 12px 24px -16px rgba(0, 0, 0, .7);
+    --shadow-dark: 0 18px 30px -20px rgba(0, 0, 0, .85);
+    --shadow-btn: 0 2px 0 #4A2A1B;
+    --shadow-btn-moss: 0 2px 0 #3B5239;
+    --shadow-focus: 0 0 0 3px rgba(143, 174, 137, .25);
 }
 
 /* No celular os campos e botões crescem para o toque mínimo de 48px */
