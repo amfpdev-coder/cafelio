@@ -12,6 +12,8 @@ import com.cafelio.api.model.User;
 import com.cafelio.api.repository.LibraryBookRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
@@ -20,6 +22,7 @@ import java.util.UUID;
 @Service
 public class LibraryBookService {
 
+    private static final ZoneId FUSO = ZoneId.of("America/Sao_Paulo");
     private final AuthService authService;
     private final LibraryBookRepository libraryBookRepository;
 
@@ -36,6 +39,10 @@ public class LibraryBookService {
         }
 
         LibraryBook libraryBook = new LibraryBook(user, book.openLibraryId(), book.title(), book.firstPublishYear(), book.coverUrl(), book.status(),book.authors(), book.tags());
+        if (book.status() == ReadingStatus.READ) {
+            libraryBook.setFinishedAt(LocalDate.now(FUSO));
+        }
+
         LibraryBook savedBook = libraryBookRepository.save(libraryBook);
         LibraryBookResponse libraryBookResponse = new LibraryBookResponse(savedBook.getId(), savedBook.getOpenLibraryId(), savedBook.getTitle(), savedBook.getFirstPublishYear(), savedBook.getCoverUrl(), savedBook.getStatus(), savedBook.getAuthors(), savedBook.getTags());
 
@@ -71,6 +78,12 @@ public class LibraryBookService {
 
         if (libraryBookUpdateRequest.status() != null){
             book.setStatus(libraryBookUpdateRequest.status());
+
+            book.setFinishedAt(
+                    libraryBookUpdateRequest.status() == ReadingStatus.READ
+                            ? LocalDate.now(FUSO)
+                            : null
+            );
         }
 
         if (libraryBookUpdateRequest.tags() != null){

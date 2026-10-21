@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.time.LocalDate;
 
 @Entity
 @Table(
@@ -75,6 +76,14 @@ public class LibraryBook {
         this.tags = tags;
     }
 
+    public LocalDate getFinishedAt() {
+        return finishedAt;
+    }
+
+    public void setFinishedAt(LocalDate finishedAt) {
+        this.finishedAt = finishedAt;
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
@@ -98,6 +107,9 @@ public class LibraryBook {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private ReadingStatus status;
+
+    @Column(name = "finished_at")
+    private LocalDate finishedAt;
 
     @ElementCollection
     @CollectionTable(
