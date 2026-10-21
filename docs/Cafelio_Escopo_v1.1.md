@@ -62,7 +62,7 @@ Cafélio é um planner literário digital que une o clima de diário de viagem c
 | 06 | Resenha | Postar na comunidade ou vincular a um caderno |
 | 07 | Sorteio de livro | Sorteia aleatoriamente um livro da meta literária |
 | 08 | Busca de livros | Open Library API |
-| 09 | Desafio Allumez! | Velas se acendem a cada livro concluído |
+| 09 | Desafio Allumez! | Meta anual de livros; uma vela por livro da meta, acesa ao concluir |
 | 10 | Desafio Flamme | Dias seguidos de leitura com grade visual |
 | 11 | Desafios temáticos | Volta ao mundo, Autoras em foco, Brasil que lê, Fora da zona |
 | 12 | Ranking global | Mais lidos, avaliados, em alta, literatura BR |
@@ -72,6 +72,38 @@ Cafélio é um planner literário digital que une o clima de diário de viagem c
 | 16 | Compteur | Total de páginas lidas no dashboard |
 | 17 | Recomendação | Próximo livro com base no histórico (regra de negócio server-side, evolui pra IA numa fase futura) |
 | 18 | Relatório anual | Tela compartilhável estilo Spotify Wrapped |
+
+## Regras dos desafios
+
+Definido em 21/10/2026, antes de construir o Allumez e os Temáticos.
+
+### Allumez!
+
+A pessoa define, no começo do ano, quantos livros quer ler. As velas são esse número: cada uma acende quando ela conclui um livro no ano.
+
+-**Dado novo necessário:** meta anual de livros, por usuária e por ano.
+-**O cartão na tela de Desafios:** mostra as velas, o progresso ("3 de 10") e quanto falta para a meta.
+-**Páginas lidas não entram:** O Compteur (funcionalidade 16) já cuida disso; repetir aqui polui o desafio.
+
+### Flamme
+
+Construído na Etapa 7, em 18/10/2026.
+
+- A sequência não quebra enquanto a pessoa ainda não leu hoje, só zera quando passa um dia inteiro sem leitura.
+- Qualquer dia da grade pode ser marcado ou desmarcado com um clique. Desmarcar pede confirmação; marcar não, porque se desfaz com outro clique.
+- Datas usam o fuso `America/Sao_Paulo`, no backend e no frontend.
+
+### Desafios temáticos
+
+Os quatro temáticos dependem de dados que o Cafélio não guarda: país da obra, estado da autoria e gênero da autora.
+
+**Decisão:** a própria leitora informa esses dados ao concluir um livro, e **só quando tem um temático ativo**. Como os temáticos são Plus e opcionais, só quem escolheu o desafio sente o trabalho de preencher.
+
+Descartado: buscar automaticamente na Open Library. O dado é irregular e costuma faltar justamente na autoria brasileira e independente, que é o acervo que esses desafios querem valorizar.
+
+### Tela de detalhe
+
+Todo desafio abre uma tela própria ao ser clicado, com o detalhamento completo do progresso. O cartão na tela de Desafios é só o resumo.
 
 ## Etapas de desenvolvimento
 
