@@ -311,12 +311,28 @@ function itemDestino(destino, classe) {
     `;
 }
 
+// "Angélica Feitosa" vira AF. A última palavra é o sobrenome, não a
+// segunda — "Maria da Silva" precisa dar MS, não MD.
+function iniciais(nome) {
+    const partes = (nome || "").trim().split(/\s+/).filter(Boolean);
+
+    if (partes.length === 0) {
+        return "?";
+    }
+
+    if (partes.length === 1) {
+        return partes[0].slice(0, 2).toUpperCase();
+    }
+
+    return (partes[0][0] + partes[partes.length - 1][0]).toUpperCase();
+}
+
 function avatarDoUsuario(user) {
     if (user.profilePictureUrl) {
         return `<img class="avatar" src="${user.profilePictureUrl}" alt="Foto de perfil" />`;
     }
 
-    return `<span class="avatar">${(user.name || "?").slice(0, 2).toUpperCase()}</span>`;
+    return `<span class="avatar">${iniciais(user.name)}</span>`;
 }
 
 function navegarPara(id) {
@@ -391,9 +407,11 @@ function renderPerfil(conteudo) {
                     </div>
 
                     <div class="campo">
-                        <label for="dados-email">E-mail</label>
-                        <input id="dados-email" type="email" value="${user.email}" disabled />
-                        <small>A troca de e-mail ainda não está disponível.</small>
+                        <label for="email-novo">E-mail</label>
+                        <input id="email-novo" type="email" value="${user.email}" />
+
+                        <button type="button" class="botao-link" id="email-trocar">Trocar e-mail</button>
+                        <p class="form-message" id="email-message"></p>
                     </div>
 
                     <div class="perfil-campos-rodape">
@@ -428,6 +446,13 @@ function renderPerfil(conteudo) {
     `;
 
     document.getElementById("dados-form").addEventListener("submit", handleDados);
+
+    // Delegado: o botão "Confirmar" só nasce depois que o código é pedido
+    document.getElementById("dados-form").addEventListener("click", (event) => {
+        if (event.target.closest("#email-trocar")) {
+            pedirTrocaDeEmail();
+        }
+    });
 
     document.getElementById("escolher-foto").addEventListener("click", () => {
         document.getElementById("picture-input").click();
@@ -466,12 +491,200 @@ async function handleDados(event) {
     }
 }
 
+// "marina@email.com" vira "m•••••@email.com"
+function mascararEmail(email) {
+    const [nome, dominio] = String(email).split("@");
+
+    if (!dominio) {
+        return email;
+    }
+
+    return `${nome.slice(0, 1)}${"•".repeat(Math.max(nome.length - 1, 1))}@${dominio}`;
+}
+
+let reenvioTimer = null;
+
+async function pedirTrocaDeEmail() {
+    const novo = document.getElementById("email-novo").value;
+    const jaAberto = document.getElementById("modal-codigo");
+
+    const message = jaAberto
+        ? document.getElementById("codigo-message")
+        : document.getElementById("email-message");
+
+    message.textContent = "Enviando código...";
+
+    try {
+        await apiPost("/auth/email-change", { newEmail: novo });
+
+        if (jaAberto) {
+            message.textContent = "Enviamos outro código.";
+            iniciarContagemDeReenvio(60);
+            return;
+        }
+
+        message.textContent = "";
+        abrirModalDoCodigo(novo);
+    } catch (error) {
+        message.textContent = error.message;
+    }
+}
+
+function abrirModalDoCodigo(novoEmail) {
+    const caixas = Array.from(
+        { length: 6 },
+        () => `<input class="codigo-caixa" type="text" inputmode="numeric" maxlength="1" aria-label="dígito do código" />`
+    ).join("");
+
+    document.body.insertAdjacentHTML("beforeend", `
+        <div class="modal-fundo" id="modal-codigo">
+            <div class="modal" role="dialog" aria-modal="true" aria-label="Digite o código">
+                <button type="button" class="modal-fechar" id="codigo-fechar" aria-label="Fechar">
+                    <i class="ph-light ph-x"></i>
+                </button>
+
+                <h3>Digite o código</h3>
+                <p class="modal-texto">Enviamos para ${mascararEmail(usuarioAtual.email)}</p>
+
+                <div class="codigo-caixas">${caixas}</div>
+
+                <p class="codigo-reenvio">
+                    Não chegou?
+                    <button type="button" class="botao-link" id="email-reenviar" disabled>Reenviar</button>
+                    <span id="codigo-contagem"></span>
+                </p>
+
+                <p class="form-message" id="codigo-message"></p>
+
+                <button type="button" id="email-confirmar">Confirmar troca</button>
+                <small>Seu e-mail passará a ser ${novoEmail}</small>
+            </div>
+        </div>
+    `);
+
+    const modal = document.getElementById("modal-codigo");
+
+    modal.addEventListener("click", (event) => {
+        // Clique no fundo escuro, fora do cartão, fecha
+        if (event.target === modal || event.target.closest("#codigo-fechar")) {
+            fecharModalDoCodigo();
+        }
+
+        if (event.target.closest("#email-reenviar")) {
+            pedirTrocaDeEmail();
+        }
+
+        if (event.target.closest("#email-confirmar")) {
+            confirmarTrocaDeEmail();
+        }
+    });
+
+    document.addEventListener("keydown", escFechaModal);
+
+    ativarCaixasDeCodigo();
+    iniciarContagemDeReenvio(60);
+
+    document.querySelector(".codigo-caixa").focus();
+}
+
+function escFechaModal(event) {
+    if (event.key === "Escape") {
+        fecharModalDoCodigo();
+    }
+}
+
+function fecharModalDoCodigo() {
+    clearInterval(reenvioTimer);
+    document.removeEventListener("keydown", escFechaModal);
+    document.getElementById("modal-codigo")?.remove();
+}
+
+// Andar sozinha entre as caixas, apagar para trás e aceitar o código colado
+function ativarCaixasDeCodigo() {
+    const caixas = [...document.querySelectorAll(".codigo-caixa")];
+
+    caixas.forEach((caixa, i) => {
+        caixa.addEventListener("input", () => {
+            caixa.value = caixa.value.replace(/\D/g, "");
+
+            if (caixa.value && i < caixas.length - 1) {
+                caixas[i + 1].focus();
+            }
+        });
+
+        caixa.addEventListener("keydown", (event) => {
+            if (event.key === "Backspace" && !caixa.value && i > 0) {
+                caixas[i - 1].focus();
+            }
+        });
+
+        caixa.addEventListener("paste", (event) => {
+            event.preventDefault();
+
+            const digitos = event.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
+
+            digitos.split("").forEach((d, j) => {
+                caixas[j].value = d;
+            });
+
+            caixas[Math.min(digitos.length, 5)].focus();
+        });
+    });
+}
+
+function iniciarContagemDeReenvio(segundos) {
+    clearInterval(reenvioTimer);
+
+    const contagem = document.getElementById("codigo-contagem");
+    const botao = document.getElementById("email-reenviar");
+
+    const tique = () => {
+        if (segundos <= 0) {
+            clearInterval(reenvioTimer);
+            contagem.textContent = "";
+            botao.disabled = false;
+            return;
+        }
+
+        const m = Math.floor(segundos / 60);
+        const s = String(segundos % 60).padStart(2, "0");
+
+        contagem.textContent = `em ${m}:${s}`;
+        segundos--;
+    };
+
+    tique();
+    reenvioTimer = setInterval(tique, 1000);
+}
+
+function codigoDigitado() {
+    return [...document.querySelectorAll(".codigo-caixa")].map((c) => c.value).join("");
+}
+
+async function confirmarTrocaDeEmail() {
+    const message = document.getElementById("codigo-message");
+
+    message.textContent = "Confirmando...";
+
+    try {
+        usuarioAtual = await apiPost("/auth/email-change/confirm", { code: codigoDigitado() });
+
+        fecharModalDoCodigo();
+
+        // Redesenha para o e-mail novo aparecer em todo lugar
+        renderCasca();
+        document.getElementById("email-message").textContent = "E-mail alterado.";
+    } catch (error) {
+        message.textContent = error.message;
+    }
+}
+
 function fotoDePerfil(user) {
     if (user.profilePictureUrl) {
         return `<img class="perfil-foto" src="${user.profilePictureUrl}" alt="Foto de perfil" />`;
     }
 
-    return `<span class="perfil-foto">${(user.name || "?").slice(0, 2).toUpperCase()}</span>`;
+    return `<span class="perfil-foto">${iniciais(user.name)}</span>`;
 }
 
 function campoDeSenha(id, rotulo, autocomplete) {
