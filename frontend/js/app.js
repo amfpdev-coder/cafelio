@@ -131,7 +131,7 @@ function rodapeDaDupla() {
             <span>Feito a quatro mãos por</span>
             <a href="https://www.linkedin.com/in/amfpdev" target="_blank" rel="noopener">@amfpdev</a>
             <span>e</span>
-            <a href="https://www.linkedin.com/in/amanda-cristiny" target="_blank" rel="noopener">@mands</a>
+            <a href="https://www.linkedin.com/in/amanda-cristiny" target="_blank" rel="noopener">@amanda-cristiny</a>
         </footer>
     `;
 }
