@@ -1705,3 +1705,32 @@ body::before {
     opacity: 0;
     overflow: hidden;
 }
+
+/* ---- Rodapé da dupla ---- */
+
+.rodape-dupla {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    margin-top: 28px;
+    padding-top: 18px;
+    border-top: 1px solid var(--color-border-faint);
+    color: var(--color-text-3);
+    font-size: 13px;
+}
+
+.rodape-dupla a {
+    color: var(--color-coffee);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 700;
+    text-decoration: none;
+    border-bottom: 1.5px solid var(--color-border-soft);
+}
+
+.rodape-dupla a:hover {
+    color: var(--color-terracota);
+    border-bottom-color: var(--color-terracota);
+}

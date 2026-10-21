@@ -125,6 +125,17 @@ function moverBotaoDoGoogle(slotId = "google-slot") {
     }
 }
 
+function rodapeDaDupla() {
+    return `
+        <footer class="rodape-dupla">
+            <span>Feito a quatro mãos por</span>
+            <a href="https://www.linkedin.com/in/amfpdev" target="_blank" rel="noopener">@amfpdev</a>
+            <span>e</span>
+            <a href="https://www.linkedin.com/in/amanda-cristiny" target="_blank" rel="noopener">@mands</a>
+        </footer>
+    `;
+}
+
 function renderLoginForm(identifier = "") {
     showGoogleButton(true);
 
@@ -174,6 +185,8 @@ function renderLoginForm(identifier = "") {
 
                     <p class="rodape-form">Ainda não tem conta? <a href="#" id="show-register">Criar conta</a></p>
                 </form>
+
+                ${rodapeDaDupla()}
             </div>
         </div>
     `;
@@ -231,6 +244,8 @@ function renderRegisterForm() {
 
             <p class="rodape-form">Já tem conta? <a href="#" id="show-login">Entrar</a></p>
         </form>
+
+        ${rodapeDaDupla()}
     `;
 
     moverBotaoDoGoogle("google-slot-cadastro");
