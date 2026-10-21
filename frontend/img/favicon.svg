@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <style>
+    /* Segue a aparência do navegador, não a do Cafélio */
+    .traco { stroke: #6B3F2A; }
+    @media (prefers-color-scheme: dark) {
+      .traco { stroke: #EDD9B4; }
+    }
+  </style>
+
+  <g class="traco" fill="none" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M26 15v-6"/>
+    <path d="M38 15v-6"/>
+    <path d="M12 26h34v13a15 15 0 0 1-15 15h-4a15 15 0 0 1-15-15z"/>
+    <path d="M46 31h3a8 8 0 0 1 0 16h-3"/>
+  </g>
+</svg>
