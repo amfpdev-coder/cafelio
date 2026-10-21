@@ -8,14 +8,23 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.time.LocalDate;
+
 
 public interface LibraryBookRepository extends JpaRepository<LibraryBook, UUID> {
 
-   boolean existsByUserAndOpenLibraryId(User user, String openLibraryId);
+    int countByUserAndStatusAndFinishedAtBetween(
+        User user,
+        ReadingStatus status,
+        LocalDate inicio,
+        LocalDate fim
+    );
 
-   List<LibraryBook> findByUser(User user);
+    boolean existsByUserAndOpenLibraryId(User user, String openLibraryId);
 
-   Optional<LibraryBook> findByIdAndUser(UUID id, User user);
+    List<LibraryBook> findByUser(User user);
 
-   List<LibraryBook> findByUserAndStatus(User user, ReadingStatus status);
+    Optional<LibraryBook> findByIdAndUser(UUID id, User user);
+
+    List<LibraryBook> findByUserAndStatus(User user, ReadingStatus status);
 }

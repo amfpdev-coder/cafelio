@@ -1,0 +1,12 @@
+package com.cafelio.api.repository;
+
+import com.cafelio.api.model.AnnualGoal;
+import com.cafelio.api.model.User;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.Optional;
+import java.util.UUID;
+
+public interface AnnualGoalRepository extends JpaRepository<AnnualGoal, UUID> {
+    Optional<AnnualGoal> findByUserAndYear(User user, int year);
+}
