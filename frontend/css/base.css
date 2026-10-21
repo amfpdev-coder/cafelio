@@ -36,6 +36,12 @@ body {
     flex: 1;
 }
 
+/* O conteúdo flutua no meio do espaço livre; o rodapé fica embaixo */
+#auth-area > *:not(.rodape-dupla) {
+    margin-top: auto;
+    margin-bottom: auto;
+}
+
 h1, h2, h3 {
     font-family: var(--font-heading);
     font-weight: 400;
@@ -1719,7 +1725,6 @@ body::before {
 /* ---- Rodapé da dupla ---- */
 
 .rodape-dupla {
-    margin-top: auto;
     display: flex;
     flex-wrap: wrap;
     align-items: center;
