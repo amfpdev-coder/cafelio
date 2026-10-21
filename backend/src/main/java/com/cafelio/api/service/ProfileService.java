@@ -64,6 +64,21 @@ public class ProfileService {
         return userRepository.save(user);
     }
 
+    @Transactional
+    public void excluirConta(UUID userId) {
+        User user = buscar(userId);
+        String foto = user.getProfilePicturePublicId();
+
+        // A foto mora no Cloudinary, fora do banco. Apagar a usuária some com
+        // o apontador e deixaria a imagem órfã lá para sempre — então ela sai
+        // primeiro, enquanto ainda se sabe de quem é.
+        userRepository.delete(user);
+
+        if (foto != null) {
+            imageService.apagar(foto);
+        }
+    }
+
     public String urlDaFoto(User user) {
         return imageService.urlDaFoto(user.getProfilePicturePublicId());
     }

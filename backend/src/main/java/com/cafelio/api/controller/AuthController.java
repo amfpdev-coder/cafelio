@@ -188,6 +188,13 @@ public class AuthController {
     }
 
     @SecurityRequirement(name = "bearerAuth")
+    @DeleteMapping("/me")
+    public ResponseEntity<Void> deleteAccount(@AuthenticationPrincipal UUID userId) {
+        profileService.excluirConta(userId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @SecurityRequirement(name = "bearerAuth")
     @DeleteMapping("/google/link")
     public ResponseEntity<UserResponse> unlinkGoogle(@AuthenticationPrincipal UUID userId) {
         User user = authService.desvincularGoogle(userId);

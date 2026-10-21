@@ -450,6 +450,16 @@ function renderPerfil(conteudo) {
                 <span class="link-sair" id="logout">
                     <i class="ph-light ph-sign-out"></i>Sair da conta
                 </span>
+
+                <div class="bloco bloco-perigo">
+                    <span class="bloco-titulo"><i class="ph-light ph-warning-octagon"></i>Excluir minha conta</span>
+                    <p>
+                        Apaga em definitivo sua conta, seus livros, suas resenhas, sua
+                        sequência de leitura e sua foto. Não há como desfazer.
+                    </p>
+                    <button type="button" class="btn-perigo" id="excluir-conta">Excluir minha conta</button>
+                    <p class="form-message" id="excluir-message"></p>
+                </div>
             </div>
         </div>
     `;
@@ -487,6 +497,7 @@ function renderPerfil(conteudo) {
     }
 
     document.getElementById("logout").addEventListener("click", handleLogout);
+    document.getElementById("excluir-conta").addEventListener("click", handleExcluirConta);
 }
 
 async function handleDados(event) {
@@ -504,6 +515,33 @@ async function handleDados(event) {
         // Redesenha a casca para o nome novo aparecer na barra lateral
         renderCasca();
         document.getElementById("dados-message").textContent = "Dados salvos.";
+    } catch (error) {
+        message.textContent = error.message;
+    }
+}
+
+async function handleExcluirConta() {
+    const message = document.getElementById("excluir-message");
+
+    // Duas perguntas de propósito: a primeira avisa, a segunda exige que a
+    // pessoa escreva. Um clique sozinho não deveria apagar uma conta.
+    if (!confirm("Apagar sua conta e tudo que há nela? Isso não pode ser desfeito.")) {
+        return;
+    }
+
+    if (prompt('Para confirmar, escreva EXCLUIR') !== "EXCLUIR") {
+        message.textContent = "Exclusão cancelada.";
+        return;
+    }
+
+    message.textContent = "Excluindo...";
+
+    try {
+        await apiDelete("/auth/me");
+
+        clearToken();
+        usuarioAtual = null;
+        renderWelcomeScreen();
     } catch (error) {
         message.textContent = error.message;
     }
