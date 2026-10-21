@@ -21,9 +21,19 @@ body {
    Provisório: a casca da Etapa 7 (barra lateral e abas) assume isso depois. */
 
 #app {
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    min-height: 100vh;
     max-width: 1120px;
     margin: 0 auto;
     padding: 32px 24px;
+}
+
+#auth-area {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
 }
 
 h1, h2, h3 {
@@ -1679,9 +1689,9 @@ body::before {
     z-index: -1;
     background-color: var(--color-doodle);
     mask-image: url("../img/doodles.svg");
-    mask-size: 420px 420px;
+    mask-size: 300px 300px;
     -webkit-mask-image: url("../img/doodles.svg");
-    -webkit-mask-size: 420px 420px;
+    -webkit-mask-size: 300px 300px;
     pointer-events: none;
 }
 
@@ -1709,13 +1719,14 @@ body::before {
 /* ---- Rodapé da dupla ---- */
 
 .rodape-dupla {
+    margin-top: auto;
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     justify-content: center;
     gap: 5px;
     width: 100%;
-    margin: 40px 0 8px;
+    margin: 48px 0 0;
     padding-top: 20px;
     border-top: 1px solid var(--color-border-faint);
     color: var(--color-text-3);
