@@ -184,25 +184,25 @@ function renderBoasVindas() {
         .join("");
 
     document.getElementById("auth-area").innerHTML = `
-        <div class="boas-vindas">
-            <div class="boas-vindas-foto">
-                <img id="slide-foto" src="" alt="" />
+        <div class="tela-entrada tela-boas-vindas">
+            <div class="painel-foto painel-boas-vindas">
+                <div class="painel-marca">
+                    <i class="ph-light ph-coffee"></i>
+                    <span>Cafélio</span>
+                </div>
+
+                <p class="painel-frase">seu diário de leituras, guardado entre um café e outro</p>
             </div>
 
-            <div class="boas-vindas-marca">
-                <i class="ph-light ph-coffee"></i>
-                <span>Cafélio</span>
-            </div>
+            <div class="coluna-slides">
+                <div class="boas-vindas-slide" id="slide"></div>
 
-            <p class="boas-vindas-frase">seu diário de leituras,<br />guardado entre um café e outro</p>
+                <div class="boas-vindas-pontos" id="pontos">${pontos}</div>
 
-            <div class="boas-vindas-slide" id="slide"></div>
-
-            <div class="boas-vindas-pontos" id="pontos">${pontos}</div>
-
-            <div class="boas-vindas-acoes">
-                <button type="button" id="ir-entrar">Entrar<i class="ph-light ph-arrow-right"></i></button>
-                <p class="rodape-form">Ainda não tem conta? <a href="#" id="ir-criar">Criar conta</a></p>
+                <div class="boas-vindas-acoes">
+                    <button type="button" id="ir-entrar">Entrar<i class="ph-light ph-arrow-right"></i></button>
+                    <p class="rodape-form">Ainda não tem conta? <a href="#" id="ir-criar">Criar conta</a></p>
+                </div>
             </div>
         </div>
 
@@ -248,15 +248,6 @@ function mostrarSlide(indice) {
         <p>${slide.texto}</p>
     `;
 
-    const foto = document.getElementById("slide-foto");
-
-    foto.src = slide.imagem;
-
-    // Tirar e repor a classe reinicia o zoom a cada troca de slide.
-    // O offsetWidth no meio obriga o navegador a recalcular antes de repor.
-    foto.classList.remove("respira");
-    void foto.offsetWidth;
-    foto.classList.add("respira");
 
     [...document.querySelectorAll(".ponto")].forEach((ponto, i) => {
         ponto.classList.toggle("ponto-ativo", i === indice);

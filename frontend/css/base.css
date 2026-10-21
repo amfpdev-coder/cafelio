@@ -1684,23 +1684,6 @@ button:disabled {
     font-size: 14px;
 }
 
-/* ---- Doodles de fundo ----
-   Vai como máscara, não como imagem: assim a cor vem de um token e
-   acompanha o tema claro/escuro sozinha. */
-
-body::before {
-    content: "";
-    position: fixed;
-    inset: 0;
-    z-index: -1;
-    background-color: var(--color-doodle);
-    mask-image: url("../img/doodles.svg");
-    mask-size: 300px 300px;
-    -webkit-mask-image: url("../img/doodles.svg");
-    -webkit-mask-size: 300px 300px;
-    pointer-events: none;
-}
-
 /* ---- Botão do Google no estilo do Cafélio ----
    O botão oficial é um iframe e não aceita CSS. Então ele fica por cima,
    invisível, e o visível embaixo é o nosso. O clique atravessa. */
@@ -1755,41 +1738,9 @@ body::before {
 
 /* ---- Tela de boas-vindas ---- */
 
-.boas-vindas {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 22px;
-    width: 100%;
-    max-width: 520px;
-    margin: auto;
-    padding: 44px 32px;
-    border-radius: var(--radius-card-lg);
-    background: var(--color-paper);
-    box-shadow: var(--shadow-card);
-    text-align: center;
-}
 
-.boas-vindas-marca {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-family: var(--font-heading);
-    font-size: 30px;
-    color: var(--color-coffee);
-}
 
-.boas-vindas-marca i {
-    font-size: 34px;
-}
 
-.boas-vindas-frase {
-    margin: -10px 0 0;
-    font-family: var(--font-hand);
-    font-size: 22px;
-    line-height: 1.3;
-    color: var(--color-text-3);
-}
 
 .boas-vindas-slide {
     display: flex;
@@ -1878,37 +1829,6 @@ body::before {
 
 /* ---- Boas-vindas: movimento ---- */
 
-.boas-vindas {
-    overflow: hidden;
-    padding-top: 0;
-}
-
-.boas-vindas-foto {
-    width: calc(100% + 64px);
-    height: 150px;
-    margin: 0 -32px 6px;
-    overflow: hidden;
-    -webkit-mask-image: linear-gradient(to bottom, #000 55%, transparent);
-    mask-image: linear-gradient(to bottom, #000 55%, transparent);
-}
-
-.boas-vindas-foto img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-}
-
-/* Zoom lento, como os sites de sabores: o quadro nunca fica parado */
-.respira {
-    animation: respira 9s ease-out both;
-}
-
-@keyframes respira {
-    from { transform: scale(1) translateY(0); }
-    to   { transform: scale(1.14) translateY(-8px); }
-}
-
 /* Cada pedaço do slide entra depois do anterior */
 @keyframes entra {
     from { opacity: 0; transform: translateY(16px); }
@@ -1937,17 +1857,158 @@ body::before {
 
 /* Quem pediu menos movimento no sistema não recebe nenhum */
 @media (prefers-reduced-motion: reduce) {
-    .respira,
+    .painel-boas-vindas::after,
     .slide-icone,
     .boas-vindas-slide > * {
         animation: none;
     }
 }
 
-@media (max-width: 767px) {
-    .boas-vindas-foto {
-        width: calc(100% + 44px);
-        height: 120px;
-        margin: 0 -22px 4px;
+/* ---- Fundo: luz morna, como sol entrando pela janela ---- */
+
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background:
+        radial-gradient(60vw 48vh at 12% 4%,  var(--brilho-quente), transparent 70%),
+        radial-gradient(52vw 44vh at 92% 88%, var(--brilho-frio),  transparent 72%);
+}
+
+/* ---- Boas-vindas ---- */
+
+.tela-boas-vindas {
+    grid-template-columns: 1fr 460px;
+}
+
+.painel-boas-vindas {
+    position: relative;
+    overflow: hidden;
+    min-height: 560px;
+}
+
+/* O painel respira: o enquadramento nunca fica totalmente parado */
+.painel-boas-vindas::after {
+    content: "";
+    position: absolute;
+    inset: -6%;
+    z-index: -1;
+    background: url("../img/entrada.jpg") center / cover;
+    animation: respira 26s ease-in-out infinite alternate;
+}
+
+@keyframes respira {
+    from { transform: scale(1) translate(0, 0); }
+    to   { transform: scale(1.1) translate(-1.5%, -2%); }
+}
+
+.coluna-slides {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 26px;
+    padding: 40px 36px;
+    border-radius: 20px;
+    background: var(--color-paper);
+    box-shadow: var(--shadow-card);
+}
+
+.boas-vindas-slide {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-height: 230px;
+}
+
+.slide-icone {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 84px;
+    height: 84px;
+    margin-bottom: 6px;
+    border-radius: 24px;
+    background: var(--color-surface-2);
+    color: var(--color-coffee);
+    font-size: 40px;
+}
+
+.boas-vindas-slide h2 {
+    margin: 0;
+    font-size: 30px;
+    line-height: 1.1;
+}
+
+.boas-vindas-slide p {
+    margin: 0;
+    color: var(--color-text-2);
+    font-size: 16px;
+}
+
+.boas-vindas-pontos {
+    display: flex;
+    gap: 8px;
+}
+
+.ponto {
+    width: 9px;
+    height: 9px;
+    padding: 0;
+    border-radius: var(--radius-pill);
+    background: var(--color-border-input);
+    box-shadow: none;
+    transition: width .35s ease, background-color .35s ease;
+}
+
+.ponto-ativo {
+    width: 28px;
+    background: var(--color-coffee);
+}
+
+.boas-vindas-acoes {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.boas-vindas-acoes button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.boas-vindas-acoes .rodape-form {
+    text-align: center;
+}
+
+@media (max-width: 900px) {
+    .tela-boas-vindas {
+        grid-template-columns: 1fr;
+    }
+
+    .painel-boas-vindas {
+        min-height: 230px;
+    }
+
+    .coluna-slides {
+        padding: 28px 22px;
+        gap: 20px;
+    }
+
+    .boas-vindas-slide {
+        min-height: 200px;
+    }
+
+    .boas-vindas-slide h2 {
+        font-size: 25px;
+    }
+
+    .slide-icone {
+        width: 72px;
+        height: 72px;
+        font-size: 34px;
     }
 }
