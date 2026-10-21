@@ -185,10 +185,10 @@ function renderLoginForm(identifier = "") {
 
                     <p class="rodape-form">Ainda não tem conta? <a href="#" id="show-register">Criar conta</a></p>
                 </form>
-
-                ${rodapeDaDupla()}
             </div>
         </div>
+
+        ${rodapeDaDupla()}
     `;
 
     moverBotaoDoGoogle();

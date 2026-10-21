@@ -1714,11 +1714,13 @@ body::before {
     align-items: center;
     justify-content: center;
     gap: 5px;
-    margin-top: 28px;
-    padding-top: 18px;
+    width: 100%;
+    margin: 40px 0 8px;
+    padding-top: 20px;
     border-top: 1px solid var(--color-border-faint);
     color: var(--color-text-3);
     font-size: 13px;
+    text-align: center;
 }
 
 .rodape-dupla a {
