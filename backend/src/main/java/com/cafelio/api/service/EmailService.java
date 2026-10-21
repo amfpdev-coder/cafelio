@@ -49,4 +49,59 @@ public class EmailService {
 
         mailSender.send(mensagem);
     }
+
+    public void enviarConfirmacaoDeEmail(String destinatario, String novoEmail, String codigo) {
+        SimpleMailMessage mensagem = new SimpleMailMessage();
+
+        mensagem.setFrom(remetente);
+        mensagem.setTo(destinatario);
+        mensagem.setSubject("Cafélio — Código para trocar seu e-mail");
+        mensagem.setText("""
+                Olá!
+
+                Recebemos um pedido para mudar o e-mail da sua conta no Cafélio
+                para:
+
+                %s
+
+                Para confirmar, informe este código na tela de perfil:
+
+                %s
+
+                O código vale por 30 minutos.
+
+                Se não foi você que pediu, NÃO informe o código e troque sua
+                senha — alguém pode ter acesso à sua conta.
+
+                Até logo,
+                Cafélio
+                """.formatted(novoEmail, codigo));
+
+        mailSender.send(mensagem);
+    }
+
+    public void avisarTrocaDeEmail(String destinatario, String novoEmail) {
+        SimpleMailMessage mensagem = new SimpleMailMessage();
+
+        mensagem.setFrom(remetente);
+        mensagem.setTo(destinatario);
+        mensagem.setSubject("Cafélio — Seu e-mail foi alterado");
+        mensagem.setText("""
+                Olá!
+
+                O e-mail da sua conta no Cafélio acabou de ser alterado para:
+
+                %s
+
+                Se foi você, não precisa fazer nada.
+
+                Se NÃO foi você, alguém pode ter acesso à sua conta. Entre em
+                contato com a gente o quanto antes.
+
+                Até logo,
+                Cafélio
+                """.formatted(novoEmail));
+
+        mailSender.send(mensagem);
+    }
 }

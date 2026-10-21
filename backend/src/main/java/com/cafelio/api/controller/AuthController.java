@@ -10,11 +10,14 @@ import com.cafelio.api.dto.PasswordResetRequest;
 import com.cafelio.api.dto.ChangePasswordRequest;
 import com.cafelio.api.dto.PasswordResetCodeRequest;
 import com.cafelio.api.dto.UpdateProfileRequest;
+import com.cafelio.api.dto.EmailChangeStartRequest;
+import com.cafelio.api.dto.EmailChangeConfirmRequest;
 import com.cafelio.api.model.User;
 import com.cafelio.api.security.GoogleTokenVerifier;
 import com.cafelio.api.service.AuthService;
 import com.cafelio.api.service.JwtService;
 import com.cafelio.api.service.PasswordResetService;
+import com.cafelio.api.service.EmailChangeService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 
@@ -45,19 +48,22 @@ public class AuthController {
     private final JwtService jwtService;
     private final PasswordResetService passwordResetService;
     private final ProfileService profileService;
+    private final EmailChangeService emailChangeService;
 
     public AuthController(
             AuthService authService,
             GoogleTokenVerifier googleTokenVerifier,
             JwtService jwtService,
             PasswordResetService passwordResetService,
-            ProfileService profileService
+            ProfileService profileService,
+            EmailChangeService emailChangeService
     ) {
         this.authService = authService;
         this.googleTokenVerifier = googleTokenVerifier;
         this.jwtService = jwtService;
         this.passwordResetService = passwordResetService;
         this.profileService = profileService;
+        this.emailChangeService = emailChangeService;
     }
 
     @PostMapping("/register")
@@ -146,6 +152,26 @@ public class AuthController {
             @Valid @RequestBody UpdateProfileRequest request
     ) {
         User user = profileService.atualizarDados(userId, request.name(), request.username());
+        return ResponseEntity.ok(new UserResponse(user, profileService.urlDaFoto(user)));
+    }
+
+    @SecurityRequirement(name = "bearerAuth")
+    @PostMapping("/email-change")
+    public ResponseEntity<Void> requestEmailChange(
+            @AuthenticationPrincipal UUID userId,
+            @Valid @RequestBody EmailChangeStartRequest request
+    ) {
+        emailChangeService.pedirTroca(userId, request.newEmail());
+        return ResponseEntity.accepted().build();
+    }
+
+    @SecurityRequirement(name = "bearerAuth")
+    @PostMapping("/email-change/confirm")
+    public ResponseEntity<UserResponse> confirmEmailChange(
+            @AuthenticationPrincipal UUID userId,
+            @Valid @RequestBody EmailChangeConfirmRequest request
+    ) {
+        User user = emailChangeService.confirmar(userId, request.code());
         return ResponseEntity.ok(new UserResponse(user, profileService.urlDaFoto(user)));
     }
 }
