@@ -132,21 +132,25 @@ const BOAS_VINDAS_KEY = "cafelio_boas_vindas";
 const SLIDES = [
     {
         icone: "books",
+        imagem: "img/entrada.jpg",
         titulo: "Sua estante",
         texto: "Organize o que você leu, está lendo e quer ler — com etiquetas e seis status.",
     },
     {
         icone: "notebook",
+        imagem: "img/entrada.jpg",
         titulo: "Cadernos literários",
         texto: "Guarde citações, resenhas e anotações em cadernos com capa e tema próprios.",
     },
     {
         icone: "medal",
+        imagem: "img/entrada.jpg",
         titulo: "Desafios",
         texto: "Acenda uma vela a cada livro concluído e mantenha sua sequência de leitura viva.",
     },
     {
         icone: "chart-bar",
+        imagem: "img/entrada.jpg",
         titulo: "Seu ano em números",
         texto: "Gêneros, páginas, humores e um relatório anual para compartilhar.",
     },
@@ -181,6 +185,10 @@ function renderBoasVindas() {
 
     document.getElementById("auth-area").innerHTML = `
         <div class="boas-vindas">
+            <div class="boas-vindas-foto">
+                <img id="slide-foto" src="" alt="" />
+            </div>
+
             <div class="boas-vindas-marca">
                 <i class="ph-light ph-coffee"></i>
                 <span>Cafélio</span>
@@ -239,6 +247,16 @@ function mostrarSlide(indice) {
         <h2>${slide.titulo}</h2>
         <p>${slide.texto}</p>
     `;
+
+    const foto = document.getElementById("slide-foto");
+
+    foto.src = slide.imagem;
+
+    // Tirar e repor a classe reinicia o zoom a cada troca de slide.
+    // O offsetWidth no meio obriga o navegador a recalcular antes de repor.
+    foto.classList.remove("respira");
+    void foto.offsetWidth;
+    foto.classList.add("respira");
 
     [...document.querySelectorAll(".ponto")].forEach((ponto, i) => {
         ponto.classList.toggle("ponto-ativo", i === indice);

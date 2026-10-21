@@ -1875,3 +1875,79 @@ body::before {
         font-size: 36px;
     }
 }
+
+/* ---- Boas-vindas: movimento ---- */
+
+.boas-vindas {
+    overflow: hidden;
+    padding-top: 0;
+}
+
+.boas-vindas-foto {
+    width: calc(100% + 64px);
+    height: 150px;
+    margin: 0 -32px 6px;
+    overflow: hidden;
+    -webkit-mask-image: linear-gradient(to bottom, #000 55%, transparent);
+    mask-image: linear-gradient(to bottom, #000 55%, transparent);
+}
+
+.boas-vindas-foto img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* Zoom lento, como os sites de sabores: o quadro nunca fica parado */
+.respira {
+    animation: respira 9s ease-out both;
+}
+
+@keyframes respira {
+    from { transform: scale(1) translateY(0); }
+    to   { transform: scale(1.14) translateY(-8px); }
+}
+
+/* Cada pedaço do slide entra depois do anterior */
+@keyframes entra {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: none; }
+}
+
+.boas-vindas-slide > * {
+    animation: entra .5s cubic-bezier(.22, .9, .3, 1) both;
+}
+
+.boas-vindas-slide h2 { animation-delay: .08s; }
+.boas-vindas-slide p  { animation-delay: .16s; }
+
+.slide-icone {
+    animation: entra .5s cubic-bezier(.22, .9, .3, 1) both, flutua 4s ease-in-out 1s infinite;
+}
+
+@keyframes flutua {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-7px); }
+}
+
+.ponto {
+    transition: width .35s ease, background-color .35s ease;
+}
+
+/* Quem pediu menos movimento no sistema não recebe nenhum */
+@media (prefers-reduced-motion: reduce) {
+    .respira,
+    .slide-icone,
+    .boas-vindas-slide > * {
+        animation: none;
+    }
+}
+
+@media (max-width: 767px) {
+    .boas-vindas-foto {
+        width: calc(100% + 44px);
+        height: 120px;
+        margin: 0 -22px 4px;
+    }
+}
