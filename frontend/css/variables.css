@@ -13,6 +13,7 @@
     --color-surface-2: #EDD9B4;
     --color-surface-dark: #3B2A1A;
     --paper-dot: rgba(107, 63, 42, .07);
+    --color-doodle: rgba(107, 63, 42, .09);
 
     /* ---- Derivadas ---- */
     --color-terracota: #A8553A;
@@ -104,6 +105,7 @@
     --color-surface-dark: #3D2C1E;
     --color-paper: #33251A;
     --paper-dot: rgba(245, 236, 215, .045);
+    --color-doodle: rgba(245, 236, 215, .06);
 
     --color-sepia: #F0E3CC;
     --color-text-2: #CDBBA3;

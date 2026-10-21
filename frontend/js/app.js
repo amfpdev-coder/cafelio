@@ -165,7 +165,12 @@ function renderLoginForm(identifier = "") {
 
                     <div class="divisor">ou</div>
 
-                    <div id="google-slot"></div>
+                    <div class="google-envoltorio">
+                        <button type="button" class="btn-google" tabindex="-1">
+                            <i class="ph-fill ph-google-logo"></i>Entrar com Google
+                        </button>
+                        <div id="google-slot"></div>
+                    </div>
 
                     <p class="rodape-form">Ainda não tem conta? <a href="#" id="show-register">Criar conta</a></p>
                 </form>
@@ -190,7 +195,7 @@ function renderLoginForm(identifier = "") {
 }
 
 function renderRegisterForm() {
-    showGoogleButton(false);
+    showGoogleButton(true);
 
     document.getElementById("auth-area").innerHTML = `
         <form id="register-form">
@@ -215,10 +220,20 @@ function renderRegisterForm() {
             <button type="submit">Criar conta</button>
             <p id="register-message" class="form-message"></p>
 
-            <p>Já tem conta? <a href="#" id="show-login">Entrar</a></p>
+            <div class="divisor">ou</div>
+
+            <div class="google-envoltorio">
+                <button type="button" class="btn-google" tabindex="-1">
+                    <i class="ph-fill ph-google-logo"></i>Entrar com Google
+                </button>
+                <div id="google-slot-cadastro"></div>
+            </div>
+
+            <p class="rodape-form">Já tem conta? <a href="#" id="show-login">Entrar</a></p>
         </form>
     `;
 
+    moverBotaoDoGoogle("google-slot-cadastro");
     document.getElementById("register-form").addEventListener("submit", handleRegister);
     document.getElementById("show-login").addEventListener("click", (event) => {
         event.preventDefault();
@@ -560,7 +575,13 @@ function blocoDoGoogle(user) {
 
     return `
         <p class="google-estado">Não vinculada. Vincule para poder entrar pelo Google.</p>
-        <div id="google-slot-perfil"></div>
+
+        <div class="google-envoltorio">
+            <button type="button" class="btn-google" tabindex="-1">
+                <i class="ph-fill ph-google-logo"></i>Vincular conta Google
+            </button>
+            <div id="google-slot-perfil"></div>
+        </div>
     `;
 }
 

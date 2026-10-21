@@ -1667,3 +1667,41 @@ button:disabled {
     color: var(--color-text-2);
     font-size: 14px;
 }
+
+/* ---- Doodles de fundo ----
+   Vai como máscara, não como imagem: assim a cor vem de um token e
+   acompanha o tema claro/escuro sozinha. */
+
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background-color: var(--color-doodle);
+    mask-image: url("../img/doodles.svg");
+    mask-size: 420px 420px;
+    -webkit-mask-image: url("../img/doodles.svg");
+    -webkit-mask-size: 420px 420px;
+    pointer-events: none;
+}
+
+/* ---- Botão do Google no estilo do Cafélio ----
+   O botão oficial é um iframe e não aceita CSS. Então ele fica por cima,
+   invisível, e o visível embaixo é o nosso. O clique atravessa. */
+
+.google-envoltorio {
+    position: relative;
+    width: 100%;
+}
+
+.google-envoltorio .btn-google {
+    width: 100%;
+    pointer-events: none;
+}
+
+.google-envoltorio > div {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    overflow: hidden;
+}
