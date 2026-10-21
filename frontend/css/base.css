@@ -1752,3 +1752,126 @@ body::before {
     color: var(--color-terracota);
     border-bottom-color: var(--color-terracota);
 }
+
+/* ---- Tela de boas-vindas ---- */
+
+.boas-vindas {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 22px;
+    width: 100%;
+    max-width: 520px;
+    margin: auto;
+    padding: 44px 32px;
+    border-radius: var(--radius-card-lg);
+    background: var(--color-paper);
+    box-shadow: var(--shadow-card);
+    text-align: center;
+}
+
+.boas-vindas-marca {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--font-heading);
+    font-size: 30px;
+    color: var(--color-coffee);
+}
+
+.boas-vindas-marca i {
+    font-size: 34px;
+}
+
+.boas-vindas-frase {
+    margin: -10px 0 0;
+    font-family: var(--font-hand);
+    font-size: 22px;
+    line-height: 1.3;
+    color: var(--color-text-3);
+}
+
+.boas-vindas-slide {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    min-height: 220px;
+}
+
+.slide-icone {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 92px;
+    height: 92px;
+    margin-bottom: 6px;
+    border-radius: var(--radius-pill);
+    background: var(--color-surface-2);
+    color: var(--color-coffee);
+    font-size: 44px;
+}
+
+.boas-vindas-slide h2 {
+    margin: 0;
+    font-size: 26px;
+}
+
+.boas-vindas-slide p {
+    max-width: 380px;
+    margin: 0;
+    color: var(--color-text-2);
+    font-size: 15px;
+}
+
+.boas-vindas-pontos {
+    display: flex;
+    gap: 8px;
+}
+
+.ponto {
+    width: 9px;
+    height: 9px;
+    padding: 0;
+    border-radius: var(--radius-pill);
+    background: var(--color-border-input);
+    box-shadow: none;
+}
+
+.ponto-ativo {
+    width: 24px;
+    background: var(--color-coffee);
+}
+
+.boas-vindas-acoes {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+}
+
+.boas-vindas-acoes button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+}
+
+@media (max-width: 767px) {
+    .boas-vindas {
+        gap: 18px;
+        padding: 32px 22px;
+    }
+
+    .boas-vindas-marca {
+        font-size: 26px;
+    }
+
+    .slide-icone {
+        width: 76px;
+        height: 76px;
+        font-size: 36px;
+    }
+}

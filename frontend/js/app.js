@@ -89,7 +89,7 @@ async function loadSession() {
     }
 
     if (!getToken()) {
-        renderLoginForm();
+        jaViuBoasVindas() ? renderLoginForm() : renderBoasVindas();
         return;
     }
 
@@ -125,6 +125,131 @@ function moverBotaoDoGoogle(slotId = "google-slot") {
     }
 }
 
+// ---- Tela de boas-vindas ----
+
+const BOAS_VINDAS_KEY = "cafelio_boas_vindas";
+
+const SLIDES = [
+    {
+        icone: "books",
+        titulo: "Sua estante",
+        texto: "Organize o que você leu, está lendo e quer ler — com etiquetas e seis status.",
+    },
+    {
+        icone: "notebook",
+        titulo: "Cadernos literários",
+        texto: "Guarde citações, resenhas e anotações em cadernos com capa e tema próprios.",
+    },
+    {
+        icone: "medal",
+        titulo: "Desafios",
+        texto: "Acenda uma vela a cada livro concluído e mantenha sua sequência de leitura viva.",
+    },
+    {
+        icone: "chart-bar",
+        titulo: "Seu ano em números",
+        texto: "Gêneros, páginas, humores e um relatório anual para compartilhar.",
+    },
+];
+
+let slideAtual = 0;
+let slideTimer = null;
+
+function jaViuBoasVindas() {
+    try {
+        return localStorage.getItem(BOAS_VINDAS_KEY) === "1";
+    } catch (error) {
+        return false;
+    }
+}
+
+function marcarBoasVindasVistas() {
+    try {
+        localStorage.setItem(BOAS_VINDAS_KEY, "1");
+    } catch (error) {
+        // Navegação privada: a tela aparece de novo na próxima visita, tudo bem
+    }
+}
+
+function renderBoasVindas() {
+    showGoogleButton(false);
+    slideAtual = 0;
+
+    const pontos = SLIDES
+        .map((_, i) => `<button type="button" class="ponto" data-slide="${i}" aria-label="slide ${i + 1}"></button>`)
+        .join("");
+
+    document.getElementById("auth-area").innerHTML = `
+        <div class="boas-vindas">
+            <div class="boas-vindas-marca">
+                <i class="ph-light ph-coffee"></i>
+                <span>Cafélio</span>
+            </div>
+
+            <p class="boas-vindas-frase">seu diário de leituras,<br />guardado entre um café e outro</p>
+
+            <div class="boas-vindas-slide" id="slide"></div>
+
+            <div class="boas-vindas-pontos" id="pontos">${pontos}</div>
+
+            <div class="boas-vindas-acoes">
+                <button type="button" id="ir-entrar">Entrar<i class="ph-light ph-arrow-right"></i></button>
+                <p class="rodape-form">Ainda não tem conta? <a href="#" id="ir-criar">Criar conta</a></p>
+            </div>
+        </div>
+
+        ${rodapeDaDupla()}
+    `;
+
+    mostrarSlide(0);
+    iniciarPassagemDeSlides();
+
+    document.getElementById("pontos").addEventListener("click", (event) => {
+        const ponto = event.target.closest("[data-slide]");
+
+        if (ponto) {
+            iniciarPassagemDeSlides();
+            mostrarSlide(Number(ponto.dataset.slide));
+        }
+    });
+
+    document.getElementById("ir-entrar").addEventListener("click", () => {
+        sairDasBoasVindas(renderLoginForm);
+    });
+
+    document.getElementById("ir-criar").addEventListener("click", (event) => {
+        event.preventDefault();
+        sairDasBoasVindas(renderRegisterForm);
+    });
+}
+
+function sairDasBoasVindas(proximaTela) {
+    clearInterval(slideTimer);
+    marcarBoasVindasVistas();
+    proximaTela();
+}
+
+function mostrarSlide(indice) {
+    const slide = SLIDES[indice];
+
+    slideAtual = indice;
+
+    document.getElementById("slide").innerHTML = `
+        <span class="slide-icone"><i class="ph-light ph-${slide.icone}"></i></span>
+        <h2>${slide.titulo}</h2>
+        <p>${slide.texto}</p>
+    `;
+
+    [...document.querySelectorAll(".ponto")].forEach((ponto, i) => {
+        ponto.classList.toggle("ponto-ativo", i === indice);
+    });
+}
+
+function iniciarPassagemDeSlides() {
+    clearInterval(slideTimer);
+    slideTimer = setInterval(() => mostrarSlide((slideAtual + 1) % SLIDES.length), 5000);
+}
+
 function rodapeDaDupla() {
     return `
         <footer class="rodape-dupla">
@@ -153,8 +278,8 @@ function renderLoginForm(identifier = "") {
             <div class="coluna-formulario">
                 <form id="login-form">
                     <div class="form-titulo">
-                        <h2>Que bom te ver de novo</h2>
-                        <span class="form-subtitulo">Entre para continuar de onde parou.</span>
+                        <h2>Entrar no Cafélio</h2>
+                        <span class="form-subtitulo">Seu diário de leituras espera por você.</span>
                     </div>
 
                     <div class="campo">
