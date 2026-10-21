@@ -184,29 +184,38 @@ function renderBoasVindas() {
         .join("");
 
     document.getElementById("auth-area").innerHTML = `
-        <div class="tela-entrada tela-boas-vindas">
-            <div class="painel-foto painel-boas-vindas">
-                <div class="painel-marca">
-                    <i class="ph-light ph-coffee"></i>
-                    <span>Cafélio</span>
+        <div class="hero">
+            <div class="hero-foto"></div>
+            <div class="hero-veu"></div>
+
+            <div class="hero-conteudo">
+                <div class="hero-topo">
+                    <div class="hero-marca">
+                        <i class="ph-light ph-coffee"></i>
+                        <span>Cafélio</span>
+                    </div>
+                    <p class="hero-frase">seu diário de leituras,<br />guardado entre um café e outro</p>
                 </div>
 
-                <p class="painel-frase">seu diário de leituras, guardado entre um café e outro</p>
-            </div>
+                <div class="hero-base">
+                    <div class="hero-slide" id="slide"></div>
 
-            <div class="coluna-slides">
-                <div class="boas-vindas-slide" id="slide"></div>
+                    <div class="hero-pontos" id="pontos">${pontos}</div>
 
-                <div class="boas-vindas-pontos" id="pontos">${pontos}</div>
+                    <div class="hero-acoes">
+                        <button type="button" id="ir-entrar">Entrar<i class="ph-light ph-arrow-right"></i></button>
+                        <p>Ainda não tem conta? <a href="#" id="ir-criar">Criar conta</a></p>
+                    </div>
 
-                <div class="boas-vindas-acoes">
-                    <button type="button" id="ir-entrar">Entrar<i class="ph-light ph-arrow-right"></i></button>
-                    <p class="rodape-form">Ainda não tem conta? <a href="#" id="ir-criar">Criar conta</a></p>
+                    <p class="hero-credito">
+                        Feito a quatro mãos por
+                        <a href="https://www.linkedin.com/in/amfpdev" target="_blank" rel="noopener">@amfpdev</a>
+                        e
+                        <a href="https://www.linkedin.com/in/amanda-cristiny" target="_blank" rel="noopener">@amanda-cristiny</a>
+                    </p>
                 </div>
             </div>
         </div>
-
-        ${rodapeDaDupla()}
     `;
 
     mostrarSlide(0);
