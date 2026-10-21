@@ -35,6 +35,7 @@ public class AuthService {
         }
 
         User user = new User();
+        user.setName(request.getName());
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
         user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
@@ -76,7 +77,10 @@ public class AuthService {
                     }
 
                     User newUser = new User();
-                    newUser.setUsername(generateUniqueUsername(email));
+                    String usernameGerado = generateUniqueUsername(email);
+
+                    newUser.setName(name != null && !name.isBlank() ? name : usernameGerado);
+                    newUser.setUsername(usernameGerado);
                     newUser.setEmail(email);
                     newUser.setGoogleId(googleId);
                     newUser.setEmailVerified(true);

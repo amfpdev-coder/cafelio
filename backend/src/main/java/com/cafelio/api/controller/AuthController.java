@@ -9,6 +9,7 @@ import com.cafelio.api.dto.PasswordResetConfirmRequest;
 import com.cafelio.api.dto.PasswordResetRequest;
 import com.cafelio.api.dto.ChangePasswordRequest;
 import com.cafelio.api.dto.PasswordResetCodeRequest;
+import com.cafelio.api.dto.UpdateProfileRequest;
 import com.cafelio.api.model.User;
 import com.cafelio.api.security.GoogleTokenVerifier;
 import com.cafelio.api.service.AuthService;
@@ -136,5 +137,15 @@ public class AuthController {
     public ResponseEntity<UserResponse> removeProfilePicture(@AuthenticationPrincipal UUID userId) {
         User user = profileService.removerFoto(userId);
         return ResponseEntity.ok(new UserResponse(user, null));
+    }
+
+    @SecurityRequirement(name = "bearerAuth")
+    @PutMapping("/profile")
+    public ResponseEntity<UserResponse> updateProfile(
+            @AuthenticationPrincipal UUID userId,
+            @Valid @RequestBody UpdateProfileRequest request
+    ) {
+        User user = profileService.atualizarDados(userId, request.name(), request.username());
+        return ResponseEntity.ok(new UserResponse(user, profileService.urlDaFoto(user)));
     }
 }

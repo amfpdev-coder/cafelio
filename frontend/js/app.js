@@ -196,6 +196,9 @@ function renderRegisterForm() {
         <form id="register-form">
             <h2>Criar conta</h2>
 
+            <label for="register-name">Seu nome</label>
+            <input id="register-name" type="text" autocomplete="name" required />
+
             <label for="register-username">Nome de usuário</label>
             <input id="register-username" type="text" autocomplete="username" required />
 
@@ -262,8 +265,8 @@ function renderCasca() {
                 <div class="barra-lateral-perfil" data-destino="perfil">
                     ${avatarDoUsuario(user)}
                     <div>
-                        <div class="perfil-nome">${user.username}</div>
-                        <div class="perfil-usuario">${user.email}</div>
+                        <div class="perfil-nome">${user.name}</div>
+                        <div class="perfil-usuario">@${user.username}</div>
                     </div>
                 </div>
             </aside>
@@ -310,10 +313,10 @@ function itemDestino(destino, classe) {
 
 function avatarDoUsuario(user) {
     if (user.profilePictureUrl) {
-        return `<img class="avatar" src="${user.profilePictureUrl}" alt="" />`;
+        return `<img class="avatar" src="${user.profilePictureUrl}" alt="Foto de perfil" />`;
     }
 
-    return `<span class="avatar">${(user.username || "?").slice(0, 2).toUpperCase()}</span>`;
+    return `<span class="avatar">${(user.name || "?").slice(0, 2).toUpperCase()}</span>`;
 }
 
 function navegarPara(id) {
@@ -360,8 +363,8 @@ function renderPerfil(conteudo) {
             <div class="perfil-cartao">
                 ${fotoDePerfil(user)}
 
-                <span class="perfil-nome">${user.username}</span>
-                <span class="perfil-email">${user.email}</span>
+                <span class="perfil-nome">${user.name}</span>
+                <span class="perfil-usuario-grande">@${user.username} · ${desdeQuando(user.createdAt)}</span>
 
                 <div class="perfil-acoes">
                     <button type="button" id="escolher-foto">
@@ -376,9 +379,31 @@ function renderPerfil(conteudo) {
             </div>
 
             <div class="perfil-coluna">
+                <form id="dados-form" class="perfil-campos">
+                    <div class="campo">
+                        <label for="dados-nome">Nome</label>
+                        <input id="dados-nome" type="text" value="${user.name}" required />
+                    </div>
+
+                    <div class="campo">
+                        <label for="dados-username">Nome de usuário</label>
+                        <input id="dados-username" type="text" value="${user.username}" required />
+                    </div>
+
+                    <div class="campo">
+                        <label for="dados-email">E-mail</label>
+                        <input id="dados-email" type="email" value="${user.email}" disabled />
+                        <small>A troca de e-mail ainda não está disponível.</small>
+                    </div>
+
+                    <div class="perfil-campos-rodape">
+                        <p id="dados-message" class="form-message"></p>
+                        <button type="submit">Salvar</button>
+                    </div>
+                </form>
+
                 <div class="bloco">
                     <span class="bloco-titulo"><i class="ph-light ph-key"></i>${acao}</span>
-                    <button type="button" id="show-password-form">${acao}</button>
                     <div id="password-area"></div>
                 </div>
 
@@ -402,6 +427,8 @@ function renderPerfil(conteudo) {
         </div>
     `;
 
+    document.getElementById("dados-form").addEventListener("submit", handleDados);
+
     document.getElementById("escolher-foto").addEventListener("click", () => {
         document.getElementById("picture-input").click();
     });
@@ -414,11 +441,29 @@ function renderPerfil(conteudo) {
         botaoRemover.addEventListener("click", handleRemovePicture);
     }
 
-    document.getElementById("show-password-form").addEventListener("click", () => {
-        renderPasswordForm(user);
-    });
+    renderPasswordForm(user);
 
     document.getElementById("logout").addEventListener("click", handleLogout);
+}
+
+async function handleDados(event) {
+    event.preventDefault();
+
+    const message = document.getElementById("dados-message");
+    message.textContent = "Salvando...";
+
+    try {
+        usuarioAtual = await apiPut("/auth/profile", {
+            name: document.getElementById("dados-nome").value,
+            username: document.getElementById("dados-username").value,
+        });
+
+        // Redesenha a casca para o nome novo aparecer na barra lateral
+        renderCasca();
+        document.getElementById("dados-message").textContent = "Dados salvos.";
+    } catch (error) {
+        message.textContent = error.message;
+    }
 }
 
 function fotoDePerfil(user) {
@@ -426,35 +471,53 @@ function fotoDePerfil(user) {
         return `<img class="perfil-foto" src="${user.profilePictureUrl}" alt="Foto de perfil" />`;
     }
 
-    return `<span class="perfil-foto">${(user.username || "?").slice(0, 2).toUpperCase()}</span>`;
+    return `<span class="perfil-foto">${(user.name || "?").slice(0, 2).toUpperCase()}</span>`;
+}
+
+function campoDeSenha(id, rotulo, autocomplete) {
+    return `
+        <div class="campo">
+            <label for="${id}">${rotulo}</label>
+            <div class="campo-com-botao">
+                <input id="${id}" type="password" autocomplete="${autocomplete}" required />
+            </div>
+        </div>
+    `;
+}
+
+// "desde mar 2025", a partir do createdAt que a API já devolve
+function desdeQuando(createdAt) {
+    if (!createdAt) {
+        return "";
+    }
+
+    const data = new Date(createdAt);
+    const mes = data.toLocaleDateString("pt-BR", { month: "short" }).replace(".", "");
+
+    return `desde ${mes} ${data.getFullYear()}`;
 }
 
 function renderPasswordForm(user) {
-    const titulo = user.hasPassword ? "Alterar senha" : "Definir senha";
-
     const campoSenhaAtual = user.hasPassword
-        ? `
-            <label for="current-password">Senha atual</label>
-            <input id="current-password" type="password" autocomplete="current-password" required />
-        `
+        ? campoDeSenha("current-password", "Senha atual", "current-password")
         : `
-            <p>Sua conta foi criada com o Google e ainda não tem senha. Definindo uma, você poderá entrar das duas formas.</p>
+            <p class="senha-aviso">
+                Sua conta foi criada com o Google e ainda não tem senha.
+                Definindo uma, você poderá entrar das duas formas.
+            </p>
         `;
 
     document.getElementById("password-area").innerHTML = `
-        <form id="password-form">
-            <h3>${titulo}</h3>
-
+        <form id="password-form" class="senha-campos">
             ${campoSenhaAtual}
+            ${campoDeSenha("new-password", "Nova senha", "new-password")}
+            ${campoDeSenha("confirm-new-password", "Confirme", "new-password")}
 
-            <label for="new-password">Nova senha</label>
-            <input id="new-password" type="password" autocomplete="new-password" required />
-            <small>Mínimo de 8 caracteres, com letra maiúscula, minúscula e número.</small>
+            <div class="senha-rodape">
+                <small>Mínimo de 8 caracteres, com letra maiúscula, minúscula e número.</small>
+                <button type="submit">${user.hasPassword ? "Atualizar senha" : "Definir senha"}</button>
+            </div>
 
-            <label for="confirm-new-password">Confirmar nova senha</label>
-            <input id="confirm-new-password" type="password" autocomplete="new-password" required />
-
-            <button type="submit">Salvar</button>
             <p id="password-message" class="form-message"></p>
         </form>
     `;
@@ -619,6 +682,7 @@ async function handleRegister(event) {
 
     try {
         await apiPost("/auth/register", {
+            name: document.getElementById("register-name").value,
             username: document.getElementById("register-username").value,
             email: email,
             password: document.getElementById("register-password").value,
@@ -1130,7 +1194,7 @@ async function renderInicio(conteudo) {
         <div class="inicio-saudacao">
             ${avatarDoUsuario(user).replace('class="avatar"', 'class="avatar avatar-grande"')}
             <div>
-                <h2>${saudacaoDoDia()}, ${user.username}</h2>
+                <h2>${saudacaoDoDia()}, ${user.name}</h2>
                 <span class="inicio-data">${dataPorExtenso(new Date())}</span>
             </div>
         </div>

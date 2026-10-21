@@ -8,6 +8,7 @@ import java.util.UUID;
 public class UserResponse {
 
     private UUID id;
+    private String name;
     private String username;
     private String email;
     private boolean emailVerified;
@@ -21,6 +22,7 @@ public class UserResponse {
 
     public UserResponse(User user, String profilePictureUrl) {
         this.id = user.getId();
+        this.name = user.getName();
         this.username = user.getUsername();
         this.email = user.getEmail();
         this.emailVerified = user.isEmailVerified();
@@ -30,6 +32,7 @@ public class UserResponse {
     }
 
     public UUID getId() { return id; }
+    public String getName() { return name; }
     public String getUsername() { return username; }
     public String getEmail() { return email; }
     public boolean isEmailVerified() { return emailVerified; }

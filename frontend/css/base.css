@@ -1421,3 +1421,86 @@ button:disabled {
 .barra-lateral .botao-tema {
     margin-bottom: 10px;
 }
+
+.perfil-usuario-grande {
+    margin-top: -6px;
+    color: var(--color-text-3);
+    font-family: var(--font-mono);
+    font-size: 14px;
+}
+/* ---- Perfil: campos de dados e senha ---- */
+
+.perfil-campos,
+.senha-campos {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 14px 18px;
+    align-items: start;
+}
+
+.campo {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+.campo label {
+    color: var(--color-text-2);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.campo small {
+    color: var(--color-text-3);
+    font-size: 12px;
+}
+
+.campo input:disabled {
+    background: var(--color-surface-2);
+    color: var(--color-text-3);
+    cursor: not-allowed;
+}
+
+.perfil-campos-rodape,
+.senha-rodape {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+}
+
+.perfil-campos-rodape button,
+.senha-rodape button {
+    width: auto;
+    flex-shrink: 0;
+}
+
+.senha-aviso {
+    grid-column: 1 / -1;
+    color: var(--color-text-2);
+    font-size: 14px;
+}
+
+#password-message {
+    grid-column: 1 / -1;
+}
+
+@media (max-width: 767px) {
+    .perfil-campos,
+    .senha-campos {
+        grid-template-columns: 1fr;
+    }
+
+    .perfil-campos-rodape,
+    .senha-rodape {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .perfil-campos-rodape button,
+    .senha-rodape button {
+        width: 100%;
+    }
+}

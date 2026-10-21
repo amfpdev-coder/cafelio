@@ -49,6 +49,21 @@ public class ProfileService {
         return user;
     }
 
+    @Transactional
+    public User atualizarDados(UUID userId, String name, String username) {
+        User user = buscar(userId);
+        String novoUsername = username.trim();
+
+        if (!user.getUsername().equals(novoUsername) && userRepository.existsByUsername(novoUsername)) {
+            throw new IllegalArgumentException("Esse nome de usuário já está em uso");
+        }
+
+        user.setName(name.trim());
+        user.setUsername(novoUsername);
+
+        return userRepository.save(user);
+    }
+
     public String urlDaFoto(User user) {
         return imageService.urlDaFoto(user.getProfilePicturePublicId());
     }
