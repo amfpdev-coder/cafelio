@@ -358,21 +358,8 @@ function renderLoginForm(identifier = "") {
     definirRota("entrar");
     showGoogleButton(true);
 
-    document.getElementById("auth-area").innerHTML = `
-        ${botaoDeTema("botao-tema botao-tema-canto")}
-
-        <div class="tela-entrada">
-            <div class="painel-foto">
-                <div class="painel-marca">
-                    <i class="ph-light ph-coffee"></i>
-                    <span>Cafélio</span>
-                </div>
-
-                <p class="painel-frase">seu diário de leituras, guardado entre um café e outro</p>
-            </div>
-
-            <div class="coluna-formulario">
-                <form id="login-form">
+    document.getElementById("auth-area").innerHTML = molduraDeEntrada("ilustra-entrar.svg", `
+        <form id="login-form">
                     <button type="button" class="botao-link voltar-entrada" id="voltar-entrada">
                         <i class="ph-light ph-arrow-left"></i>Voltar
                     </button>
@@ -410,11 +397,7 @@ function renderLoginForm(identifier = "") {
 
                     <p class="rodape-form">Ainda não tem conta? <a href="#" id="show-register">Criar conta</a></p>
                 </form>
-            </div>
-        </div>
-
-        ${rodapeDaDupla()}
-    `;
+    `);
 
     moverBotaoDoGoogle();
     document.getElementById("identifier").value = identifier;
@@ -437,7 +420,7 @@ function renderRegisterForm() {
     definirRota("criar-conta");
     showGoogleButton(true);
 
-    document.getElementById("auth-area").innerHTML = molduraDeEntrada("foto-livros-abertos", `
+    document.getElementById("auth-area").innerHTML = molduraDeEntrada("ilustra-criar-conta.svg", `
         <form id="register-form">
             <button type="button" class="botao-link voltar-entrada" id="voltar-entrada">
                 <i class="ph-light ph-arrow-left"></i>Voltar
@@ -1133,16 +1116,19 @@ renderWelcomeScreen();
 
 // Moldura das telas de entrada: a mesma foto-e-coluna em todas,
 // para o caminho do login ao cadastro não parecer troca de aplicativo
-function molduraDeEntrada(classeDaFoto, conteudo) {
+function molduraDeEntrada(ilustracao, conteudo) {
     return `
         ${botaoDeTema("botao-tema botao-tema-canto")}
 
         <div class="tela-entrada">
-            <div class="painel-foto ${classeDaFoto}">
+            <div class="painel-ilustra">
                 <div class="painel-marca">
                     <i class="ph-light ph-coffee"></i>
                     <span>Cafélio</span>
                 </div>
+
+                <img class="painel-desenho" src="img/${ilustracao}" alt=""
+                     onerror="this.style.display='none'" />
 
                 <p class="painel-frase">seu diário de leituras, guardado entre um café e outro</p>
             </div>
@@ -1158,10 +1144,8 @@ function renderForgotPasswordForm(email = "") {
     definirRota("esqueci-senha");
     showGoogleButton(false);
 
-    document.getElementById("auth-area").innerHTML = molduraDeEntrada("foto-cafe-e-livro", `
+    document.getElementById("auth-area").innerHTML = molduraDeEntrada("ilustra-esqueci-senha.svg", `
         <form id="forgot-form">
-            <img class="ilustracao" src="img/ilustra-leitura.svg" alt="" />
-
             <div class="form-titulo">
                 <h2>Esqueceu a senha? Acontece.</h2>
                 <span class="form-subtitulo">

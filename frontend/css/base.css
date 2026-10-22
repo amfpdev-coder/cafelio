@@ -209,34 +209,27 @@ button:disabled {
 
 /* ---- Painel listrado ---- */
 
-.painel-foto {
-    /* Só o gradiente vai na variável. url() dentro de variável resolve o
-       caminho pelo arquivo onde ela foi declarada, e quebra se vier do HTML. */
-    --veu: linear-gradient(
-        to bottom,
-        rgba(245, 236, 215, .88) 0%,
-        rgba(245, 236, 215, .20) 28%,
-        rgba(245, 236, 215, .20) 62%,
-        rgba(245, 236, 215, .92) 100%
-    );
-
+.painel-ilustra {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    gap: 24px;
+    gap: 20px;
     padding: 32px;
     border-radius: 20px;
-    background-position: center;
-    background-size: cover;
-    background-image: var(--veu), url("../img/cafe-da-tarde.jpg");
+
+    /* Creme fixo nos dois temas: as ilustrações do Storyset têm traço
+       escuro e sumiriam sobre superfície noturna */
+    background:
+        radial-gradient(120% 90% at 50% 0%, #FBF6EA 0%, #F0E2C4 100%);
     box-shadow: inset 0 0 0 1px rgba(107, 63, 42, .15);
 }
 
-.foto-cafe-da-tarde  { background-image: var(--veu), url("../img/cafe-da-tarde.jpg"); }
-.foto-cafe-e-livro   { background-image: var(--veu), url("../img/cafe-e-livro.jpg"); }
-.foto-livros-abertos { background-image: var(--veu), url("../img/livros-abertos.jpg"); }
-.foto-leitura        { background-image: var(--veu), url("../img/leitura-no-sofa.jpg"); }
-.foto-estante        { background-image: var(--veu), url("../img/estante.jpg"); }
+.painel-desenho {
+    width: 100%;
+    max-width: 420px;
+    margin: 0 auto;
+}
+
 
 .painel-marca {
     display: flex;
@@ -421,7 +414,7 @@ button:disabled {
         min-height: 0;
     }
 
-    .painel-foto {
+    .painel-ilustra {
         min-height: 150px;
         padding: 20px;
         gap: 14px;
