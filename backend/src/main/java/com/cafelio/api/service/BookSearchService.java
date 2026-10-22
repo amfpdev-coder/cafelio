@@ -52,7 +52,8 @@ public class BookSearchService {
                 book.title(),
                 book.authors(),
                 book.firstPublishYear(),
-                coverUrl
+                coverUrl,
+                book.pages()
         );
     }
 }

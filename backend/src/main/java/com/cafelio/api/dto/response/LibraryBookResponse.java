@@ -22,7 +22,9 @@ public record LibraryBookResponse(
 
         List<String> authors,
 
-        Set<BookTag> tags
+        Set<BookTag> tags,
+
+        Integer pages
 
 ) {
 

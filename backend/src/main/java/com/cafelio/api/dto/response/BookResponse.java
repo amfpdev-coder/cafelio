@@ -8,6 +8,7 @@ public record BookResponse(
         String title,
         List<String> authors,
         Integer firstPublishYear,
-        String coverUrl
+        String coverUrl,
+        Integer pages
 ) {
 }

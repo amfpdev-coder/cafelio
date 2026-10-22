@@ -25,7 +25,7 @@ public class LibraryBook {
 
     }
 
-    public LibraryBook(User user, String openLibraryId, String title, Integer firstPublishYear, String coverUrl, ReadingStatus status, List<String> authors, Set<BookTag> tags){
+    public LibraryBook(User user, String openLibraryId, String title, Integer firstPublishYear, String coverUrl, ReadingStatus status, List<String> authors, Set<BookTag> tags, Integer pages){
         this.user = user;
         this.openLibraryId = openLibraryId;
         this.title = title;
@@ -34,6 +34,7 @@ public class LibraryBook {
         this.status = status;
         this.authors = authors;
         this.tags = tags;
+        this.pages = pages;
     }
 
     public UUID getId() {
@@ -76,6 +77,14 @@ public class LibraryBook {
         this.tags = tags;
     }
 
+    public Integer getPages() {
+        return pages;
+    }
+
+    public void setPages(Integer pages) {
+        this.pages = pages;
+    }
+
     public LocalDate getFinishedAt() {
         return finishedAt;
     }
@@ -100,6 +109,9 @@ public class LibraryBook {
 
     @Column(name = "first_publish_year")
     private Integer firstPublishYear;
+
+    @Column(name = "pages")
+    private Integer pages;
 
     @Column(name = "cover_url")
     private String coverUrl;
