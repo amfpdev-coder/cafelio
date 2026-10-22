@@ -208,6 +208,83 @@ function moverBotaoDoGoogle(slotId = "google-slot") {
     }
 }
 
+// ---- Diálogo do Cafélio, no lugar das caixas do navegador ----
+
+// Devolve uma promessa: true se confirmou, false se desistiu. Com
+// `escrever`, só confirma quem digitar exatamente aquela palavra.
+function perguntar({ titulo, texto, confirmar = "Confirmar", perigo = false, escrever = null }) {
+    return new Promise((resolve) => {
+        const campo = escrever
+            ? `
+                <div class="campo">
+                    <label for="dialogo-escrever">Para confirmar, escreva <strong>${escrever}</strong></label>
+                    <input id="dialogo-escrever" type="text" autocomplete="off" />
+                </div>
+            `
+            : "";
+
+        document.body.insertAdjacentHTML("beforeend", `
+            <div class="modal-fundo" id="modal-dialogo">
+                <div class="modal" role="dialog" aria-modal="true" aria-label="${titulo}">
+                    <button type="button" class="modal-fechar" id="dialogo-fechar" aria-label="Fechar">
+                        <i class="ph-light ph-x"></i>
+                    </button>
+
+                    <h3>${titulo}</h3>
+                    <p class="modal-texto">${texto}</p>
+
+                    ${campo}
+
+                    <div class="dialogo-acoes">
+                        <button type="button" class="botao-secundario" id="dialogo-nao">Cancelar</button>
+                        <button type="button" class="${perigo ? "btn-perigo" : ""}" id="dialogo-sim">${confirmar}</button>
+                    </div>
+                </div>
+            </div>
+        `);
+
+        const modal = document.getElementById("modal-dialogo");
+        const entrada = document.getElementById("dialogo-escrever");
+
+        function fechar(resposta) {
+            document.removeEventListener("keydown", pelaTecla);
+            modal.remove();
+            resolve(resposta);
+        }
+
+        function pelaTecla(event) {
+            if (event.key === "Escape") {
+                fechar(false);
+            }
+
+            if (event.key === "Enter" && entrada) {
+                confirmarDialogo();
+            }
+        }
+
+        function confirmarDialogo() {
+            fechar(!escrever || entrada.value.trim() === escrever);
+        }
+
+        modal.addEventListener("click", (event) => {
+            if (event.target === modal
+                || event.target.closest("#dialogo-fechar")
+                || event.target.closest("#dialogo-nao")) {
+                fechar(false);
+                return;
+            }
+
+            if (event.target.closest("#dialogo-sim")) {
+                confirmarDialogo();
+            }
+        });
+
+        document.addEventListener("keydown", pelaTecla);
+
+        (entrada || document.getElementById("dialogo-sim")).focus();
+    });
+}
+
 // ---- Tela de boas-vindas ----
 
 const SLIDES = [
@@ -799,11 +876,16 @@ async function handleExcluirConta() {
 
     // Duas perguntas de propósito: a primeira avisa, a segunda exige que a
     // pessoa escreva. Um clique sozinho não deveria apagar uma conta.
-    if (!confirm("Apagar sua conta e tudo que há nela? Isso não pode ser desfeito.")) {
-        return;
-    }
+    const certeza = await perguntar({
+        titulo: "Apagar sua conta?",
+        texto: "Sua conta, seus livros, suas resenhas, sua sequência de leitura e sua foto "
+             + "serão apagados em definitivo. Não há como desfazer.",
+        confirmar: "Apagar minha conta",
+        perigo: true,
+        escrever: "EXCLUIR",
+    });
 
-    if (prompt('Para confirmar, escreva EXCLUIR') !== "EXCLUIR") {
+    if (!certeza) {
         message.textContent = "Exclusão cancelada.";
         return;
     }
@@ -847,7 +929,13 @@ function blocoDoGoogle(user) {
 async function desvincularGoogle() {
     const message = document.getElementById("google-message");
 
-    if (!confirm("Desvincular sua conta Google do Cafélio?")) {
+    const certeza = await perguntar({
+        titulo: "Desvincular o Google?",
+        texto: "Você deixa de poder entrar pelo Google. Para voltar atrás, é só vincular de novo.",
+        confirmar: "Desvincular",
+    });
+
+    if (!certeza) {
         return;
     }
 
@@ -1687,8 +1775,17 @@ function preencherFlamme(flamme) {
 }
 
 async function alternarDia(dia, estaMarcado) {
-    if (estaMarcado && !confirm(`Remover o registro de leitura de ${dia}?`)) {
-        return;
+    if (estaMarcado) {
+        const certeza = await perguntar({
+            titulo: "Remover esse dia?",
+            texto: `A leitura de ${dia} sai da sua sequência. Você pode marcar de novo depois.`,
+            confirmar: "Remover",
+            perigo: true,
+        });
+
+        if (!certeza) {
+            return;
+        }
     }
 
     const caminho = `/challenges/flamme/days/${dia}`;
