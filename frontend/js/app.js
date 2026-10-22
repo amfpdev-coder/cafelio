@@ -50,6 +50,17 @@ function definirRota(rota) {
     location.hash = rota;
 }
 
+// Muda o endereço e deixa o roteador desenhar — assim o voltar do
+// navegador e os links internos seguem o mesmo caminho
+function irPara(rota) {
+    if (rotaAtual() === rota) {
+        aplicarRota();
+        return;
+    }
+
+    location.hash = rota;
+}
+
 function aplicarRota() {
     const rota = rotaAtual();
 
@@ -407,7 +418,7 @@ function renderLoginForm(identifier = "") {
     moverBotaoDoGoogle();
     document.getElementById("identifier").value = identifier;
     document.getElementById("login-form").addEventListener("submit", handleLogin);
-    document.getElementById("voltar-entrada").addEventListener("click", renderBoasVindas);
+    document.getElementById("voltar-entrada").addEventListener("click", () => irPara("boas-vindas"));
         document.getElementById("show-register").addEventListener("click", (event) => {
         event.preventDefault();
         renderRegisterForm();
@@ -485,7 +496,7 @@ function renderRegisterForm() {
 
     moverBotaoDoGoogle("google-slot-cadastro");
     document.getElementById("register-form").addEventListener("submit", handleRegister);
-    document.getElementById("voltar-entrada").addEventListener("click", renderBoasVindas);
+    document.getElementById("voltar-entrada").addEventListener("click", () => irPara("boas-vindas"));
     document.getElementById("show-login").addEventListener("click", (event) => {
         event.preventDefault();
         renderLoginForm();
@@ -1127,11 +1138,6 @@ function molduraDeEntrada(ilustracao, conteudo) {
 
         <div class="tela-entrada">
             <div class="painel-ilustra">
-                <div class="painel-marca">
-                    <i class="ph-light ph-coffee"></i>
-                    <span>Cafélio</span>
-                </div>
-
                 <img class="painel-desenho" src="img/${ilustracao}" alt=""
                      onerror="this.style.display='none'" />
             </div>
