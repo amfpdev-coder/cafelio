@@ -1,6 +1,6 @@
 :root {
     /* ---- Identidade (fixa, não alterar) ----
-       cream e beige são TINTA CLARA: texto sobre superfície escura.
+        cream e beige são TINTA CLARA: texto sobre superfície escura.
        Para fundos claros use --color-surface-1 e --color-surface-2. */
     --color-cream: #F5ECD7;
     --color-beige: #EDD9B4;
@@ -13,6 +13,8 @@
     --color-surface-2: #EDD9B4;
     --color-surface-dark: #3B2A1A;
     --paper-dot: rgba(107, 63, 42, .07);
+    --brilho-quente: rgba(201, 154, 91, .20);
+    --brilho-frio: rgba(92, 122, 90, .12);
 
     /* ---- Derivadas ---- */
     --color-terracota: #A8553A;
@@ -99,24 +101,26 @@
    A madrugada do Cafélio é café queimado, não cinza de escritório. */
 
 :root[data-theme="dark"] {
-    --color-surface-1: #1E150F;
-    --color-surface-2: #2A1E15;
-    --color-surface-dark: #3D2C1E;
-    --color-paper: #33251A;
-    --paper-dot: rgba(245, 236, 215, .045);
+    --color-surface-1: #2B2018;
+    --color-surface-2: #3A2B20;
+    --color-surface-dark: #4A3627;
+    --color-paper: #443328;
+    --paper-dot: rgba(245, 236, 215, .05);
+    --brilho-quente: rgba(201, 154, 91, .16);
+    --brilho-frio: rgba(92, 122, 90, .12);
 
     --color-sepia: #F0E3CC;
     --color-text-2: #CDBBA3;
     --color-text-3: #A8937C;
     --color-overline: #BE9E7B;
 
-    --color-border-input: #4E3A29;
-    --color-border-soft: #443224;
-    --color-border-faint: #3A2A1E;
+    --color-border-input: #60492F;
+    --color-border-soft: #553F2E;
+    --color-border-faint: #4A3728;
 
-    --color-coffee: #8B5536;
-    --color-coffee-hover: #9C6342;
-    --color-coffee-active: #70452B;
+    --color-coffee: #A0653F;
+    --color-coffee-hover: #B2734C;
+    --color-coffee-active: #8A5533;
 
     --color-moss: #7FA37C;
     --color-caramelo: #D8AE72;

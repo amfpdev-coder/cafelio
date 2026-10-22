@@ -18,6 +18,72 @@ const DESTINOS_EXPLORAR = [
 
 const DESTINO_PERFIL = { id: "perfil", icone: "user-circle", rotulo: "Perfil" };
 
+// ---- Rotas: a tela atual mora no endereço ----
+
+const DESTINOS_VALIDOS = [
+    ...DESTINOS_PRINCIPAIS.map((d) => d.id),
+    ...DESTINOS_EXPLORAR.map((d) => d.id),
+    DESTINO_PERFIL.id,
+];
+
+const ROTAS_DE_ENTRADA = {
+    "boas-vindas": () => renderBoasVindas(),
+    "entrar": () => renderLoginForm(),
+    "criar-conta": () => renderRegisterForm(),
+    "esqueci-senha": () => renderForgotPasswordForm(),
+    "usar-codigo": () => renderForgotPasswordForm(),
+    "nova-senha": () => renderForgotPasswordForm(),
+};
+
+// Qual tela está desenhada na tela agora. É o que evita redesenhar à toa,
+// sem depender da ordem em que os eventos chegam.
+let rotaDesenhada = null;
+
+function rotaAtual() {
+    return decodeURIComponent(location.hash.replace("#", ""));
+}
+
+// Quem já está desenhando só sincroniza o endereço
+function definirRota(rota) {
+    rotaDesenhada = rota;
+
+    if (rotaAtual() !== rota) {
+        location.hash = rota;
+    }
+}
+
+// Muda o endereço e deixa o roteador desenhar — assim o voltar do
+// navegador e os links internos seguem o mesmo caminho
+function irPara(rota) {
+    if (rotaAtual() === rota) {
+        aplicarRota();
+        return;
+    }
+
+    location.hash = rota;
+}
+
+function aplicarRota() {
+    const rota = rotaAtual();
+
+    if (usuarioAtual) {
+        navegarPara(DESTINOS_VALIDOS.includes(rota) ? rota : "inicio");
+        return;
+    }
+
+    (ROTAS_DE_ENTRADA[rota] || renderBoasVindas)();
+}
+
+// Voltar e avançar do navegador passam por aqui
+window.addEventListener("hashchange", () => {
+    // O endereço já corresponde ao que está na tela: nada a fazer
+    if (rotaAtual() === rotaDesenhada) {
+        return;
+    }
+
+    aplicarRota();
+});
+
 let usuarioAtual = null;
 let destinoAtual = "inicio";
 
@@ -47,21 +113,35 @@ function aplicarTema(tema) {
     }
 }
 
-function alternarTema() {
-    aplicarTema(document.documentElement.dataset.theme === "dark" ? "light" : "dark");
-    renderCasca();
-}
-
-function botaoDeTema(classe) {
+function conteudoDoBotaoDeTema() {
     const escuro = document.documentElement.dataset.theme === "dark";
 
     return `
-        <button type="button" class="${classe}" data-tema="alternar">
-            <i class="ph-light ph-${escuro ? "sun" : "moon"}"></i>
-            <span>${escuro ? "Modo claro" : "Modo escuro"}</span>
-        </button>
+        <i class="ph-light ph-${escuro ? "sun" : "moon"}"></i>
+        <span>${escuro ? "Modo claro" : "Modo escuro"}</span>
     `;
 }
+
+function botaoDeTema(classe) {
+    return `<button type="button" class="${classe}" data-tema="alternar">${conteudoDoBotaoDeTema()}</button>`;
+}
+
+// Só o conteúdo do botão muda: redesenhar a tela faria o carrossel
+// da entrada voltar ao primeiro slide
+function alternarTema() {
+    aplicarTema(document.documentElement.dataset.theme === "dark" ? "light" : "dark");
+
+    document.querySelectorAll("[data-tema]").forEach((botao) => {
+        botao.innerHTML = conteudoDoBotaoDeTema();
+    });
+}
+
+// Um escutador só, para os botões de tema de qualquer tela
+document.addEventListener("click", (event) => {
+    if (event.target.closest("[data-tema]")) {
+        alternarTema();
+    }
+});
 
 aplicarTema(temaSalvo() || temaDoSistema());
 
@@ -89,12 +169,15 @@ async function loadSession() {
     }
 
     if (!getToken()) {
-        renderLoginForm();
+        (ROTAS_DE_ENTRADA[rotaAtual()] || renderBoasVindas)();
         return;
     }
 
     try {
         const user = await apiGet("/auth/me");
+        const rota = rotaAtual();
+
+        destinoAtual = DESTINOS_VALIDOS.includes(rota) ? rota : "inicio";
         renderLoggedInArea(user);
     } catch (error) {
         renderLoginForm();
@@ -116,8 +199,8 @@ function showGoogleButton(visible) {
     button.style.display = visible ? "" : "none";
 }
 
-function moverBotaoDoGoogle() {
-    const slot = document.getElementById("google-slot");
+function moverBotaoDoGoogle(slotId = "google-slot") {
+    const slot = document.getElementById(slotId);
     const button = document.querySelector(".g_id_signin");
 
     if (slot && button) {
@@ -125,25 +208,180 @@ function moverBotaoDoGoogle() {
     }
 }
 
-function renderLoginForm(identifier = "") {
-    showGoogleButton(true);
+// ---- Tela de boas-vindas ----
+
+const SLIDES = [
+    {
+        icone: "books",
+        imagem: "img/estante.jpg",
+        titulo: "Sua estante",
+        texto: "Organize o que você leu, está lendo e quer ler — com etiquetas e seis status.",
+    },
+    {
+        icone: "notebook",
+        imagem: "img/livros-abertos.jpg",
+        titulo: "Cadernos literários",
+        texto: "Guarde citações, resenhas e anotações em cadernos com capa e tema próprios.",
+    },
+    {
+        icone: "medal",
+        imagem: "img/leitura-no-sofa.jpg",
+        titulo: "Desafios",
+        texto: "Acenda uma vela a cada livro concluído e mantenha sua sequência de leitura viva.",
+    },
+    {
+        icone: "chart-bar",
+        imagem: "img/cafe-e-livro.jpg",
+        titulo: "Seu ano em números",
+        texto: "Gêneros, páginas, humores e um relatório anual para compartilhar.",
+    },
+];
+
+let slideAtual = 0;
+let slideTimer = null;
+
+function renderBoasVindas() {
+    definirRota("boas-vindas");
+    showGoogleButton(false);
+    slideAtual = 0;
+
+    const pontos = SLIDES
+        .map((_, i) => `<button type="button" class="ponto" data-slide="${i}" aria-label="slide ${i + 1}"></button>`)
+        .join("");
 
     document.getElementById("auth-area").innerHTML = `
-        <div class="tela-entrada">
-            <div class="painel-foto">
-                <div class="painel-marca">
-                    <i class="ph-light ph-coffee"></i>
-                    <span>Cafélio</span>
+        ${botaoDeTema("botao-tema botao-tema-canto botao-tema-hero")}
+
+        <div class="hero">
+            <div class="hero-foto" id="hero-foto"></div>
+            <div class="hero-veu"></div>
+
+            <div class="hero-conteudo">
+                <div class="hero-topo">
+                    <div class="hero-marca">
+                        <i class="ph-light ph-coffee"></i>
+                        <span>Cafélio</span>
+                    </div>
+                    <p class="hero-frase">seu diário de leituras,<br />guardado entre um café e outro</p>
                 </div>
 
-                <p class="painel-frase">seu diário de leituras, guardado entre um café e outro</p>
-            </div>
+                <div class="hero-base">
+                    <div class="hero-slide" id="slide"></div>
 
-            <div class="coluna-formulario">
-                <form id="login-form">
+                    <div class="hero-pontos" id="pontos">${pontos}</div>
+
+                    <div class="hero-acoes">
+                        <button type="button" id="ir-entrar">Entrar<i class="ph-light ph-arrow-right"></i></button>
+                        <p>Ainda não tem conta? <a href="#" id="ir-criar">Criar conta</a></p>
+                    </div>
+
+                    <p class="hero-credito">
+                        Feito a quatro mãos por
+                        <a href="https://www.linkedin.com/in/amfpdev" target="_blank" rel="noopener">@amfpdev</a>
+                        e
+                        <a href="https://www.linkedin.com/in/amanda-cristiny" target="_blank" rel="noopener">@amanda-cristiny</a>
+                        <span class="hero-credito-fontes">
+                            Ilustrações por <a href="https://storyset.com/home" target="_blank" rel="noopener">Storyset</a>
+                            e <a href="https://undraw.co" target="_blank" rel="noopener">unDraw</a>
+                            · Fotografias do <a href="https://unsplash.com" target="_blank" rel="noopener">Unsplash</a>
+                        </span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    `;
+
+    mostrarSlide(0);
+    iniciarPassagemDeSlides();
+
+    document.getElementById("pontos").addEventListener("click", (event) => {
+        const ponto = event.target.closest("[data-slide]");
+
+        if (ponto) {
+            iniciarPassagemDeSlides();
+            mostrarSlide(Number(ponto.dataset.slide));
+        }
+    });
+
+    document.getElementById("ir-entrar").addEventListener("click", () => {
+        clearInterval(slideTimer);
+        irPara("entrar");
+    });
+
+    document.getElementById("ir-criar").addEventListener("click", (event) => {
+        event.preventDefault();
+        clearInterval(slideTimer);
+        irPara("criar-conta");
+    });
+}
+
+function mostrarSlide(indice) {
+    const slide = SLIDES[indice];
+
+    slideAtual = indice;
+
+    const foto = document.getElementById("hero-foto");
+
+    foto.style.backgroundImage = `url("${slide.imagem}")`;
+
+    // Tirar e repor a classe reinicia o movimento a cada troca.
+    // O offsetWidth no meio obriga o navegador a recalcular antes de repor.
+    foto.classList.remove("em-cena");
+    void foto.offsetWidth;
+    foto.classList.add("em-cena");
+
+    document.getElementById("slide").innerHTML = `
+        <span class="slide-icone"><i class="ph-light ph-${slide.icone}"></i></span>
+        <h2>${slide.titulo}</h2>
+        <p>${slide.texto}</p>
+    `;
+
+
+    [...document.querySelectorAll(".ponto")].forEach((ponto, i) => {
+        ponto.classList.toggle("ponto-ativo", i === indice);
+    });
+}
+
+function iniciarPassagemDeSlides() {
+    clearInterval(slideTimer);
+    slideTimer = setInterval(() => mostrarSlide((slideAtual + 1) % SLIDES.length), 5000);
+}
+
+function rodapeDaDupla() {
+    return `
+        <footer class="rodape-dupla">
+            <p class="rodape-linha">
+                <span>Feito a quatro mãos por</span>
+                <a href="https://www.linkedin.com/in/amfpdev" target="_blank" rel="noopener">@amfpdev</a>
+                <span>e</span>
+                <a href="https://www.linkedin.com/in/amanda-cristiny" target="_blank" rel="noopener">@amanda-cristiny</a>
+            </p>
+
+            <p class="rodape-linha rodape-fontes">
+                <span>Ilustrações por</span>
+                <a href="https://storyset.com/home" target="_blank" rel="noopener">Storyset</a>
+                <span>e</span>
+                <a href="https://undraw.co" target="_blank" rel="noopener">unDraw</a>
+                <span>· Fotografias do</span>
+                <a href="https://unsplash.com" target="_blank" rel="noopener">Unsplash</a>
+            </p>
+        </footer>
+    `;
+}
+
+function renderLoginForm(identifier = "") {
+    definirRota("entrar");
+    showGoogleButton(true);
+
+    document.getElementById("auth-area").innerHTML = molduraDeEntrada("ilustra-entrar.svg", `
+        <form id="login-form">
+                    <button type="button" class="botao-link voltar-entrada" id="voltar-entrada">
+                        <i class="ph-light ph-arrow-left"></i>Voltar
+                    </button>
+
                     <div class="form-titulo">
-                        <h2>Que bom te ver de novo</h2>
-                        <span class="form-subtitulo">Entre para continuar de onde parou.</span>
+                        <h2>Entrar no Cafélio</h2>
+                        <span class="form-subtitulo">Seu diário de leituras espera por você.</span>
                     </div>
 
                     <div class="campo">
@@ -165,64 +403,102 @@ function renderLoginForm(identifier = "") {
 
                     <div class="divisor">ou</div>
 
-                    <div id="google-slot"></div>
+                    <div class="google-envoltorio">
+                        <button type="button" class="btn-google" tabindex="-1">
+                            <i class="ph-fill ph-google-logo"></i>Entrar com Google
+                        </button>
+                        <div id="google-slot"></div>
+                    </div>
 
                     <p class="rodape-form">Ainda não tem conta? <a href="#" id="show-register">Criar conta</a></p>
                 </form>
-            </div>
-        </div>
-    `;
+    `);
 
     moverBotaoDoGoogle();
     document.getElementById("identifier").value = identifier;
     document.getElementById("login-form").addEventListener("submit", handleLogin);
-        document.getElementById("show-register").addEventListener("click", (event) => {
+    document.getElementById("voltar-entrada").addEventListener("click", () => irPara("boas-vindas"));
+    document.getElementById("show-register").addEventListener("click", (event) => {
         event.preventDefault();
-        renderRegisterForm();
+        irPara("criar-conta");
     });
 
     document.getElementById("show-forgot").addEventListener("click", (event) => {
         event.preventDefault();
-        renderForgotPasswordForm();
+        irPara("esqueci-senha");
     });
 
     ativarMostrarSenha();
 }
 
 function renderRegisterForm() {
-    showGoogleButton(false);
+    definirRota("criar-conta");
+    showGoogleButton(true);
 
-    document.getElementById("auth-area").innerHTML = `
+    document.getElementById("auth-area").innerHTML = molduraDeEntrada("ilustra-criar-conta.svg", `
         <form id="register-form">
-            <h2>Criar conta</h2>
+            <button type="button" class="botao-link voltar-entrada" id="voltar-entrada">
+                <i class="ph-light ph-arrow-left"></i>Voltar
+            </button>
 
-            <label for="register-name">Seu nome</label>
-            <input id="register-name" type="text" autocomplete="name" required />
+            <div class="form-titulo">
+                <h2>Criar conta</h2>
+                <span class="form-subtitulo">Leva um minuto, e a estante é sua para sempre.</span>
+            </div>
 
-            <label for="register-username">Nome de usuário</label>
-            <input id="register-username" type="text" autocomplete="username" required />
+            <div class="campo">
+                <label for="register-name">Seu nome</label>
+                <input id="register-name" type="text" autocomplete="name" required />
+            </div>
 
-            <label for="register-email">E-mail</label>
-            <input id="register-email" type="email" autocomplete="email" required />
+            <div class="campo">
+                <label for="register-username">Nome de usuário</label>
+                <input id="register-username" type="text" autocomplete="username" required />
+                <small>Letras, números, ponto e sublinhado.</small>
+            </div>
 
-            <label for="register-password">Senha</label>
-            <input id="register-password" type="password" autocomplete="new-password" required />
-            <small>Mínimo de 8 caracteres, com letra maiúscula, minúscula e número.</small>
+            <div class="campo">
+                <label for="register-email">E-mail</label>
+                <input id="register-email" type="email" autocomplete="email" required />
+            </div>
 
-            <label for="register-confirm">Confirmar senha</label>
-            <input id="register-confirm" type="password" autocomplete="new-password" required />
+            <div class="campo">
+                <label for="register-password">Senha</label>
+                <div class="campo-com-botao">
+                    <input id="register-password" type="password" autocomplete="new-password" required />
+                </div>
+                <small>Mínimo de 8 caracteres, com letra maiúscula, minúscula e número.</small>
+            </div>
+
+            <div class="campo">
+                <label for="register-confirm">Confirmar senha</label>
+                <div class="campo-com-botao">
+                    <input id="register-confirm" type="password" autocomplete="new-password" required />
+                </div>
+            </div>
 
             <button type="submit">Criar conta</button>
             <p id="register-message" class="form-message"></p>
 
-            <p>Já tem conta? <a href="#" id="show-login">Entrar</a></p>
-        </form>
-    `;
+            <div class="divisor">ou</div>
 
+            <div class="google-envoltorio">
+                <button type="button" class="btn-google" tabindex="-1">
+                    <i class="ph-fill ph-google-logo"></i>Entrar com Google
+                </button>
+                <div id="google-slot-cadastro"></div>
+            </div>
+
+            <p class="rodape-form">Já tem conta? <a href="#" id="show-login">Entrar</a></p>
+        </form>
+    `);
+
+    moverBotaoDoGoogle("google-slot-cadastro");
     document.getElementById("register-form").addEventListener("submit", handleRegister);
+    document.getElementById("voltar-entrada").addEventListener("click", () => irPara("boas-vindas"));
     document.getElementById("show-login").addEventListener("click", (event) => {
         event.preventDefault();
-        renderLoginForm();
+        irPara("entrar");
     });
 
     ativarMostrarSenha();
@@ -280,11 +556,6 @@ function renderCasca() {
     `;
 
     document.querySelector(".casca").addEventListener("click", (event) => {
-        if (event.target.closest("[data-tema]")) {
-            alternarTema();
-            return;
-        }
-
         const alvo = event.target.closest("[data-destino]");
 
         if (!alvo) {
@@ -337,11 +608,17 @@ function avatarDoUsuario(user) {
 
 function navegarPara(id) {
     destinoAtual = id;
+    definirRota(id);
     renderCasca();
 }
 
 function renderDestino() {
     const conteudo = document.getElementById("conteudo");
+
+    definirRota(destinoAtual);
+
+    // Só o Perfil hospeda o botão do Google; qualquer outra tela o esconde
+    showGoogleButton(false);
 
     if (destinoAtual === "perfil") {
         renderPerfil(conteudo);
@@ -430,6 +707,12 @@ function renderPerfil(conteudo) {
                     ${botaoDeTema("botao-tema botao-tema-perfil")}
                 </div>
 
+                <div class="bloco">
+                    <span class="bloco-titulo"><i class="ph-light ph-link-simple"></i>Conta Google</span>
+                    ${blocoDoGoogle(user)}
+                    <p class="form-message" id="google-message"></p>
+                </div>
+
                 <div class="cartao-plano">
                     <i class="ph-light ph-crown-simple"></i>
                     <div>
@@ -441,6 +724,16 @@ function renderPerfil(conteudo) {
                 <span class="link-sair" id="logout">
                     <i class="ph-light ph-sign-out"></i>Sair da conta
                 </span>
+
+                <div class="bloco bloco-perigo">
+                    <span class="bloco-titulo"><i class="ph-light ph-warning-octagon"></i>Excluir minha conta</span>
+                    <p>
+                        Apaga em definitivo sua conta, seus livros, suas resenhas, sua
+                        sequência de leitura e sua foto. Não há como desfazer.
+                    </p>
+                    <button type="button" class="btn-perigo" id="excluir-conta">Excluir minha conta</button>
+                    <p class="form-message" id="excluir-message"></p>
+                </div>
             </div>
         </div>
     `;
@@ -468,7 +761,17 @@ function renderPerfil(conteudo) {
 
     renderPasswordForm(user);
 
+    const botaoDesvincular = document.getElementById("google-desvincular");
+
+    if (botaoDesvincular) {
+        botaoDesvincular.addEventListener("click", desvincularGoogle);
+    } else {
+        showGoogleButton(true);
+        moverBotaoDoGoogle("google-slot-perfil");
+    }
+
     document.getElementById("logout").addEventListener("click", handleLogout);
+    document.getElementById("excluir-conta").addEventListener("click", handleExcluirConta);
 }
 
 async function handleDados(event) {
@@ -486,6 +789,88 @@ async function handleDados(event) {
         // Redesenha a casca para o nome novo aparecer na barra lateral
         renderCasca();
         document.getElementById("dados-message").textContent = "Dados salvos.";
+    } catch (error) {
+        message.textContent = error.message;
+    }
+}
+
+async function handleExcluirConta() {
+    const message = document.getElementById("excluir-message");
+
+    // Duas perguntas de propósito: a primeira avisa, a segunda exige que a
+    // pessoa escreva. Um clique sozinho não deveria apagar uma conta.
+    if (!confirm("Apagar sua conta e tudo que há nela? Isso não pode ser desfeito.")) {
+        return;
+    }
+
+    if (prompt('Para confirmar, escreva EXCLUIR') !== "EXCLUIR") {
+        message.textContent = "Exclusão cancelada.";
+        return;
+    }
+
+    message.textContent = "Excluindo...";
+
+    try {
+        await apiDelete("/auth/me");
+
+        clearToken();
+        usuarioAtual = null;
+        renderWelcomeScreen();
+    } catch (error) {
+        message.textContent = error.message;
+    }
+}
+
+function blocoDoGoogle(user) {
+    if (user.googleLinked) {
+        return `
+            <p class="google-estado">
+                <i class="ph-fill ph-check-circle"></i>
+                Vinculada. Você pode entrar no Cafélio pelo Google.
+            </p>
+            <button type="button" class="botao-link" id="google-desvincular">Desvincular</button>
+        `;
+    }
+
+    return `
+        <p class="google-estado">Não vinculada. Vincule para poder entrar pelo Google.</p>
+
+        <div class="google-envoltorio">
+            <button type="button" class="btn-google" tabindex="-1">
+                <i class="ph-fill ph-google-logo"></i>Vincular conta Google
+            </button>
+            <div id="google-slot-perfil"></div>
+        </div>
+    `;
+}
+
+async function desvincularGoogle() {
+    const message = document.getElementById("google-message");
+
+    if (!confirm("Desvincular sua conta Google do Cafélio?")) {
+        return;
+    }
+
+    message.textContent = "Desvinculando...";
+
+    try {
+        usuarioAtual = await apiDelete("/auth/google/link");
+        renderCasca();
+        document.getElementById("google-message").textContent = "Conta Google desvinculada.";
+    } catch (error) {
+        message.textContent = error.message;
+    }
+}
+
+async function vincularGoogle(idToken) {
+    const message = document.getElementById("google-message");
+
+    message.textContent = "Vinculando...";
+
+    try {
+        usuarioAtual = await apiPost("/auth/google/link", { idToken });
+        renderCasca();
+        document.getElementById("google-message").textContent = "Conta Google vinculada.";
     } catch (error) {
         message.textContent = error.message;
     }
@@ -635,10 +1020,18 @@ function ativarCaixasDeCodigo() {
 function iniciarContagemDeReenvio(segundos) {
     clearInterval(reenvioTimer);
 
-    const contagem = document.getElementById("codigo-contagem");
-    const botao = document.getElementById("email-reenviar");
-
     const tique = () => {
+        // Procurados a cada tique: a tela pode ter trocado no meio da contagem,
+        // e o botão muda de nome conforme o fluxo
+        const contagem = document.getElementById("codigo-contagem");
+        const botao = document.getElementById("email-reenviar")
+                   || document.getElementById("code-reenviar");
+
+        if (!contagem || !botao) {
+            clearInterval(reenvioTimer);
+            return;
+        }
+
         if (segundos <= 0) {
             clearInterval(reenvioTimer);
             contagem.textContent = "";
@@ -744,24 +1137,62 @@ function renderPasswordForm(user) {
 
 renderWelcomeScreen();
 
+// Moldura das telas de entrada: a mesma foto-e-coluna em todas,
+// para o caminho do login ao cadastro não parecer troca de aplicativo
+function molduraDeEntrada(ilustracao, conteudo) {
+    return `
+        ${botaoDeTema("botao-tema botao-tema-canto")}
+
+        <div class="tela-entrada">
+            <div class="painel-ilustra">
+                <img class="painel-desenho" src="img/${ilustracao}" alt=""
+                     onerror="this.style.display='none'" />
+            </div>
+
+            <div class="coluna-formulario">${conteudo}</div>
+        </div>
+
+        ${rodapeDaDupla()}
+    `;
+}
+
 function renderForgotPasswordForm(email = "") {
+    definirRota("esqueci-senha");
     showGoogleButton(false);
 
-    document.getElementById("auth-area").innerHTML = `
+    document.getElementById("auth-area").innerHTML = molduraDeEntrada("ilustra-esqueci-senha.svg", `
         <form id="forgot-form">
-            <h2>Esqueci minha senha</h2>
-            <p>Informe seu e-mail. Enviaremos um link e um código de 6 dígitos — você escolhe qual usar.</p>
+            <div class="form-titulo">
+                <h2>Esqueceu a senha? Acontece.</h2>
+                <span class="form-subtitulo">
+                    Digite o e-mail da sua conta e a gente manda um jeito de criar uma nova.
+                </span>
+            </div>
 
-            <label for="forgot-email">E-mail</label>
-            <input id="forgot-email" type="email" autocomplete="email" required />
+            <div class="campo">
+                <label for="forgot-email">E-mail</label>
+                <input id="forgot-email" type="email" autocomplete="email" required />
+            </div>
 
-            <button type="submit">Enviar</button>
+            <p class="aviso">
+                <i class="ph-light ph-info"></i>
+                <span>
+                    Você vai receber <strong>um link</strong> e <strong>um código de 6 dígitos</strong>.
+                    Use o que for mais prático. Os dois valem por 30 minutos.
+                </span>
+            </p>
+
+            <button type="submit">Enviar link e código</button>
             <p id="forgot-message" class="form-message"></p>
 
-            <p><a href="#" id="have-code">Já tenho um código</a></p>
-            <p><a href="#" id="back-to-login">Voltar para o login</a></p>
+            <p class="rodape-form"><a href="#" id="have-code">Já tenho um código</a></p>
+            <p class="rodape-form">
+                <a href="#" id="back-to-login" class="voltar-entrada">
+                    <i class="ph-light ph-arrow-left"></i>Voltar para entrar
+                </a>
+            </p>
         </form>
-    `;
+    `);
 
     document.getElementById("forgot-email").value = email;
     document.getElementById("forgot-form").addEventListener("submit", handleForgotPassword);
@@ -773,53 +1204,103 @@ function renderForgotPasswordForm(email = "") {
 
     document.getElementById("back-to-login").addEventListener("click", (event) => {
         event.preventDefault();
-        renderLoginForm();
+        irPara("entrar");
     });
 }
 
 function renderResetByCodeForm(email = "") {
+    definirRota("usar-codigo");
     showGoogleButton(false);
 
-    document.getElementById("auth-area").innerHTML = `
+    const caixas = Array.from(
+        { length: 6 },
+        () => `<input class="codigo-caixa" type="text" inputmode="numeric" maxlength="1" aria-label="dígito do código" />`
+    ).join("");
+
+    document.getElementById("auth-area").innerHTML = molduraDeEntrada("ilustra-codigo.svg", `
         <form id="code-form">
-            <h2>Usar o código</h2>
-            <p>Digite o código de 6 dígitos que enviamos para o seu e-mail.</p>
+            <div class="form-titulo">
+                <h2>Digite o código</h2>
+                <span class="form-subtitulo">Enviamos para ${mascararEmail(email)}</span>
+            </div>
 
-            <label for="code-email">E-mail</label>
-            <input id="code-email" type="email" autocomplete="email" required />
+            <input id="code-email" type="email" value="${email}" hidden />
 
-            <label for="code-value">Código</label>
-            <input id="code-value" type="text" inputmode="numeric" maxlength="6"
-                    pattern="\\d{6}" autocomplete="one-time-code" required />
+            <div class="codigo-caixas">${caixas}</div>
 
-            <label for="code-password">Nova senha</label>
-            <input id="code-password" type="password" autocomplete="new-password" required />
-            <small>Mínimo de 8 caracteres, com letra maiúscula, minúscula e número.</small>
+            <p class="codigo-reenvio">
+                Não chegou?
+                <button type="button" class="botao-link" id="code-reenviar" disabled>Reenviar</button>
+                <span id="codigo-contagem"></span>
+            </p>
 
-            <label for="code-confirm">Confirmar nova senha</label>
-            <input id="code-confirm" type="password" autocomplete="new-password" required />
+            <div class="senha-campos">
+                <div class="campo">
+                    <label for="code-password">Nova senha</label>
+                    <div class="campo-com-botao">
+                        <input id="code-password" type="password" autocomplete="new-password" required />
+                    </div>
+                </div>
 
-            <button type="submit">Salvar senha</button>
+                <div class="campo">
+                    <label for="code-confirm">Confirme</label>
+                    <div class="campo-com-botao">
+                        <input id="code-confirm" type="password" autocomplete="new-password" required />
+                    </div>
+                </div>
+            </div>
+
+            <p class="regra-senha">
+                <i class="ph-light ph-check-circle"></i>
+                8 caracteres ou mais, com maiúscula, minúscula e número
+            </p>
+
+            <button type="submit">Salvar nova senha</button>
             <p id="code-message" class="form-message"></p>
 
-            <p><a href="#" id="back-to-forgot">Pedir um código novo</a></p>
+            <p class="rodape-form">
+                <a href="#" id="back-to-forgot" class="voltar-entrada">
+                    <i class="ph-light ph-arrow-left"></i>Pedir um código novo
+                </a>
+            </p>
         </form>
-    `;
+    `);
 
-    document.getElementById("code-email").value = email;
     document.getElementById("code-form").addEventListener("submit", handleResetByCode);
+
+    document.getElementById("code-reenviar").addEventListener("click", reenviarCodigoDeSenha);
 
     document.getElementById("back-to-forgot").addEventListener("click", (event) => {
         event.preventDefault();
-        renderForgotPasswordForm(document.getElementById("code-email").value);
+        renderForgotPasswordForm(email);
     });
 
-    document.getElementById(email ? "code-value" : "code-email").focus();
-
+    ativarCaixasDeCodigo();
+    iniciarContagemDeReenvio(60);
     ativarMostrarSenha();
+
+    document.querySelector(".codigo-caixa").focus();
+}
+
+async function reenviarCodigoDeSenha() {
+    const message = document.getElementById("code-message");
+
+    message.textContent = "Reenviando...";
+
+    try {
+        await apiPost("/auth/password/reset-request", {
+            email: document.getElementById("code-email").value,
+        });
+
+        message.textContent = "Enviamos outro código.";
+        iniciarContagemDeReenvio(60);
+    } catch (error) {
+        message.textContent = error.message;
+    }
 }
 
 function renderResetPasswordForm(token) {
+    definirRota("nova-senha");
     showGoogleButton(false);
 
     document.getElementById("auth-area").innerHTML = `
@@ -846,6 +1327,13 @@ function renderResetPasswordForm(token) {
 }
 
 async function handleGoogleLogin(response) {
+    // O mesmo botão serve para entrar e para vincular: se já há sessão,
+    // o clique veio da tela de Perfil.
+    if (getToken() && usuarioAtual) {
+        vincularGoogle(response.credential);
+        return;
+    }
+
     if (!document.getElementById("login-message")) {
         renderLoginForm();
     }
@@ -936,8 +1424,9 @@ async function handleChangePassword(event, user) {
 
 function handleLogout() {
     destinoAtual = "inicio";
+    usuarioAtual = null;
     clearToken();
-    renderLoginForm();
+    irPara("boas-vindas");
 }
 
 async function handleForgotPassword(event) {
@@ -994,7 +1483,7 @@ async function handleResetByCode(event) {
     try {
         await apiPost("/auth/password/reset-code", {
             email: email,
-            code: document.getElementById("code-value").value,
+            code: codigoDigitado(),
             newPassword: document.getElementById("code-password").value,
             confirmNewPassword: document.getElementById("code-confirm").value,
         });

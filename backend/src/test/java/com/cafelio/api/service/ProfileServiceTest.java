@@ -41,6 +41,33 @@ class ProfileServiceTest {
     }
 
     @Test
+    void excluirConta_comFoto_apagaAImagemDepoisDeApagarAConta() {
+        User user = new User();
+        user.setProfilePicturePublicId("cafelio/fotos/abc");
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+
+        service.excluirConta(userId);
+
+        InOrder ordem = inOrder(userRepository, imageService);
+
+        ordem.verify(userRepository).delete(user);
+        ordem.verify(imageService).apagar("cafelio/fotos/abc");
+    }
+
+    @Test
+    void excluirConta_semFoto_naoChamaOCloudinary() {
+        User user = new User();
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+
+        service.excluirConta(userId);
+
+        verify(userRepository).delete(user);
+        verify(imageService, never()).apagar(any());
+    }
+
+    @Test
     void atualizarDados_nomeDeUsuarioLivre_salva() {
         User user = new User();
         user.setUsername("angelica");

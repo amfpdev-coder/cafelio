@@ -37,7 +37,7 @@ class AuthServiceTest {
     @Test
     void usuarioNovo_criaComGoogleIdEEmailVerificado() {
         when(userRepository.findByGoogleId("google-123")).thenReturn(Optional.empty());
-        when(userRepository.findByEmail("ana@example.com")).thenReturn(Optional.empty());
+        when(userRepository.existsByEmail("ana@example.com")).thenReturn(false);
         when(userRepository.existsByUsername("ana")).thenReturn(false);
         when(userRepository.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
 
@@ -63,23 +63,104 @@ class AuthServiceTest {
     }
 
     @Test
-    void usuarioExistePorEmailSemGoogleId_vinculaGoogleId() {
-        User existentePorEmail = new User();
-        existentePorEmail.setEmail("ana@example.com");
+    void jaExisteContaComEsseEmail_recusaEMandaVincularNoPerfil() {
         when(userRepository.findByGoogleId("google-123")).thenReturn(Optional.empty());
-        when(userRepository.findByEmail("ana@example.com")).thenReturn(Optional.of(existentePorEmail));
+        when(userRepository.existsByEmail("ana@example.com")).thenReturn(true);
+
+        // Vincular sozinho pelo e-mail quebrava quando a pessoa trocava de
+        // endereco, e deixava tomar conta alheia por coincidencia.
+        assertThatThrownBy(() ->
+                authService.loginOrRegisterWithGoogle("google-123", "ana@example.com", "Ana"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Já existe uma conta com esse e-mail. Entre com sua senha e vincule o Google no Perfil.");
+
+        verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    void vincularGoogle_contaLivre_guardaOGoogleId() {
+        UUID userId = UUID.randomUUID();
+        User user = new User();
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(userRepository.findByGoogleId("google-123")).thenReturn(Optional.empty());
         when(userRepository.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        User result = authService.loginOrRegisterWithGoogle("google-123", "ana@example.com", "Ana");
+        authService.vincularGoogle(userId, "google-123");
 
-        assertThat(result.getGoogleId()).isEqualTo("google-123");
-        verify(userRepository).save(existentePorEmail);
+        assertThat(user.getGoogleId()).isEqualTo("google-123");
+    }
+
+    @Test
+    void vincularGoogle_googleDeOutraConta_recusa() {
+        UUID userId = UUID.randomUUID();
+        User user = new User();
+        user.setId(userId);
+
+        User outra = new User();
+        outra.setId(UUID.randomUUID());
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(userRepository.findByGoogleId("google-123")).thenReturn(Optional.of(outra));
+
+        assertThatThrownBy(() -> authService.vincularGoogle(userId, "google-123"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Essa conta Google já está vinculada a outra conta do Cafélio");
+
+        verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    void vincularGoogle_mesmoGoogleJaVinculado_naoReclama() {
+        UUID userId = UUID.randomUUID();
+        User user = new User();
+        user.setId(userId);
+        user.setGoogleId("google-123");
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(userRepository.findByGoogleId("google-123")).thenReturn(Optional.of(user));
+        when(userRepository.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        authService.vincularGoogle(userId, "google-123");
+
+        assertThat(user.getGoogleId()).isEqualTo("google-123");
+    }
+
+    @Test
+    void desvincularGoogle_contaComSenha_removeOVinculo() {
+        UUID userId = UUID.randomUUID();
+        User user = new User();
+        user.setGoogleId("google-123");
+        user.setPasswordHash("hash");
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(userRepository.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        authService.desvincularGoogle(userId);
+
+        assertThat(user.getGoogleId()).isNull();
+    }
+
+    @Test
+    void desvincularGoogle_contaSemSenha_recusaParaNaoTrancarAPessoaDeFora() {
+        UUID userId = UUID.randomUUID();
+        User user = new User();
+        user.setGoogleId("google-123");
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+
+        assertThatThrownBy(() -> authService.desvincularGoogle(userId))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Defina uma senha antes de desvincular o Google — sem ela você ficaria sem como entrar.");
+
+        assertThat(user.getGoogleId()).isEqualTo("google-123");
+        verify(userRepository, never()).save(any());
     }
 
     @Test
     void nomeDeUsuarioJaExiste_adicionaSufixoNumerico() {
         when(userRepository.findByGoogleId("google-123")).thenReturn(Optional.empty());
-        when(userRepository.findByEmail("ana@example.com")).thenReturn(Optional.empty());
+        when(userRepository.existsByEmail("ana@example.com")).thenReturn(false);
         when(userRepository.existsByUsername("ana")).thenReturn(true);
         when(userRepository.existsByUsername("ana1")).thenReturn(false);
         when(userRepository.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
