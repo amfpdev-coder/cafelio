@@ -224,7 +224,7 @@ button:disabled {
             rgba(245, 236, 215, .20) 62%,
             rgba(245, 236, 215, .92) 100%
         ),
-        url("../img/cafe-da-tarde.jpg") center / cover;
+        var(--foto, url("../img/cafe-da-tarde.jpg")) center / cover;
     box-shadow: inset 0 0 0 1px rgba(107, 63, 42, .15);
 }
 
@@ -2070,4 +2070,42 @@ body::before {
     .botao-tema-canto span {
         display: none;
     }
+}
+
+/* ---- Selo de ilustração e caixa de aviso ---- */
+
+.selo-ilustracao {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 56px;
+    height: 56px;
+    border-radius: 18px;
+    background: var(--color-surface-2);
+    color: var(--color-coffee);
+    font-size: 28px;
+}
+
+.aviso {
+    display: flex;
+    gap: 10px;
+    margin: 0;
+    padding: 14px 16px;
+    border-radius: 14px;
+    background: var(--color-surface-2);
+    box-shadow: inset 0 0 0 1px var(--color-border-soft);
+    color: var(--color-text-2);
+    font-size: 13px;
+    line-height: 1.45;
+}
+
+.aviso i {
+    flex-shrink: 0;
+    margin-top: 1px;
+    font-size: 18px;
+    color: var(--color-caramelo);
+}
+
+.aviso strong {
+    color: var(--color-sepia);
 }

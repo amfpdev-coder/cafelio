@@ -425,31 +425,47 @@ function renderRegisterForm() {
     definirRota("criar-conta");
     showGoogleButton(true);
 
-    document.getElementById("auth-area").innerHTML = `
-        ${botaoDeTema("botao-tema botao-tema-canto")}
-
+    document.getElementById("auth-area").innerHTML = molduraDeEntrada("img/livros-abertos.jpg", `
         <form id="register-form">
             <button type="button" class="botao-link voltar-entrada" id="voltar-entrada">
                 <i class="ph-light ph-arrow-left"></i>Voltar
             </button>
 
-            <h2>Criar conta</h2>
+            <div class="form-titulo">
+                <h2>Criar conta</h2>
+                <span class="form-subtitulo">Leva um minuto, e a estante é sua para sempre.</span>
+            </div>
 
-            <label for="register-name">Seu nome</label>
-            <input id="register-name" type="text" autocomplete="name" required />
+            <div class="campo">
+                <label for="register-name">Seu nome</label>
+                <input id="register-name" type="text" autocomplete="name" required />
+            </div>
 
-            <label for="register-username">Nome de usuário</label>
-            <input id="register-username" type="text" autocomplete="username" required />
+            <div class="campo">
+                <label for="register-username">Nome de usuário</label>
+                <input id="register-username" type="text" autocomplete="username" required />
+                <small>Letras, números, ponto e sublinhado.</small>
+            </div>
 
-            <label for="register-email">E-mail</label>
-            <input id="register-email" type="email" autocomplete="email" required />
+            <div class="campo">
+                <label for="register-email">E-mail</label>
+                <input id="register-email" type="email" autocomplete="email" required />
+            </div>
 
-            <label for="register-password">Senha</label>
-            <input id="register-password" type="password" autocomplete="new-password" required />
-            <small>Mínimo de 8 caracteres, com letra maiúscula, minúscula e número.</small>
+            <div class="campo">
+                <label for="register-password">Senha</label>
+                <div class="campo-com-botao">
+                    <input id="register-password" type="password" autocomplete="new-password" required />
+                </div>
+                <small>Mínimo de 8 caracteres, com letra maiúscula, minúscula e número.</small>
+            </div>
 
-            <label for="register-confirm">Confirmar senha</label>
-            <input id="register-confirm" type="password" autocomplete="new-password" required />
+            <div class="campo">
+                <label for="register-confirm">Confirmar senha</label>
+                <div class="campo-com-botao">
+                    <input id="register-confirm" type="password" autocomplete="new-password" required />
+                </div>
+            </div>
 
             <button type="submit">Criar conta</button>
             <p id="register-message" class="form-message"></p>
@@ -465,9 +481,7 @@ function renderRegisterForm() {
 
             <p class="rodape-form">Já tem conta? <a href="#" id="show-login">Entrar</a></p>
         </form>
-
-        ${rodapeDaDupla()}
-    `;
+    `);
 
     moverBotaoDoGoogle("google-slot-cadastro");
     document.getElementById("register-form").addEventListener("submit", handleRegister);
@@ -1105,25 +1119,68 @@ function renderPasswordForm(user) {
 
 renderWelcomeScreen();
 
+// Moldura das telas de entrada: a mesma foto-e-coluna em todas,
+// para o caminho do login ao cadastro não parecer troca de aplicativo
+function molduraDeEntrada(imagem, conteudo) {
+    return `
+        ${botaoDeTema("botao-tema botao-tema-canto")}
+
+        <div class="tela-entrada">
+            <div class="painel-foto" style="--foto: url('${imagem}')">
+                <div class="painel-marca">
+                    <i class="ph-light ph-coffee"></i>
+                    <span>Cafélio</span>
+                </div>
+
+                <p class="painel-frase">seu diário de leituras, guardado entre um café e outro</p>
+            </div>
+
+            <div class="coluna-formulario">${conteudo}</div>
+        </div>
+
+        ${rodapeDaDupla()}
+    `;
+}
+
 function renderForgotPasswordForm(email = "") {
     definirRota("esqueci-senha");
     showGoogleButton(false);
 
-    document.getElementById("auth-area").innerHTML = `
+    document.getElementById("auth-area").innerHTML = molduraDeEntrada("img/cafe-e-livro.jpg", `
         <form id="forgot-form">
-            <h2>Esqueci minha senha</h2>
-            <p>Informe seu e-mail. Enviaremos um link e um código de 6 dígitos — você escolhe qual usar.</p>
+            <span class="selo-ilustracao"><i class="ph-light ph-envelope-simple"></i></span>
 
-            <label for="forgot-email">E-mail</label>
-            <input id="forgot-email" type="email" autocomplete="email" required />
+            <div class="form-titulo">
+                <h2>Esqueceu a senha? Acontece.</h2>
+                <span class="form-subtitulo">
+                    Digite o e-mail da sua conta e a gente manda um jeito de criar uma nova.
+                </span>
+            </div>
 
-            <button type="submit">Enviar</button>
+            <div class="campo">
+                <label for="forgot-email">E-mail</label>
+                <input id="forgot-email" type="email" autocomplete="email" required />
+            </div>
+
+            <p class="aviso">
+                <i class="ph-light ph-info"></i>
+                <span>
+                    Você vai receber <strong>um link</strong> e <strong>um código de 6 dígitos</strong>.
+                    Use o que for mais prático. Os dois valem por 30 minutos.
+                </span>
+            </p>
+
+            <button type="submit">Enviar link e código</button>
             <p id="forgot-message" class="form-message"></p>
 
-            <p><a href="#" id="have-code">Já tenho um código</a></p>
-            <p><a href="#" id="back-to-login">Voltar para o login</a></p>
+            <p class="rodape-form"><a href="#" id="have-code">Já tenho um código</a></p>
+            <p class="rodape-form">
+                <a href="#" id="back-to-login" class="voltar-entrada">
+                    <i class="ph-light ph-arrow-left"></i>Voltar para entrar
+                </a>
+            </p>
         </form>
-    `;
+    `);
 
     document.getElementById("forgot-email").value = email;
     document.getElementById("forgot-form").addEventListener("submit", handleForgotPassword);
