@@ -1687,16 +1687,37 @@ button:disabled {
 .google-envoltorio {
     position: relative;
     width: 100%;
+
+    /* O botão real do Google tem no máximo 400px. Travando o nosso na mesma
+       largura, a área clicável cobre exatamente o que se vê. */
+    max-width: 400px;
+    margin: 0 auto;
+    cursor: pointer;
 }
 
 .google-envoltorio .btn-google {
     width: 100%;
+
+    /* Quem recebe o clique é o botão do Google, invisível por cima */
     pointer-events: none;
+}
+
+/* O estado de passagem do mouse vem do envoltório, já que o botão
+   visível não recebe eventos */
+.google-envoltorio:hover .btn-google {
+    background: var(--color-areia);
+}
+
+.google-envoltorio:active .btn-google {
+    transform: translateY(2px);
 }
 
 .google-envoltorio > div {
     position: absolute;
     inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     opacity: 0;
     overflow: hidden;
 }
