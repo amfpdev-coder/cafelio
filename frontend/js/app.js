@@ -208,6 +208,83 @@ function moverBotaoDoGoogle(slotId = "google-slot") {
     }
 }
 
+// ---- Diálogo do Cafélio, no lugar das caixas do navegador ----
+
+// Devolve uma promessa: true se confirmou, false se desistiu. Com
+// `escrever`, só confirma quem digitar exatamente aquela palavra.
+function perguntar({ titulo, texto, confirmar = "Confirmar", perigo = false, escrever = null }) {
+    return new Promise((resolve) => {
+        const campo = escrever
+            ? `
+                <div class="campo">
+                    <label for="dialogo-escrever">Para confirmar, escreva <strong>${escrever}</strong></label>
+                    <input id="dialogo-escrever" type="text" autocomplete="off" />
+                </div>
+            `
+            : "";
+
+        document.body.insertAdjacentHTML("beforeend", `
+            <div class="modal-fundo" id="modal-dialogo">
+                <div class="modal" role="dialog" aria-modal="true" aria-label="${titulo}">
+                    <button type="button" class="modal-fechar" id="dialogo-fechar" aria-label="Fechar">
+                        <i class="ph-light ph-x"></i>
+                    </button>
+
+                    <h3>${titulo}</h3>
+                    <p class="modal-texto">${texto}</p>
+
+                    ${campo}
+
+                    <div class="dialogo-acoes">
+                        <button type="button" class="botao-secundario" id="dialogo-nao">Cancelar</button>
+                        <button type="button" class="${perigo ? "btn-perigo" : ""}" id="dialogo-sim">${confirmar}</button>
+                    </div>
+                </div>
+            </div>
+        `);
+
+        const modal = document.getElementById("modal-dialogo");
+        const entrada = document.getElementById("dialogo-escrever");
+
+        function fechar(resposta) {
+            document.removeEventListener("keydown", pelaTecla);
+            modal.remove();
+            resolve(resposta);
+        }
+
+        function pelaTecla(event) {
+            if (event.key === "Escape") {
+                fechar(false);
+            }
+
+            if (event.key === "Enter" && entrada) {
+                confirmarDialogo();
+            }
+        }
+
+        function confirmarDialogo() {
+            fechar(!escrever || entrada.value.trim() === escrever);
+        }
+
+        modal.addEventListener("click", (event) => {
+            if (event.target === modal
+                || event.target.closest("#dialogo-fechar")
+                || event.target.closest("#dialogo-nao")) {
+                fechar(false);
+                return;
+            }
+
+            if (event.target.closest("#dialogo-sim")) {
+                confirmarDialogo();
+            }
+        });
+
+        document.addEventListener("keydown", pelaTecla);
+
+        (entrada || document.getElementById("dialogo-sim")).focus();
+    });
+}
+
 // ---- Tela de boas-vindas ----
 
 const SLIDES = [
@@ -799,11 +876,16 @@ async function handleExcluirConta() {
 
     // Duas perguntas de propósito: a primeira avisa, a segunda exige que a
     // pessoa escreva. Um clique sozinho não deveria apagar uma conta.
-    if (!confirm("Apagar sua conta e tudo que há nela? Isso não pode ser desfeito.")) {
-        return;
-    }
+    const certeza = await perguntar({
+        titulo: "Apagar sua conta?",
+        texto: "Sua conta, seus livros, suas resenhas, sua sequência de leitura e sua foto "
+             + "serão apagados em definitivo. Não há como desfazer.",
+        confirmar: "Apagar minha conta",
+        perigo: true,
+        escrever: "EXCLUIR",
+    });
 
-    if (prompt('Para confirmar, escreva EXCLUIR') !== "EXCLUIR") {
+    if (!certeza) {
         message.textContent = "Exclusão cancelada.";
         return;
     }
@@ -847,7 +929,13 @@ function blocoDoGoogle(user) {
 async function desvincularGoogle() {
     const message = document.getElementById("google-message");
 
-    if (!confirm("Desvincular sua conta Google do Cafélio?")) {
+    const certeza = await perguntar({
+        titulo: "Desvincular o Google?",
+        texto: "Você deixa de poder entrar pelo Google. Para voltar atrás, é só vincular de novo.",
+        confirmar: "Desvincular",
+    });
+
+    if (!certeza) {
         return;
     }
 
@@ -1687,8 +1775,17 @@ function preencherFlamme(flamme) {
 }
 
 async function alternarDia(dia, estaMarcado) {
-    if (estaMarcado && !confirm(`Remover o registro de leitura de ${dia}?`)) {
-        return;
+    if (estaMarcado) {
+        const certeza = await perguntar({
+            titulo: "Remover esse dia?",
+            texto: `A leitura de ${dia} sai da sua sequência. Você pode marcar de novo depois.`,
+            confirmar: "Remover",
+            perigo: true,
+        });
+
+        if (!certeza) {
+            return;
+        }
     }
 
     const caminho = `/challenges/flamme/days/${dia}`;
@@ -1897,28 +1994,96 @@ async function renderInicio(conteudo) {
             ${avatarDoUsuario(user).replace('class="avatar"', 'class="avatar avatar-grande"')}
             <div>
                 <h2>${saudacaoDoDia()}, ${user.name}</h2>
-                <span class="inicio-data">${dataPorExtenso(new Date())}</span>
+                <span class="inicio-data">
+                    ${dataPorExtenso(new Date())} · hora de um café e de um capítulo
+                </span>
             </div>
         </div>
 
         <div class="inicio-cartoes">
+            <div class="cartao-paginas" id="cartao-paginas">
+                <span class="overline">Páginas lidas</span>
+                <p class="rascunho">Carregando…</p>
+            </div>
+
             <div class="cartao-sequencia" id="cartao-sequencia">
                 <span class="overline">Sequência</span>
                 <p class="rascunho">Carregando…</p>
             </div>
         </div>
 
-        <p class="aviso-rascunho">
-            <i class="ph-light ph-wrench"></i>O resto da tela — páginas lidas, livro em andamento e recomendação — ainda não foi construído.
-        </p>
+        <section id="lendo-agora"></section>
     `;
 
-    try {
-        preencherSequencia(await apiGet("/challenges/flamme"));
-    } catch (error) {
-        document.getElementById("cartao-sequencia").innerHTML =
-            `<p class="form-message">${error.message}</p>`;
+    // As duas chamadas saem juntas: uma não depende da outra
+    const [home, flamme] = await Promise.allSettled([
+        apiGet("/home"),
+        apiGet("/challenges/flamme"),
+    ]);
+
+    if (home.status === "fulfilled") {
+        preencherPaginas(home.value);
+        preencherLendoAgora(home.value.lendoAgora);
+    } else {
+        document.getElementById("cartao-paginas").innerHTML =
+            `<p class="form-message">${home.reason.message}</p>`;
     }
+
+    if (flamme.status === "fulfilled") {
+        preencherSequencia(flamme.value);
+    } else {
+        document.getElementById("cartao-sequencia").innerHTML =
+            `<p class="form-message">${flamme.reason.message}</p>`;
+    }
+}
+
+function preencherPaginas(home) {
+    const naSemana = home.paginasNaSemana > 0
+        ? `+${home.paginasNaSemana.toLocaleString("pt-BR")} na semana`
+        : "nenhuma página esta semana";
+
+    document.getElementById("cartao-paginas").innerHTML = `
+        <span class="overline">Páginas lidas em ${home.ano}</span>
+        <span class="paginas-valor">${home.paginasNoAno.toLocaleString("pt-BR")}</span>
+        <span class="paginas-semana">${naSemana}</span>
+    `;
+}
+
+function preencherLendoAgora(livros) {
+    const area = document.getElementById("lendo-agora");
+
+    if (!livros.length) {
+        area.innerHTML = `
+            <span class="overline">Lendo agora</span>
+            <p class="rascunho">Nenhum livro em andamento. Marque um como "Lendo" na Estante.</p>
+        `;
+        return;
+    }
+
+    const cartoes = livros.map((livro) => `
+        <article class="livro-lendo">
+            ${capaDoLivro(livro)}
+            <div>
+                <h3>${livro.title}</h3>
+                <p class="livro-autoria">${(livro.authors || []).join(", ")}</p>
+                ${livro.pages ? `<p class="livro-paginas">${livro.pages} páginas</p>` : ""}
+            </div>
+        </article>
+    `).join("");
+
+    area.innerHTML = `
+        <span class="overline">Lendo agora</span>
+        <div class="livros-lendo">${cartoes}</div>
+    `;
+}
+
+// Sem capa, a lombada desenhada com o título já identifica o livro
+function capaDoLivro(livro) {
+    if (livro.coverUrl) {
+        return `<img class="capa" src="${livro.coverUrl}" alt="Capa de ${livro.title}" />`;
+    }
+
+    return `<span class="capa capa-vazia">${livro.title}</span>`;
 }
 
 function preencherSequencia(flamme) {
