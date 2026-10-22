@@ -1133,8 +1133,6 @@ function molduraDeEntrada(ilustracao, conteudo) {
 
                 <img class="painel-desenho" src="img/${ilustracao}" alt=""
                      onerror="this.style.display='none'" />
-
-                <p class="painel-frase">seu diário de leituras, guardado entre um café e outro</p>
             </div>
 
             <div class="coluna-formulario">${conteudo}</div>
