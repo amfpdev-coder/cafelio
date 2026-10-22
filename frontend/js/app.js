@@ -89,7 +89,7 @@ async function loadSession() {
     }
 
     if (!getToken()) {
-        jaViuBoasVindas() ? renderLoginForm() : renderBoasVindas();
+        renderBoasVindas();
         return;
     }
 
@@ -127,8 +127,6 @@ function moverBotaoDoGoogle(slotId = "google-slot") {
 
 // ---- Tela de boas-vindas ----
 
-const BOAS_VINDAS_KEY = "cafelio_boas_vindas";
-
 const SLIDES = [
     {
         icone: "books",
@@ -158,22 +156,6 @@ const SLIDES = [
 
 let slideAtual = 0;
 let slideTimer = null;
-
-function jaViuBoasVindas() {
-    try {
-        return localStorage.getItem(BOAS_VINDAS_KEY) === "1";
-    } catch (error) {
-        return false;
-    }
-}
-
-function marcarBoasVindasVistas() {
-    try {
-        localStorage.setItem(BOAS_VINDAS_KEY, "1");
-    } catch (error) {
-        // Navegação privada: a tela aparece de novo na próxima visita, tudo bem
-    }
-}
 
 function renderBoasVindas() {
     showGoogleButton(false);
@@ -242,7 +224,6 @@ function renderBoasVindas() {
 
 function sairDasBoasVindas(proximaTela) {
     clearInterval(slideTimer);
-    marcarBoasVindasVistas();
     proximaTela();
 }
 
