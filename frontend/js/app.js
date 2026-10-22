@@ -268,6 +268,7 @@ function renderBoasVindas() {
                         <a href="https://www.linkedin.com/in/amanda-cristiny" target="_blank" rel="noopener">@amanda-cristiny</a>
                         <span class="hero-credito-fontes">
                             Ilustrações por <a href="https://storyset.com/home" target="_blank" rel="noopener">Storyset</a>
+                            e <a href="https://undraw.co" target="_blank" rel="noopener">unDraw</a>
                             · Fotografias do <a href="https://unsplash.com" target="_blank" rel="noopener">Unsplash</a>
                         </span>
                     </p>
@@ -346,9 +347,12 @@ function rodapeDaDupla() {
             </p>
 
             <p class="rodape-linha rodape-fontes">
-                <a href="https://storyset.com/home" target="_blank" rel="noopener">Ilustrações por Storyset</a>
-                <span>·</span>
-                <a href="https://unsplash.com" target="_blank" rel="noopener">Fotografias do Unsplash</a>
+                <span>Ilustrações por</span>
+                <a href="https://storyset.com/home" target="_blank" rel="noopener">Storyset</a>
+                <span>e</span>
+                <a href="https://undraw.co" target="_blank" rel="noopener">unDraw</a>
+                <span>· Fotografias do</span>
+                <a href="https://unsplash.com" target="_blank" rel="noopener">Unsplash</a>
             </p>
         </footer>
     `;
