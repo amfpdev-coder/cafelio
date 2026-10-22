@@ -2019,3 +2019,49 @@ body::before {
 .voltar-entrada:hover {
     text-decoration: underline;
 }
+
+/* ---- Botão de tema nas telas de entrada ---- */
+
+.botao-tema-canto {
+    position: fixed;
+    top: 18px;
+    right: 18px;
+    z-index: 30;
+    width: auto;
+    height: 40px;
+    padding: 0 16px;
+    border-radius: var(--radius-pill);
+    background: var(--color-paper);
+    box-shadow: inset 0 0 0 1px var(--color-border-soft);
+    color: var(--color-text-2);
+}
+
+.botao-tema-canto:hover {
+    background: var(--color-surface-2);
+    color: var(--color-sepia);
+}
+
+/* Sobre a foto da entrada ele precisa de vidro, não de papel */
+.botao-tema-hero {
+    background: rgba(26, 17, 10, .45);
+    box-shadow: inset 0 0 0 1px rgba(245, 236, 215, .3);
+    color: var(--color-cream);
+    backdrop-filter: blur(8px);
+}
+
+.botao-tema-hero:hover {
+    background: rgba(26, 17, 10, .65);
+    color: var(--color-cream);
+}
+
+@media (max-width: 767px) {
+    .botao-tema-canto {
+        top: 12px;
+        right: 12px;
+        padding: 0 12px;
+    }
+
+    .botao-tema-canto span {
+        display: none;
+    }
+}

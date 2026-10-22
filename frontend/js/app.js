@@ -99,21 +99,35 @@ function aplicarTema(tema) {
     }
 }
 
-function alternarTema() {
-    aplicarTema(document.documentElement.dataset.theme === "dark" ? "light" : "dark");
-    renderCasca();
-}
-
-function botaoDeTema(classe) {
+function conteudoDoBotaoDeTema() {
     const escuro = document.documentElement.dataset.theme === "dark";
 
     return `
-        <button type="button" class="${classe}" data-tema="alternar">
-            <i class="ph-light ph-${escuro ? "sun" : "moon"}"></i>
-            <span>${escuro ? "Modo claro" : "Modo escuro"}</span>
-        </button>
+        <i class="ph-light ph-${escuro ? "sun" : "moon"}"></i>
+        <span>${escuro ? "Modo claro" : "Modo escuro"}</span>
     `;
 }
+
+function botaoDeTema(classe) {
+    return `<button type="button" class="${classe}" data-tema="alternar">${conteudoDoBotaoDeTema()}</button>`;
+}
+
+// Só o conteúdo do botão muda: redesenhar a tela faria o carrossel
+// da entrada voltar ao primeiro slide
+function alternarTema() {
+    aplicarTema(document.documentElement.dataset.theme === "dark" ? "light" : "dark");
+
+    document.querySelectorAll("[data-tema]").forEach((botao) => {
+        botao.innerHTML = conteudoDoBotaoDeTema();
+    });
+}
+
+// Um escutador só, para os botões de tema de qualquer tela
+document.addEventListener("click", (event) => {
+    if (event.target.closest("[data-tema]")) {
+        alternarTema();
+    }
+});
 
 aplicarTema(temaSalvo() || temaDoSistema());
 
@@ -222,6 +236,8 @@ function renderBoasVindas() {
         .join("");
 
     document.getElementById("auth-area").innerHTML = `
+        ${botaoDeTema("botao-tema botao-tema-canto botao-tema-hero")}
+
         <div class="hero">
             <div class="hero-foto" id="hero-foto"></div>
             <div class="hero-veu"></div>
@@ -331,6 +347,8 @@ function renderLoginForm(identifier = "") {
     showGoogleButton(true);
 
     document.getElementById("auth-area").innerHTML = `
+        ${botaoDeTema("botao-tema botao-tema-canto")}
+
         <div class="tela-entrada">
             <div class="painel-foto">
                 <div class="painel-marca">
@@ -408,6 +426,8 @@ function renderRegisterForm() {
     showGoogleButton(true);
 
     document.getElementById("auth-area").innerHTML = `
+        ${botaoDeTema("botao-tema botao-tema-canto")}
+
         <form id="register-form">
             <button type="button" class="botao-link voltar-entrada" id="voltar-entrada">
                 <i class="ph-light ph-arrow-left"></i>Voltar
@@ -512,11 +532,6 @@ function renderCasca() {
     `;
 
     document.querySelector(".casca").addEventListener("click", (event) => {
-        if (event.target.closest("[data-tema]")) {
-            alternarTema();
-            return;
-        }
-
         const alvo = event.target.closest("[data-destino]");
 
         if (!alvo) {
