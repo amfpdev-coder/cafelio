@@ -234,7 +234,9 @@ button:disabled {
     gap: 8px;
     font-family: var(--font-heading);
     font-size: 28px;
-    color: var(--color-coffee);
+
+    /* O véu do painel é creme fixo nos dois temas, então a tinta também é */
+    color: #6B3F2A;
 }
 
 .painel-marca i {
@@ -256,7 +258,7 @@ button:disabled {
     font-family: var(--font-hand);
     font-size: 34px;
     line-height: 1.15;
-    color: var(--color-sepia);
+    color: #3B2A1A;
 }
 
 /* ---- Coluna do formulário ---- */
