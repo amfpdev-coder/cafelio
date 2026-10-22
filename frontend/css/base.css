@@ -1756,7 +1756,9 @@ body::before {
     inset: 0;
     z-index: 10;
     overflow: hidden;
-    background: var(--color-sepia);
+
+    /* Fundo enquanto a foto carrega. Fixo: a entrada é escura nos dois temas */
+    background: #1A110A;
 }
 
 /* A foto é maior que a tela para poder se mover sem mostrar borda */
@@ -1909,8 +1911,10 @@ body::before {
     align-items: center;
     gap: 10px;
     padding: 0 34px;
-    background: var(--color-cream);
-    color: var(--color-sepia);
+
+    /* Fixos pelo mesmo motivo: o botão está sempre sobre a foto */
+    background: #F5ECD7;
+    color: #2A1E15;
     box-shadow: 0 2px 0 rgba(0, 0, 0, .35);
 }
 
