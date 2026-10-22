@@ -2141,3 +2141,22 @@ body::before {
     border-radius: 20px;
     background: #F5ECD7;
 }
+
+.regra-senha {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin: 0;
+    color: var(--color-text-3);
+    font-size: 13px;
+}
+
+.regra-senha i {
+    font-size: 16px;
+    color: var(--color-moss);
+}
+
+.codigo-caixas {
+    display: flex;
+    gap: 8px;
+}
