@@ -1160,7 +1160,7 @@ function renderForgotPasswordForm(email = "") {
 
     document.getElementById("auth-area").innerHTML = molduraDeEntrada("img/cafe-e-livro.jpg", `
         <form id="forgot-form">
-            <span class="selo-ilustracao"><i class="ph-light ph-envelope-simple"></i></span>
+            <img class="ilustracao" src="img/ilustra-leitura.svg" alt="" />
 
             <div class="form-titulo">
                 <h2>Esqueceu a senha? Acontece.</h2>

@@ -2133,3 +2133,17 @@ body::before {
     display: block;
     margin-top: 4px;
 }
+
+/* ---- Ilustrações do Storyset ----
+   Elas têm traço escuro, que sumiria no tema noturno. Por isso vão
+   sempre sobre creme fixo, como a foto do painel. */
+
+.ilustracao {
+    display: block;
+    width: 100%;
+    max-width: 300px;
+    margin: 0 auto 4px;
+    padding: 8px 14px;
+    border-radius: 20px;
+    background: #F5ECD7;
+}
