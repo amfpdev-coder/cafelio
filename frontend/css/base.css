@@ -2001,3 +2001,21 @@ body::before {
         min-height: 100%;
     }
 }
+
+.voltar-entrada {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    align-self: flex-start;
+    margin-bottom: 4px;
+    font-size: 14px;
+    text-decoration: none;
+}
+
+.voltar-entrada i {
+    font-size: 16px;
+}
+
+.voltar-entrada:hover {
+    text-decoration: underline;
+}

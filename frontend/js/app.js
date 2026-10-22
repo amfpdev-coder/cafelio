@@ -18,6 +18,58 @@ const DESTINOS_EXPLORAR = [
 
 const DESTINO_PERFIL = { id: "perfil", icone: "user-circle", rotulo: "Perfil" };
 
+// ---- Rotas: a tela atual mora no endereço ----
+
+const DESTINOS_VALIDOS = [
+    ...DESTINOS_PRINCIPAIS.map((d) => d.id),
+    ...DESTINOS_EXPLORAR.map((d) => d.id),
+    DESTINO_PERFIL.id,
+];
+
+const ROTAS_DE_ENTRADA = {
+    "boas-vindas": () => renderBoasVindas(),
+    "entrar": () => renderLoginForm(),
+    "criar-conta": () => renderRegisterForm(),
+    "esqueci-senha": () => renderForgotPasswordForm(),
+};
+
+let ignorarProximoHash = false;
+
+function rotaAtual() {
+    return decodeURIComponent(location.hash.replace("#", ""));
+}
+
+// Troca o endereço sem disparar o redesenho: quem chamou já está desenhando
+function definirRota(rota) {
+    if (rotaAtual() === rota) {
+        return;
+    }
+
+    ignorarProximoHash = true;
+    location.hash = rota;
+}
+
+function aplicarRota() {
+    const rota = rotaAtual();
+
+    if (usuarioAtual) {
+        navegarPara(DESTINOS_VALIDOS.includes(rota) ? rota : "inicio");
+        return;
+    }
+
+    (ROTAS_DE_ENTRADA[rota] || renderBoasVindas)();
+}
+
+// Voltar e avançar do navegador passam por aqui
+window.addEventListener("hashchange", () => {
+    if (ignorarProximoHash) {
+        ignorarProximoHash = false;
+        return;
+    }
+
+    aplicarRota();
+});
+
 let usuarioAtual = null;
 let destinoAtual = "inicio";
 
@@ -89,12 +141,15 @@ async function loadSession() {
     }
 
     if (!getToken()) {
-        renderBoasVindas();
+        (ROTAS_DE_ENTRADA[rotaAtual()] || renderBoasVindas)();
         return;
     }
 
     try {
         const user = await apiGet("/auth/me");
+        const rota = rotaAtual();
+
+        destinoAtual = DESTINOS_VALIDOS.includes(rota) ? rota : "inicio";
         renderLoggedInArea(user);
     } catch (error) {
         renderLoginForm();
@@ -158,6 +213,7 @@ let slideAtual = 0;
 let slideTimer = null;
 
 function renderBoasVindas() {
+    definirRota("boas-vindas");
     showGoogleButton(false);
     slideAtual = 0;
 
@@ -271,6 +327,7 @@ function rodapeDaDupla() {
 }
 
 function renderLoginForm(identifier = "") {
+    definirRota("entrar");
     showGoogleButton(true);
 
     document.getElementById("auth-area").innerHTML = `
@@ -286,6 +343,10 @@ function renderLoginForm(identifier = "") {
 
             <div class="coluna-formulario">
                 <form id="login-form">
+                    <button type="button" class="botao-link voltar-entrada" id="voltar-entrada">
+                        <i class="ph-light ph-arrow-left"></i>Voltar
+                    </button>
+
                     <div class="form-titulo">
                         <h2>Entrar no Cafélio</h2>
                         <span class="form-subtitulo">Seu diário de leituras espera por você.</span>
@@ -328,6 +389,7 @@ function renderLoginForm(identifier = "") {
     moverBotaoDoGoogle();
     document.getElementById("identifier").value = identifier;
     document.getElementById("login-form").addEventListener("submit", handleLogin);
+    document.getElementById("voltar-entrada").addEventListener("click", renderBoasVindas);
         document.getElementById("show-register").addEventListener("click", (event) => {
         event.preventDefault();
         renderRegisterForm();
@@ -342,10 +404,15 @@ function renderLoginForm(identifier = "") {
 }
 
 function renderRegisterForm() {
+    definirRota("criar-conta");
     showGoogleButton(true);
 
     document.getElementById("auth-area").innerHTML = `
         <form id="register-form">
+            <button type="button" class="botao-link voltar-entrada" id="voltar-entrada">
+                <i class="ph-light ph-arrow-left"></i>Voltar
+            </button>
+
             <h2>Criar conta</h2>
 
             <label for="register-name">Seu nome</label>
@@ -384,6 +451,7 @@ function renderRegisterForm() {
 
     moverBotaoDoGoogle("google-slot-cadastro");
     document.getElementById("register-form").addEventListener("submit", handleRegister);
+    document.getElementById("voltar-entrada").addEventListener("click", renderBoasVindas);
     document.getElementById("show-login").addEventListener("click", (event) => {
         event.preventDefault();
         renderLoginForm();
@@ -501,11 +569,14 @@ function avatarDoUsuario(user) {
 
 function navegarPara(id) {
     destinoAtual = id;
+    definirRota(id);
     renderCasca();
 }
 
 function renderDestino() {
     const conteudo = document.getElementById("conteudo");
+
+    definirRota(destinoAtual);
 
     // Só o Perfil hospeda o botão do Google; qualquer outra tela o esconde
     showGoogleButton(false);
@@ -1020,6 +1091,7 @@ function renderPasswordForm(user) {
 renderWelcomeScreen();
 
 function renderForgotPasswordForm(email = "") {
+    definirRota("esqueci-senha");
     showGoogleButton(false);
 
     document.getElementById("auth-area").innerHTML = `
