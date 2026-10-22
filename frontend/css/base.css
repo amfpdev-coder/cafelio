@@ -2181,3 +2181,44 @@ body::before {
     display: flex;
     gap: 8px;
 }
+
+/* ---- Reação ao mouse, em todos os botões ----
+   Os botões com visual próprio apagam o fundo do botão padrão e, com ele,
+   perdiam a resposta ao toque. Aqui ela volta para todos. */
+
+button,
+.google-envoltorio .btn-google,
+.link-sair,
+.destino {
+    transition:
+        background-color .18s ease,
+        box-shadow .18s ease,
+        color .18s ease,
+        transform .08s ease;
+}
+
+button:not(:disabled):active,
+.google-envoltorio:active .btn-google {
+    transform: translateY(2px);
+}
+
+/* Pontinhos do carrossel: clareiam antes de serem clicados */
+.ponto:hover {
+    background: var(--color-areia);
+}
+
+.hero-pontos .ponto:hover {
+    background: rgba(245, 236, 215, .65);
+}
+
+/* "Sair da conta" não é botão, mas se comporta como um */
+.link-sair:hover {
+    color: var(--color-error);
+    cursor: pointer;
+}
+
+/* Os botões de tema afundam junto, como os demais */
+.botao-tema:active,
+.botao-tema-canto:active {
+    transform: translateY(2px);
+}
