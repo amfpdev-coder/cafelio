@@ -1755,7 +1755,7 @@ body::before {
     position: fixed;
     inset: 0;
     z-index: 10;
-    overflow: hidden auto;
+    overflow: hidden;
     background: var(--color-sepia);
 }
 
@@ -1790,21 +1790,24 @@ body::before {
     position: absolute;
     inset: 0;
     background:
+        /* escurece a faixa da esquerda, onde fica o texto */
         linear-gradient(
-            to top,
-            rgba(26, 17, 10, .94) 0%,
-            rgba(26, 17, 10, .78) 32%,
-            rgba(26, 17, 10, .30) 62%,
-            rgba(26, 17, 10, .38) 100%
-        );
+            to right,
+            rgba(26, 17, 10, .86) 0%,
+            rgba(26, 17, 10, .60) 34%,
+            rgba(26, 17, 10, .18) 64%,
+            rgba(26, 17, 10, .06) 100%
+        ),
+        /* e um pouco o pé, para o rodapé e os botões */
+        linear-gradient(to top, rgba(26, 17, 10, .5) 0%, transparent 42%);
 }
 
 .hero-conteudo {
     position: relative;
     display: grid;
-    grid-template-rows: auto 1fr auto;
+    grid-template-rows: auto 1fr;
     box-sizing: border-box;
-    min-height: 100%;
+    height: 100%;
     padding: 40px clamp(24px, 7vw, 92px) 36px;
     color: var(--color-cream);
 }
@@ -1835,6 +1838,7 @@ body::before {
     display: flex;
     flex-direction: column;
     gap: 20px;
+    align-self: end;
     max-width: 540px;
 }
 
@@ -1983,5 +1987,17 @@ body::before {
     .em-cena,
     .hero-slide > * {
         animation: none;
+    }
+}
+
+/* Em telas muito baixas o conteúdo não cabe: aí sim ela rola */
+@media (max-height: 600px) {
+    .hero {
+        overflow: hidden auto;
+    }
+
+    .hero-conteudo {
+        height: auto;
+        min-height: 100%;
     }
 }
