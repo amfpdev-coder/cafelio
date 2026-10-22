@@ -1020,10 +1020,18 @@ function ativarCaixasDeCodigo() {
 function iniciarContagemDeReenvio(segundos) {
     clearInterval(reenvioTimer);
 
-    const contagem = document.getElementById("codigo-contagem");
-    const botao = document.getElementById("email-reenviar");
-
     const tique = () => {
+        // Procurados a cada tique: a tela pode ter trocado no meio da contagem,
+        // e o botão muda de nome conforme o fluxo
+        const contagem = document.getElementById("codigo-contagem");
+        const botao = document.getElementById("email-reenviar")
+                   || document.getElementById("code-reenviar");
+
+        if (!contagem || !botao) {
+            clearInterval(reenvioTimer);
+            return;
+        }
+
         if (segundos <= 0) {
             clearInterval(reenvioTimer);
             contagem.textContent = "";
