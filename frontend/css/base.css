@@ -1711,10 +1711,9 @@ button:disabled {
 
 .rodape-dupla {
     display: flex;
-    flex-wrap: wrap;
+    flex-direction: column;
     align-items: center;
-    justify-content: center;
-    gap: 5px;
+    gap: 2px;
     width: 100%;
     margin: 48px 0 0;
     padding-top: 20px;
@@ -2108,4 +2107,29 @@ body::before {
 
 .aviso strong {
     color: var(--color-sepia);
+}
+
+.rodape-linha {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    margin: 0;
+}
+
+.rodape-fontes {
+    margin-top: 6px;
+    font-size: 12px;
+}
+
+.rodape-fontes a {
+    font-family: var(--font-body);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.hero-credito-fontes {
+    display: block;
+    margin-top: 4px;
 }

@@ -1,6 +1,6 @@
 :root {
     /* ---- Identidade (fixa, não alterar) ----
-       cream e beige são TINTA CLARA: texto sobre superfície escura.
+        cream e beige são TINTA CLARA: texto sobre superfície escura.
        Para fundos claros use --color-surface-1 e --color-surface-2. */
     --color-cream: #F5ECD7;
     --color-beige: #EDD9B4;

@@ -266,6 +266,10 @@ function renderBoasVindas() {
                         <a href="https://www.linkedin.com/in/amfpdev" target="_blank" rel="noopener">@amfpdev</a>
                         e
                         <a href="https://www.linkedin.com/in/amanda-cristiny" target="_blank" rel="noopener">@amanda-cristiny</a>
+                        <span class="hero-credito-fontes">
+                            Ilustrações por <a href="https://storyset.com/home" target="_blank" rel="noopener">Storyset</a>
+                            · Fotografias do <a href="https://unsplash.com" target="_blank" rel="noopener">Unsplash</a>
+                        </span>
                     </p>
                 </div>
             </div>
@@ -334,10 +338,18 @@ function iniciarPassagemDeSlides() {
 function rodapeDaDupla() {
     return `
         <footer class="rodape-dupla">
-            <span>Feito a quatro mãos por</span>
-            <a href="https://www.linkedin.com/in/amfpdev" target="_blank" rel="noopener">@amfpdev</a>
-            <span>e</span>
-            <a href="https://www.linkedin.com/in/amanda-cristiny" target="_blank" rel="noopener">@amanda-cristiny</a>
+            <p class="rodape-linha">
+                <span>Feito a quatro mãos por</span>
+                <a href="https://www.linkedin.com/in/amfpdev" target="_blank" rel="noopener">@amfpdev</a>
+                <span>e</span>
+                <a href="https://www.linkedin.com/in/amanda-cristiny" target="_blank" rel="noopener">@amanda-cristiny</a>
+            </p>
+
+            <p class="rodape-linha rodape-fontes">
+                <a href="https://storyset.com/home" target="_blank" rel="noopener">Ilustrações por Storyset</a>
+                <span>·</span>
+                <a href="https://unsplash.com" target="_blank" rel="noopener">Fotografias do Unsplash</a>
+            </p>
         </footer>
     `;
 }
