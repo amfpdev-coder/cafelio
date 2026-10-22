@@ -15,6 +15,11 @@ public record OpenLibraryBookResponse(
         Integer firstPublishYear,
 
         @JsonProperty("cover_i")
-        Integer coverId
+        Integer coverId,
+
+        // A Open Library tem uma contagem por edição; a mediana é o valor
+        // típico do livro, e é o que eles recomendam para este caso
+        @JsonProperty("number_of_pages_median")
+        Integer pages
 ) {
 }

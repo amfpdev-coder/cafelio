@@ -31,7 +31,7 @@ public class OpenLibraryClient {
                             .queryParam("limit", limit)
                             .queryParam(
                                     "fields",
-                                    "key,title,author_name,first_publish_year,cover_i"
+                                    "key,title,author_name,first_publish_year,cover_i,number_of_pages_median"
                             )
                             .build())
                     .retrieve()

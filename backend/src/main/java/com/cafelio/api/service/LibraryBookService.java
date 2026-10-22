@@ -38,13 +38,13 @@ public class LibraryBookService {
             throw new LibraryBookAlreadyExistsException("Livro já adicionado na biblioteca");
         }
 
-        LibraryBook libraryBook = new LibraryBook(user, book.openLibraryId(), book.title(), book.firstPublishYear(), book.coverUrl(), book.status(),book.authors(), book.tags());
+        LibraryBook libraryBook = new LibraryBook(user, book.openLibraryId(), book.title(), book.firstPublishYear(), book.coverUrl(), book.status(),book.authors(), book.tags(), book.pages());
         if (book.status() == ReadingStatus.READ) {
             libraryBook.setFinishedAt(LocalDate.now(FUSO));
         }
 
         LibraryBook savedBook = libraryBookRepository.save(libraryBook);
-        LibraryBookResponse libraryBookResponse = new LibraryBookResponse(savedBook.getId(), savedBook.getOpenLibraryId(), savedBook.getTitle(), savedBook.getFirstPublishYear(), savedBook.getCoverUrl(), savedBook.getStatus(), savedBook.getAuthors(), savedBook.getTags());
+        LibraryBookResponse libraryBookResponse = new LibraryBookResponse(savedBook.getId(), savedBook.getOpenLibraryId(), savedBook.getTitle(), savedBook.getFirstPublishYear(), savedBook.getCoverUrl(), savedBook.getStatus(), savedBook.getAuthors(), savedBook.getTags(), savedBook.getPages());
 
         return libraryBookResponse;
     }
@@ -62,7 +62,8 @@ public class LibraryBookService {
                 book.getCoverUrl(),
                 book.getStatus(),
                 book.getAuthors(),
-                book.getTags()
+                book.getTags(),
+                book.getPages()
         )).toList();
 
         return list;
@@ -99,7 +100,8 @@ public class LibraryBookService {
                 updatedBook.getCoverUrl(),
                 updatedBook.getStatus(),
                 updatedBook.getAuthors(),
-                updatedBook.getTags());
+                updatedBook.getTags(),
+                updatedBook.getPages());
 
         return  libraryBookResponse;
     }
@@ -119,7 +121,8 @@ public class LibraryBookService {
                 book.getCoverUrl(),
                 book.getStatus(),
                 book.getAuthors(),
-                book.getTags()
+                book.getTags(),
+                book.getPages()
         );
 
         return response;
@@ -157,7 +160,8 @@ public class LibraryBookService {
                 livroSorteado.getCoverUrl(),
                 livroSorteado.getStatus(),
                 livroSorteado.getAuthors(),
-                livroSorteado.getTags()
+                livroSorteado.getTags(),
+                livroSorteado.getPages()
         );
 
         return readingGoalBook;

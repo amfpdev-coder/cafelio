@@ -32,7 +32,8 @@ class BookSearchServiceTest {
                 "Livro sem capa",
                 List.of("Autor Teste"),
                 2000,
-                null
+                null,
+                320
         );
 
         OpenLibrarySearchResponse openLibraryResponse =

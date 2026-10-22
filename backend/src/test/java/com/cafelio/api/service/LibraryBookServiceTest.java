@@ -53,7 +53,8 @@ public class LibraryBookServiceTest {
                 "https://capa-teste.com",
                 ReadingStatus.WANT_TO_READ,
                 List.of("Autor Teste"),
-                Set.of(BookTag.WANTED)
+                Set.of(BookTag.WANTED),
+                320
         );
 
 
@@ -67,7 +68,8 @@ public class LibraryBookServiceTest {
                 request.coverUrl(),
                 request.status(),
                 request.authors(),
-                request.tags()
+                request.tags(),
+                320
         );
 
         when(libraryBookRepository.save(any(LibraryBook.class))).thenReturn(savedBook);
@@ -98,7 +100,8 @@ public class LibraryBookServiceTest {
                 "https://capa-teste.com",
                 ReadingStatus.WANT_TO_READ,
                 List.of("Autor Teste"),
-                Set.of(BookTag.WANTED)
+                Set.of(BookTag.WANTED),
+                320
         );
 
         when(libraryBookRepository.existsByUserAndOpenLibraryId(
@@ -152,7 +155,8 @@ public class LibraryBookServiceTest {
                 "capa",
                 ReadingStatus.READING,
                 List.of("Autor"),
-                Set.of(BookTag.FAVORITE)
+                Set.of(BookTag.FAVORITE),
+                320
         );
 
         LibraryBookUpdateRequest request =
@@ -191,7 +195,8 @@ public class LibraryBookServiceTest {
                 "capa",
                 ReadingStatus.READING,
                 List.of("Autor"),
-                Set.of(BookTag.FAVORITE)
+                Set.of(BookTag.FAVORITE),
+                320
         );
 
         LibraryBookUpdateRequest request =
@@ -228,7 +233,8 @@ public class LibraryBookServiceTest {
                 "capa",
                 ReadingStatus.READING,
                 List.of("Autor"),
-                Set.of(BookTag.FAVORITE)
+                Set.of(BookTag.FAVORITE),
+                320
         );
 
         when(authService.findById(userId)).thenReturn(user);
@@ -254,7 +260,8 @@ public class LibraryBookServiceTest {
                 "capa",
                 ReadingStatus.READING_GOAL,
                 List.of("Machado de Assis"),
-                Set.of(BookTag.WANTED)
+                Set.of(BookTag.WANTED),
+                320
         );
 
         when(authService.findById(userId)).thenReturn(user);

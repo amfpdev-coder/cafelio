@@ -28,7 +28,9 @@ public record LibraryBookCreateRequest (
         List<String> authors,
 
         @NotNull
-        Set<BookTag> tags
+        Set<BookTag> tags,
+
+        Integer pages
 ) {
 
 
