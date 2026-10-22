@@ -32,6 +32,7 @@ const ROTAS_DE_ENTRADA = {
     "criar-conta": () => renderRegisterForm(),
     "esqueci-senha": () => renderForgotPasswordForm(),
     "usar-codigo": () => renderForgotPasswordForm(),
+    "nova-senha": () => renderForgotPasswordForm(),
 };
 
 // Qual tela está desenhada na tela agora. É o que evita redesenhar à toa,
@@ -1285,6 +1286,179 @@ async function reenviarCodigoDeSenha() {
 
         message.textContent = "Enviamos outro código.";
         iniciarContagemDeReenvio(60);
+    } catch (error) {
+        message.textContent = error.message;
+    }
+}
+
+function renderResetPasswordForm(token) {
+    definirRota("nova-senha");
+    showGoogleButton(false);
+
+    document.getElementById("auth-area").innerHTML = `
+        <form id="reset-form">
+            <h2>Escolher nova senha</h2>
+
+            <label for="reset-password">Nova senha</label>
+            <input id="reset-password" type="password" autocomplete="new-password" required />
+            <small>Mínimo de 8 caracteres, com letra maiúscula, minúscula e número.</small>
+
+            <label for="reset-confirm">Confirmar nova senha</label>
+            <input id="reset-confirm" type="password" autocomplete="new-password" required />
+
+            <button type="submit">Salvar senha</button>
+            <p id="reset-message" class="form-message"></p>
+        </form>
+    `;
+
+    document.getElementById("reset-form").addEventListener("submit", (event) => {
+        handleResetPassword(event, token);
+    });
+
+    ativarMostrarSenha();
+}
+
+async function handleGoogleLogin(response) {
+    // O mesmo botão serve para entrar e para vincular: se já há sessão,
+    // o clique veio da tela de Perfil.
+    if (getToken() && usuarioAtual) {
+        vincularGoogle(response.credential);
+        return;
+    }
+
+    if (!document.getElementById("login-message")) {
+        renderLoginForm();
+    }
+
+    const message = document.getElementById("login-message");
+    message.textContent = "Entrando...";
+
+    try {
+        const result = await apiPost("/auth/google", { idToken: response.credential });
+        setToken(result.token);
+
+        const user = await apiGet("/auth/me");
+        renderLoggedInArea(user);
+    } catch (error) {
+        message.textContent = error.message;
+    }
+}
+
+async function handleLogin(event) {
+    event.preventDefault();
+
+    const message = document.getElementById("login-message");
+    message.textContent = "Entrando...";
+
+    try {
+        const result = await apiPost("/auth/login", {
+            identifier: document.getElementById("identifier").value,
+            password: document.getElementById("password").value,
+        });
+
+        setToken(result.token);
+
+        const user = await apiGet("/auth/me");
+        renderLoggedInArea(user);
+    } catch (error) {
+        message.textContent = error.message;
+    }
+}
+
+async function handleRegister(event) {
+    event.preventDefault();
+
+    const message = document.getElementById("register-message");
+    message.textContent = "Criando conta...";
+
+    const email = document.getElementById("register-email").value;
+
+    try {
+        await apiPost("/auth/register", {
+            name: document.getElementById("register-name").value,
+            username: document.getElementById("register-username").value,
+            email: email,
+            password: document.getElementById("register-password").value,
+            confirmPassword: document.getElementById("register-confirm").value,
+        });
+
+        renderLoginForm(email);
+        document.getElementById("login-message").textContent =
+            "Conta criada! Agora é só entrar com sua senha.";
+        document.getElementById("password").focus();
+    } catch (error) {
+        message.textContent = error.message;
+    }
+}
+
+async function handleChangePassword(event, user) {
+    event.preventDefault();
+
+    const message = document.getElementById("password-message");
+    message.textContent = "Salvando...";
+
+    const currentPasswordInput = document.getElementById("current-password");
+
+    try {
+        await apiPut("/auth/password", {
+            currentPassword: currentPasswordInput ? currentPasswordInput.value : null,
+            newPassword: document.getElementById("new-password").value,
+            confirmNewPassword: document.getElementById("confirm-new-password").value,
+        });
+
+        const updated = await apiGet("/auth/me");
+        renderLoggedInArea(updated);
+        document.getElementById("password-area").textContent = "Senha salva com sucesso!";
+    } catch (error) {
+        message.textContent = error.message;
+    }
+}
+
+function handleLogout() {
+    destinoAtual = "inicio";
+    usuarioAtual = null;
+    clearToken();
+    irPara("boas-vindas");
+}
+
+async function handleForgotPassword(event) {
+    event.preventDefault();
+
+    const message = document.getElementById("forgot-message");
+    message.textContent = "Enviando...";
+
+    const email = document.getElementById("forgot-email").value;
+
+    try {
+        await apiPost("/auth/password/reset-request", { email: email });
+
+        renderResetByCodeForm(email);
+        document.getElementById("code-message").textContent =
+            "Se esse e-mail estiver cadastrado, enviamos um link e um código de 6 dígitos. " +
+            "Valem por 30 minutos.";
+    } catch (error) {
+        message.textContent = error.message;
+    }
+}
+
+async function handleResetPassword(event, token) {
+    event.preventDefault();
+
+    const message = document.getElementById("reset-message");
+    message.textContent = "Salvando...";
+
+    try {
+        await apiPost("/auth/password/reset", {
+            token: token,
+            newPassword: document.getElementById("reset-password").value,
+            confirmNewPassword: document.getElementById("reset-confirm").value,
+        });
+
+        window.history.replaceState({}, "", window.location.pathname);
+
+        renderLoginForm();
+        document.getElementById("login-message").textContent =
+            "Senha alterada! Agora é só entrar com a senha nova.";
     } catch (error) {
         message.textContent = error.message;
     }
