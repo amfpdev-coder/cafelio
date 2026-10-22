@@ -437,7 +437,7 @@ function renderRegisterForm() {
     definirRota("criar-conta");
     showGoogleButton(true);
 
-    document.getElementById("auth-area").innerHTML = molduraDeEntrada("img/livros-abertos.jpg", `
+    document.getElementById("auth-area").innerHTML = molduraDeEntrada("foto-livros-abertos", `
         <form id="register-form">
             <button type="button" class="botao-link voltar-entrada" id="voltar-entrada">
                 <i class="ph-light ph-arrow-left"></i>Voltar
@@ -1133,12 +1133,12 @@ renderWelcomeScreen();
 
 // Moldura das telas de entrada: a mesma foto-e-coluna em todas,
 // para o caminho do login ao cadastro não parecer troca de aplicativo
-function molduraDeEntrada(imagem, conteudo) {
+function molduraDeEntrada(classeDaFoto, conteudo) {
     return `
         ${botaoDeTema("botao-tema botao-tema-canto")}
 
         <div class="tela-entrada">
-            <div class="painel-foto" style="--foto: url('${imagem}')">
+            <div class="painel-foto ${classeDaFoto}">
                 <div class="painel-marca">
                     <i class="ph-light ph-coffee"></i>
                     <span>Cafélio</span>
@@ -1158,7 +1158,7 @@ function renderForgotPasswordForm(email = "") {
     definirRota("esqueci-senha");
     showGoogleButton(false);
 
-    document.getElementById("auth-area").innerHTML = molduraDeEntrada("img/cafe-e-livro.jpg", `
+    document.getElementById("auth-area").innerHTML = molduraDeEntrada("foto-cafe-e-livro", `
         <form id="forgot-form">
             <img class="ilustracao" src="img/ilustra-leitura.svg" alt="" />
 
