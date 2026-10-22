@@ -34,20 +34,21 @@ const ROTAS_DE_ENTRADA = {
     "usar-codigo": () => renderForgotPasswordForm(),
 };
 
-let ignorarProximoHash = false;
+// Qual tela está desenhada na tela agora. É o que evita redesenhar à toa,
+// sem depender da ordem em que os eventos chegam.
+let rotaDesenhada = null;
 
 function rotaAtual() {
     return decodeURIComponent(location.hash.replace("#", ""));
 }
 
-// Troca o endereço sem disparar o redesenho: quem chamou já está desenhando
+// Quem já está desenhando só sincroniza o endereço
 function definirRota(rota) {
-    if (rotaAtual() === rota) {
-        return;
-    }
+    rotaDesenhada = rota;
 
-    ignorarProximoHash = true;
-    location.hash = rota;
+    if (rotaAtual() !== rota) {
+        location.hash = rota;
+    }
 }
 
 // Muda o endereço e deixa o roteador desenhar — assim o voltar do
@@ -74,8 +75,8 @@ function aplicarRota() {
 
 // Voltar e avançar do navegador passam por aqui
 window.addEventListener("hashchange", () => {
-    if (ignorarProximoHash) {
-        ignorarProximoHash = false;
+    // O endereço já corresponde ao que está na tela: nada a fazer
+    if (rotaAtual() === rotaDesenhada) {
         return;
     }
 
@@ -302,18 +303,15 @@ function renderBoasVindas() {
     });
 
     document.getElementById("ir-entrar").addEventListener("click", () => {
-        sairDasBoasVindas(renderLoginForm);
+        clearInterval(slideTimer);
+        irPara("entrar");
     });
 
     document.getElementById("ir-criar").addEventListener("click", (event) => {
         event.preventDefault();
-        sairDasBoasVindas(renderRegisterForm);
+        clearInterval(slideTimer);
+        irPara("criar-conta");
     });
-}
-
-function sairDasBoasVindas(proximaTela) {
-    clearInterval(slideTimer);
-    proximaTela();
 }
 
 function mostrarSlide(indice) {
@@ -419,14 +417,14 @@ function renderLoginForm(identifier = "") {
     document.getElementById("identifier").value = identifier;
     document.getElementById("login-form").addEventListener("submit", handleLogin);
     document.getElementById("voltar-entrada").addEventListener("click", () => irPara("boas-vindas"));
-        document.getElementById("show-register").addEventListener("click", (event) => {
+    document.getElementById("show-register").addEventListener("click", (event) => {
         event.preventDefault();
-        renderRegisterForm();
+        irPara("criar-conta");
     });
 
     document.getElementById("show-forgot").addEventListener("click", (event) => {
         event.preventDefault();
-        renderForgotPasswordForm();
+        irPara("esqueci-senha");
     });
 
     ativarMostrarSenha();
@@ -499,7 +497,7 @@ function renderRegisterForm() {
     document.getElementById("voltar-entrada").addEventListener("click", () => irPara("boas-vindas"));
     document.getElementById("show-login").addEventListener("click", (event) => {
         event.preventDefault();
-        renderLoginForm();
+        irPara("entrar");
     });
 
     ativarMostrarSenha();
@@ -1197,7 +1195,7 @@ function renderForgotPasswordForm(email = "") {
 
     document.getElementById("back-to-login").addEventListener("click", (event) => {
         event.preventDefault();
-        renderLoginForm();
+        irPara("entrar");
     });
 }
 
