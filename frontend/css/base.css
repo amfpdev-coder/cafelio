@@ -224,7 +224,7 @@ button:disabled {
             rgba(245, 236, 215, .20) 62%,
             rgba(245, 236, 215, .92) 100%
         ),
-        url("../img/entrada.jpg") center / cover;
+        url("../img/cafe-da-tarde.jpg") center / cover;
     box-shadow: inset 0 0 0 1px rgba(107, 63, 42, .15);
 }
 
@@ -1763,13 +1763,25 @@ body::before {
 .hero-foto {
     position: absolute;
     inset: -5%;
-    background: url("../img/entrada.jpg") center / cover;
-    animation: respira 30s ease-in-out infinite alternate;
+    background-position: center;
+    background-size: cover;
+}
+
+/* Entra desfocada e se assenta, depois segue respirando devagar */
+.em-cena {
+    animation:
+        assenta 1.4s cubic-bezier(.2, .8, .3, 1) both,
+        respira 26s ease-in-out 1.4s infinite alternate;
+}
+
+@keyframes assenta {
+    from { opacity: 0; filter: blur(14px); transform: scale(1.1); }
+    to   { opacity: 1; filter: blur(0);    transform: scale(1); }
 }
 
 @keyframes respira {
     from { transform: scale(1) translate(0, 0); }
-    to   { transform: scale(1.12) translate(-2%, -2.5%); }
+    to   { transform: scale(1.1) translate(-2%, -2.5%); }
 }
 
 /* Véu em gradiente: a foto clareia em cima e escurece embaixo,
@@ -1789,12 +1801,11 @@ body::before {
 
 .hero-conteudo {
     position: relative;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
     box-sizing: border-box;
     min-height: 100%;
-    padding: 44px clamp(24px, 7vw, 92px) 40px;
+    padding: 40px clamp(24px, 7vw, 92px) 36px;
     color: var(--color-cream);
 }
 
@@ -1825,14 +1836,13 @@ body::before {
     flex-direction: column;
     gap: 20px;
     max-width: 540px;
-    margin-top: 48px;
 }
 
 .hero-slide {
     display: flex;
     flex-direction: column;
     gap: 12px;
-    min-height: 210px;
+    min-height: 186px;
 }
 
 .slide-icone {
@@ -1916,7 +1926,7 @@ body::before {
 }
 
 .hero-credito {
-    margin: 26px 0 0;
+    margin: 18px 0 0;
     font-size: 12px;
     color: rgba(245, 236, 215, .5);
 }
@@ -1970,7 +1980,7 @@ body::before {
 
 /* Quem pediu menos movimento no sistema não recebe nenhum */
 @media (prefers-reduced-motion: reduce) {
-    .hero-foto,
+    .em-cena,
     .hero-slide > * {
         animation: none;
     }

@@ -132,25 +132,25 @@ const BOAS_VINDAS_KEY = "cafelio_boas_vindas";
 const SLIDES = [
     {
         icone: "books",
-        imagem: "img/entrada.jpg",
+        imagem: "img/estante.jpg",
         titulo: "Sua estante",
         texto: "Organize o que você leu, está lendo e quer ler — com etiquetas e seis status.",
     },
     {
         icone: "notebook",
-        imagem: "img/entrada.jpg",
+        imagem: "img/livros-abertos.jpg",
         titulo: "Cadernos literários",
         texto: "Guarde citações, resenhas e anotações em cadernos com capa e tema próprios.",
     },
     {
         icone: "medal",
-        imagem: "img/entrada.jpg",
+        imagem: "img/leitura-no-sofa.jpg",
         titulo: "Desafios",
         texto: "Acenda uma vela a cada livro concluído e mantenha sua sequência de leitura viva.",
     },
     {
         icone: "chart-bar",
-        imagem: "img/entrada.jpg",
+        imagem: "img/cafe-e-livro.jpg",
         titulo: "Seu ano em números",
         texto: "Gêneros, páginas, humores e um relatório anual para compartilhar.",
     },
@@ -185,7 +185,7 @@ function renderBoasVindas() {
 
     document.getElementById("auth-area").innerHTML = `
         <div class="hero">
-            <div class="hero-foto"></div>
+            <div class="hero-foto" id="hero-foto"></div>
             <div class="hero-veu"></div>
 
             <div class="hero-conteudo">
@@ -250,6 +250,16 @@ function mostrarSlide(indice) {
     const slide = SLIDES[indice];
 
     slideAtual = indice;
+
+    const foto = document.getElementById("hero-foto");
+
+    foto.style.backgroundImage = `url("${slide.imagem}")`;
+
+    // Tirar e repor a classe reinicia o movimento a cada troca.
+    // O offsetWidth no meio obriga o navegador a recalcular antes de repor.
+    foto.classList.remove("em-cena");
+    void foto.offsetWidth;
+    foto.classList.add("em-cena");
 
     document.getElementById("slide").innerHTML = `
         <span class="slide-icone"><i class="ph-light ph-${slide.icone}"></i></span>
