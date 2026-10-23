@@ -44,7 +44,7 @@ public class LibraryBookService {
         }
 
         LibraryBook savedBook = libraryBookRepository.save(libraryBook);
-        LibraryBookResponse libraryBookResponse = new LibraryBookResponse(savedBook.getId(), savedBook.getOpenLibraryId(), savedBook.getTitle(), savedBook.getFirstPublishYear(), savedBook.getCoverUrl(), savedBook.getStatus(), savedBook.getAuthors(), savedBook.getTags(), savedBook.getPages(), savedBook.getCreatedAt());
+        LibraryBookResponse libraryBookResponse = new LibraryBookResponse(savedBook.getId(), savedBook.getOpenLibraryId(), savedBook.getTitle(), savedBook.getFirstPublishYear(), savedBook.getCoverUrl(), savedBook.getStatus(), savedBook.getAuthors(), savedBook.getTags(), savedBook.getPages(), savedBook.getCreatedAt(), savedBook.getStartedAt(), savedBook.getFinishedAt());
 
         return libraryBookResponse;
     }
@@ -64,7 +64,9 @@ public class LibraryBookService {
                 book.getAuthors(),
                 book.getTags(),
                 book.getPages(),
-                book.getCreatedAt()
+                book.getCreatedAt(),
+                book.getStartedAt(),
+                book.getFinishedAt()
         )).toList();
 
         return list;
@@ -79,13 +81,26 @@ public class LibraryBookService {
         );
 
         if (libraryBookUpdateRequest.status() != null){
-            book.setStatus(libraryBookUpdateRequest.status());
+            ReadingStatus novo = libraryBookUpdateRequest.status();
 
-            book.setFinishedAt(
-                    libraryBookUpdateRequest.status() == ReadingStatus.READ
-                            ? LocalDate.now(FUSO)
-                            : null
-            );
+            book.setStatus(novo);
+            book.setFinishedAt(novo == ReadingStatus.READ ? LocalDate.now(FUSO) : null);
+
+            // Começar a ler carimba a data só na primeira vez: quem volta a
+            // "Lendo" depois de abandonar não perde quando começou
+            if ((novo == ReadingStatus.READING || novo == ReadingStatus.REREADING)
+                    && book.getStartedAt() == null) {
+                book.setStartedAt(LocalDate.now(FUSO));
+            }
+        }
+
+        // Datas informadas à mão ganham da regra acima
+        if (libraryBookUpdateRequest.startedAt() != null) {
+            book.setStartedAt(libraryBookUpdateRequest.startedAt());
+        }
+
+        if (libraryBookUpdateRequest.finishedAt() != null) {
+            book.setFinishedAt(libraryBookUpdateRequest.finishedAt());
         }
 
         if (libraryBookUpdateRequest.tags() != null){
@@ -103,7 +118,9 @@ public class LibraryBookService {
                 updatedBook.getAuthors(),
                 updatedBook.getTags(),
                 updatedBook.getPages(),
-                updatedBook.getCreatedAt());
+                updatedBook.getCreatedAt(),
+                updatedBook.getStartedAt(),
+                updatedBook.getFinishedAt());
 
         return  libraryBookResponse;
     }
@@ -125,7 +142,9 @@ public class LibraryBookService {
                 book.getAuthors(),
                 book.getTags(),
                 book.getPages(),
-                book.getCreatedAt()
+                book.getCreatedAt(),
+                book.getStartedAt(),
+                book.getFinishedAt()
         );
 
         return response;
@@ -165,7 +184,9 @@ public class LibraryBookService {
                 livroSorteado.getAuthors(),
                 livroSorteado.getTags(),
                 livroSorteado.getPages(),
-                livroSorteado.getCreatedAt()
+                livroSorteado.getCreatedAt(),
+                livroSorteado.getStartedAt(),
+                livroSorteado.getFinishedAt()
         );
 
         return readingGoalBook;

@@ -2726,3 +2726,62 @@ button:not(:disabled):active,
         max-width: 190px;
     }
 }
+
+.detalhe-datas {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 14px;
+    width: 100%;
+}
+
+.detalhe-datas input {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* ---- Estado vazio ---- */
+
+.estado-vazio {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    max-width: 420px;
+    margin: 48px auto;
+    padding: 40px 28px;
+    border-radius: var(--radius-card-lg);
+    background: var(--color-surface-2);
+    text-align: center;
+}
+
+.estado-vazio-selo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 110px;
+    height: 110px;
+    border-radius: var(--radius-pill);
+    background: var(--color-paper);
+    color: var(--color-coffee);
+    font-size: 50px;
+}
+
+.estado-vazio h3 {
+    margin: 4px 0 0;
+    font-size: 26px;
+    line-height: 1.15;
+}
+
+.estado-vazio p {
+    margin: 0;
+    color: var(--color-text-2);
+    font-size: 15px;
+}
+
+.estado-vazio button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 6px;
+    padding: 0 22px;
+}

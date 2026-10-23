@@ -2223,6 +2223,24 @@ async function renderLivro(conteudo, id) {
                 </div>
 
                 <div class="bloco">
+                    <span class="bloco-titulo"><i class="ph-light ph-calendar-blank"></i>Datas</span>
+
+                    <div class="detalhe-datas">
+                        <div class="campo">
+                            <label for="data-inicio">Comecei a ler</label>
+                            <input id="data-inicio" type="date" value="${livro.startedAt || ""}" />
+                        </div>
+
+                        <div class="campo">
+                            <label for="data-fim">Terminei</label>
+                            <input id="data-fim" type="date" value="${livro.finishedAt || ""}" />
+                        </div>
+                    </div>
+
+                    <small>Mudar o status preenche sozinho. Aqui você corrige.</small>
+                </div>
+
+                <div class="bloco">
                     <span class="bloco-titulo"><i class="ph-light ph-tag"></i>Etiquetas</span>
                     <div class="escolhas-status" id="detalhe-etiquetas">
                         ${Object.entries(ETIQUETAS).map(([chave, e]) => `
@@ -2270,6 +2288,14 @@ async function renderLivro(conteudo, id) {
                 ? atuais.filter((t) => t !== etiqueta)
                 : [...atuais, etiqueta],
         });
+    });
+
+    document.getElementById("data-inicio").addEventListener("change", (event) => {
+        salvarLivro({ startedAt: event.target.value || null });
+    });
+
+    document.getElementById("data-fim").addEventListener("change", (event) => {
+        salvarLivro({ finishedAt: event.target.value || null });
     });
 
     document.getElementById("remover-livro").addEventListener("click", removerLivro);
@@ -2353,6 +2379,12 @@ async function renderEstante(conteudo) {
         return;
     }
 
+    // Estante vazia não precisa de filtros nem de busca: precisa de um convite
+    if (!estanteToda.length) {
+        renderEstanteVazia(conteudo);
+        return;
+    }
+
     filtroStatus = "todos";
     filtroEtiqueta = null;
     buscaEstante = "";
@@ -2433,6 +2465,25 @@ async function renderEstante(conteudo) {
     });
 
     preencherEstante();
+}
+
+function renderEstanteVazia(conteudo) {
+    conteudo.innerHTML = `
+        <h2>Estante</h2>
+
+        <div class="estado-vazio">
+            <span class="estado-vazio-selo"><i class="ph-light ph-books"></i></span>
+
+            <h3>Sua estante ainda está vazia</h3>
+            <p>Comece pelo livro que está na sua mesa de cabeceira. O resto a gente arruma junto.</p>
+
+            <button type="button" id="estante-primeiro">
+                <i class="ph-light ph-plus"></i>Adicionar o primeiro livro
+            </button>
+        </div>
+    `;
+
+    document.getElementById("estante-primeiro").addEventListener("click", () => irPara("buscar"));
 }
 
 function preencherEstante() {

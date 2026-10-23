@@ -90,6 +90,14 @@ public class LibraryBook {
         this.pages = pages;
     }
 
+    public LocalDate getStartedAt() {
+        return startedAt;
+    }
+
+    public void setStartedAt(LocalDate startedAt) {
+        this.startedAt = startedAt;
+    }
+
     public LocalDate getFinishedAt() {
         return finishedAt;
     }
@@ -127,6 +135,9 @@ public class LibraryBook {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private ReadingStatus status;
+
+    @Column(name = "started_at")
+    private LocalDate startedAt;
 
     @Column(name = "finished_at")
     private LocalDate finishedAt;

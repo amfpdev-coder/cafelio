@@ -162,6 +162,8 @@ public class LibraryBookServiceTest {
         LibraryBookUpdateRequest request =
                 new LibraryBookUpdateRequest(
                         ReadingStatus.READ,
+                        null,
+                        null,
                         null
                 );
 
@@ -202,7 +204,9 @@ public class LibraryBookServiceTest {
         LibraryBookUpdateRequest request =
                 new LibraryBookUpdateRequest(
                         null,
-                        Set.of(BookTag.WANTED)
+                        Set.of(BookTag.WANTED),
+                        null,
+                        null
                 );
 
         when(authService.findById(userId)).thenReturn(user);
