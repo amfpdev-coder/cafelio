@@ -68,7 +68,8 @@ function aplicarRota() {
     const rota = rotaAtual();
 
     if (usuarioAtual) {
-        navegarPara(DESTINOS_VALIDOS.includes(rota) ? rota : "inicio");
+        // "livro/<id>" é a única rota com parte variável
+        navegarPara(DESTINOS_VALIDOS.includes(rota) || rota.startsWith("livro/") ? rota : "inicio");
         return;
     }
 
@@ -720,6 +721,11 @@ function renderDestino() {
 
     if (destinoAtual === "buscar") {
         renderBuscar(conteudo);
+        return;
+    }
+
+    if (destinoAtual.startsWith("livro/")) {
+        renderLivro(conteudo, destinoAtual.slice("livro/".length));
         return;
     }
 
@@ -2170,6 +2176,138 @@ function escolherStatus(livro) {
     });
 }
 
+// ---- Detalhe do livro ----
+
+let livroAberto = null;
+
+async function renderLivro(conteudo, id) {
+    conteudo.innerHTML = `<p class="rascunho">Carregando…</p>`;
+
+    try {
+        livroAberto = await apiGet(`/library-books/${id}`);
+    } catch (error) {
+        conteudo.innerHTML = `<p class="form-message">${error.message}</p>`;
+        return;
+    }
+
+    const livro = livroAberto;
+    const status = STATUS[livro.status];
+
+    conteudo.innerHTML = `
+        <button type="button" class="botao-link voltar-entrada" id="voltar-estante">
+            <i class="ph-light ph-arrow-left"></i>Estante
+        </button>
+
+        <div class="detalhe">
+            <div class="detalhe-capa">${capaDoLivro(livro)}</div>
+
+            <div class="detalhe-texto">
+                <h2>${livro.title}</h2>
+                <p class="detalhe-autoria">${(livro.authors || []).join(", ")}</p>
+
+                <p class="detalhe-dados">
+                    ${[livro.firstPublishYear, livro.pages ? `${livro.pages} páginas` : null]
+                        .filter(Boolean).join(" · ")}
+                </p>
+
+                <div class="bloco">
+                    <span class="bloco-titulo"><i class="ph-light ph-bookmark-simple"></i>Status</span>
+                    <div class="escolhas-status" id="detalhe-status">
+                        ${Object.entries(STATUS).map(([chave, s]) => `
+                            <button type="button" class="pilula pilula-escolha ${chave === livro.status ? "pilula-ativa" : ""}"
+                                    data-novo-status="${chave}">
+                                <span class="ponto-status"></span>${s.rotulo}
+                            </button>
+                        `).join("")}
+                    </div>
+                </div>
+
+                <div class="bloco">
+                    <span class="bloco-titulo"><i class="ph-light ph-tag"></i>Etiquetas</span>
+                    <div class="escolhas-status" id="detalhe-etiquetas">
+                        ${Object.entries(ETIQUETAS).map(([chave, e]) => `
+                            <button type="button" class="pilula pilula-escolha ${(livro.tags || []).includes(chave) ? "pilula-ativa" : ""}"
+                                    data-etiqueta-livro="${chave}">
+                                <i class="ph-light ph-${e.icone}"></i>${e.rotulo}
+                            </button>
+                        `).join("")}
+                    </div>
+                </div>
+
+                <p class="form-message" id="detalhe-estado"></p>
+
+                <div class="bloco bloco-perigo">
+                    <span class="bloco-titulo"><i class="ph-light ph-trash"></i>Tirar da estante</span>
+                    <p>O livro sai da sua estante. As citações e resenhas ligadas a ele também.</p>
+                    <button type="button" class="btn-perigo" id="remover-livro">Tirar da estante</button>
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.getElementById("voltar-estante").addEventListener("click", () => irPara("estante"));
+
+    document.getElementById("detalhe-status").addEventListener("click", (event) => {
+        const pilula = event.target.closest("[data-novo-status]");
+
+        if (pilula && pilula.dataset.novoStatus !== livroAberto.status) {
+            salvarLivro({ status: pilula.dataset.novoStatus });
+        }
+    });
+
+    document.getElementById("detalhe-etiquetas").addEventListener("click", (event) => {
+        const pilula = event.target.closest("[data-etiqueta-livro]");
+
+        if (!pilula) {
+            return;
+        }
+
+        const etiqueta = pilula.dataset.etiquetaLivro;
+        const atuais = livroAberto.tags || [];
+
+        salvarLivro({
+            tags: atuais.includes(etiqueta)
+                ? atuais.filter((t) => t !== etiqueta)
+                : [...atuais, etiqueta],
+        });
+    });
+
+    document.getElementById("remover-livro").addEventListener("click", removerLivro);
+}
+
+async function salvarLivro(mudanca) {
+    const estado = document.getElementById("detalhe-estado");
+
+    estado.textContent = "Salvando...";
+
+    try {
+        await apiPatch(`/library-books/${livroAberto.id}`, mudanca);
+        renderLivro(document.getElementById("conteudo"), livroAberto.id);
+    } catch (error) {
+        estado.textContent = error.message;
+    }
+}
+
+async function removerLivro() {
+    const certeza = await perguntar({
+        titulo: "Tirar da estante?",
+        texto: `"${livroAberto.title}" sai da sua estante, junto com o que estiver ligado a ele.`,
+        confirmar: "Tirar da estante",
+        perigo: true,
+    });
+
+    if (!certeza) {
+        return;
+    }
+
+    try {
+        await apiDelete(`/library-books/${livroAberto.id}`);
+        irPara("estante");
+    } catch (error) {
+        document.getElementById("detalhe-estado").textContent = error.message;
+    }
+}
+
 // ---- Estante ----
 
 const STATUS = {
@@ -2273,6 +2411,14 @@ async function renderEstante(conteudo) {
         if (pilula) {
             filtroStatus = pilula.dataset.status;
             preencherEstante();
+        }
+    });
+
+    document.getElementById("grade-livros").addEventListener("click", (event) => {
+        const livro = event.target.closest("[data-livro]");
+
+        if (livro) {
+            irPara(`livro/${livro.dataset.livro}`);
         }
     });
 
@@ -2440,7 +2586,7 @@ function preencherLendoAgora(livros) {
     }
 
     const cartoes = livros.map((livro) => `
-        <article class="livro-lendo">
+        <article class="livro-lendo" data-livro="${livro.id}">
             ${capaDoLivro(livro)}
             <div>
                 <h3>${livro.title}</h3>
@@ -2454,6 +2600,14 @@ function preencherLendoAgora(livros) {
         <span class="overline">Lendo agora</span>
         <div class="livros-lendo">${cartoes}</div>
     `;
+
+    area.addEventListener("click", (event) => {
+        const cartao = event.target.closest("[data-livro]");
+
+        if (cartao) {
+            irPara(`livro/${cartao.dataset.livro}`);
+        }
+    });
 }
 
 // Sem capa, a lombada desenhada com o título já identifica o livro

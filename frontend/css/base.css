@@ -2666,3 +2666,63 @@ button:not(:disabled):active,
         justify-content: center;
     }
 }
+
+/* ---- Detalhe do livro ---- */
+
+.detalhe {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 32px;
+    margin-top: 10px;
+    align-items: start;
+}
+
+.detalhe-capa .capa {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 2 / 3;
+    border-radius: 12px;
+    box-shadow: var(--shadow-dark);
+}
+
+.detalhe-texto {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.detalhe-texto h2 {
+    margin: 0;
+}
+
+.detalhe-autoria {
+    margin: -10px 0 0;
+    color: var(--color-text-2);
+    font-size: 17px;
+}
+
+.detalhe-dados {
+    margin: -8px 0 0;
+    color: var(--color-text-3);
+    font-size: 14px;
+}
+
+.livro-lendo {
+    cursor: pointer;
+}
+
+.livro-lendo:hover .capa {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-dark);
+}
+
+@media (max-width: 900px) {
+    .detalhe {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .detalhe-capa {
+        max-width: 190px;
+    }
+}
