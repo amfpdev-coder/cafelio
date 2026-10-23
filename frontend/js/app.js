@@ -2009,6 +2009,10 @@ let resultadosDaBusca = [];
 
 async function renderBuscar(conteudo) {
     conteudo.innerHTML = `
+        <button type="button" class="botao-link voltar-entrada" id="voltar-estante">
+            <i class="ph-light ph-arrow-left"></i>Estante
+        </button>
+
         <h2>Buscar livros</h2>
 
         <form id="form-buscar" class="busca-livros">
@@ -2024,6 +2028,7 @@ async function renderBuscar(conteudo) {
         <div id="busca-resultados"></div>
     `;
 
+    document.getElementById("voltar-estante").addEventListener("click", () => irPara("estante"));
     document.getElementById("form-buscar").addEventListener("submit", handleBuscarLivros);
 
     document.getElementById("busca-resultados").addEventListener("click", (event) => {
