@@ -2462,11 +2462,8 @@ button:not(:disabled):active,
     color: var(--color-cream);
 }
 
-.ponto-status {
-    width: 7px;
-    height: 7px;
-    border-radius: var(--radius-pill);
-    background: currentColor;
+.pilula i {
+    font-size: 15px;
 }
 
 /* ---- Grade de livros ---- */
@@ -2532,7 +2529,7 @@ button:not(:disabled):active,
 .selo-status {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: 5px;
     align-self: flex-start;
     padding: 3px 9px;
     border-radius: var(--radius-pill);
@@ -2784,4 +2781,8 @@ button:not(:disabled):active,
     gap: 8px;
     margin-top: 6px;
     padding: 0 22px;
+}
+
+.selo-status i {
+    font-size: 13px;
 }

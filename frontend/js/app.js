@@ -2131,7 +2131,7 @@ function escolherStatus(livro) {
     return new Promise((resolve) => {
         const opcoes = Object.entries(STATUS).map(([chave, s]) => `
             <button type="button" class="pilula pilula-escolha" data-escolha="${chave}">
-                <span class="ponto-status"></span>${s.rotulo}
+<i class="ph-light ph-${s.icone}"></i>${s.rotulo}
             </button>
         `).join("");
 
@@ -2221,7 +2221,7 @@ async function renderLivro(conteudo, id) {
                         ${Object.entries(STATUS).map(([chave, s]) => `
                             <button type="button" class="pilula pilula-escolha ${chave === livro.status ? "pilula-ativa" : ""}"
                                     data-novo-status="${chave}">
-                                <span class="ponto-status"></span>${s.rotulo}
+<i class="ph-light ph-${s.icone}"></i>${s.rotulo}
                             </button>
                         `).join("")}
                     </div>
@@ -2342,12 +2342,12 @@ async function removerLivro() {
 // ---- Estante ----
 
 const STATUS = {
-    READING:      { rotulo: "Lendo",          chave: "lendo" },
-    READ:         { rotulo: "Lido",           chave: "lido" },
-    WANT_TO_READ: { rotulo: "Quero ler",      chave: "quero" },
-    READING_GOAL: { rotulo: "Meta literária", chave: "meta" },
-    REREADING:    { rotulo: "Relendo",        chave: "relendo" },
-    ABANDONED:    { rotulo: "Abandonei",      chave: "abandonei" },
+    READING:      { rotulo: "Lendo",          chave: "lendo",     icone: "book-open" },
+    READ:         { rotulo: "Lido",           chave: "lido",      icone: "check-circle" },
+    WANT_TO_READ: { rotulo: "Quero ler",      chave: "quero",     icone: "bookmark-simple" },
+    READING_GOAL: { rotulo: "Meta literária", chave: "meta",      icone: "target" },
+    REREADING:    { rotulo: "Relendo",        chave: "relendo",   icone: "arrows-clockwise" },
+    ABANDONED:    { rotulo: "Abandonei",      chave: "abandonei", icone: "x-circle" },
 };
 
 const ETIQUETAS = {
@@ -2539,7 +2539,7 @@ function pilulasDeStatus() {
         return `
             <button type="button" class="pilula pilula-${s.chave} ${filtroStatus === chave ? "pilula-ativa" : ""}"
                     data-status="${chave}">
-                <span class="ponto-status"></span>${s.rotulo} · ${quantos}
+<i class="ph-light ph-${s.icone}"></i>${s.rotulo} · ${quantos}
             </button>
         `;
     }).join("");
@@ -2561,7 +2561,7 @@ function cartaoDeLivro(livro) {
             <h3 class="livro-titulo">${livro.title}</h3>
 
             <span class="selo-status selo-${status ? status.chave : "lido"}">
-                <span class="ponto-status"></span>${status ? status.rotulo : livro.status}
+                <i class="ph-light ph-${status ? status.icone : "book"}"></i>${status ? status.rotulo : livro.status}
             </span>
         </article>
     `;
