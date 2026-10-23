@@ -2462,11 +2462,8 @@ button:not(:disabled):active,
     color: var(--color-cream);
 }
 
-.ponto-status {
-    width: 7px;
-    height: 7px;
-    border-radius: var(--radius-pill);
-    background: currentColor;
+.pilula i {
+    font-size: 15px;
 }
 
 /* ---- Grade de livros ---- */
@@ -2532,7 +2529,7 @@ button:not(:disabled):active,
 .selo-status {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: 5px;
     align-self: flex-start;
     padding: 3px 9px;
     border-radius: var(--radius-pill);
@@ -2568,4 +2565,224 @@ button:not(:disabled):active,
         flex: 1;
         width: auto;
     }
+}
+
+/* ---- Buscar livros ---- */
+
+.busca-livros {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+    max-width: none;
+    margin: 18px 0 0;
+}
+
+.busca-livros .campo-busca {
+    flex: 1;
+}
+
+.busca-livros .campo-busca input {
+    width: 100%;
+}
+
+.resultados {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.resultado {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 14px 16px;
+    border-radius: 18px;
+    background: var(--color-paper);
+    box-shadow: inset 0 0 0 1px var(--color-border-soft);
+}
+
+.resultado .capa {
+    width: 54px;
+    height: 80px;
+}
+
+.resultado-texto {
+    flex: 1;
+    min-width: 0;
+}
+
+.resultado-texto h3 {
+    margin: 0 0 3px;
+    font-size: 18px;
+    line-height: 1.2;
+}
+
+.resultado-detalhe {
+    margin: 0;
+    color: var(--color-text-2);
+    font-size: 14px;
+}
+
+.resultado button {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+
+/* ---- Escolher o status ao adicionar ---- */
+
+.escolhas-status {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.pilula-escolha {
+    height: 40px;
+    font-size: 14px;
+}
+
+@media (max-width: 767px) {
+    .busca-livros {
+        flex-direction: column;
+    }
+
+    .resultado {
+        flex-wrap: wrap;
+    }
+
+    .resultado button {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .escolhas-status .pilula {
+        flex: 1 1 45%;
+        justify-content: center;
+    }
+}
+
+/* ---- Detalhe do livro ---- */
+
+.detalhe {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 32px;
+    margin-top: 10px;
+    align-items: start;
+}
+
+.detalhe-capa .capa {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 2 / 3;
+    border-radius: 12px;
+    box-shadow: var(--shadow-dark);
+}
+
+.detalhe-texto {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.detalhe-texto h2 {
+    margin: 0;
+}
+
+.detalhe-autoria {
+    margin: -10px 0 0;
+    color: var(--color-text-2);
+    font-size: 17px;
+}
+
+.detalhe-dados {
+    margin: -8px 0 0;
+    color: var(--color-text-3);
+    font-size: 14px;
+}
+
+.livro-lendo {
+    cursor: pointer;
+}
+
+.livro-lendo:hover .capa {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-dark);
+}
+
+@media (max-width: 900px) {
+    .detalhe {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .detalhe-capa {
+        max-width: 190px;
+    }
+}
+
+.detalhe-datas {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 14px;
+    width: 100%;
+}
+
+.detalhe-datas input {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* ---- Estado vazio ---- */
+
+.estado-vazio {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    max-width: 420px;
+    margin: 48px auto;
+    padding: 40px 28px;
+    border-radius: var(--radius-card-lg);
+    background: var(--color-surface-2);
+    text-align: center;
+}
+
+.estado-vazio-selo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 110px;
+    height: 110px;
+    border-radius: var(--radius-pill);
+    background: var(--color-paper);
+    color: var(--color-coffee);
+    font-size: 50px;
+}
+
+.estado-vazio h3 {
+    margin: 4px 0 0;
+    font-size: 26px;
+    line-height: 1.15;
+}
+
+.estado-vazio p {
+    margin: 0;
+    color: var(--color-text-2);
+    font-size: 15px;
+}
+
+.estado-vazio button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 6px;
+    padding: 0 22px;
+}
+
+.selo-status i {
+    font-size: 13px;
 }

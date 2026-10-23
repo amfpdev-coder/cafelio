@@ -4,6 +4,7 @@ import com.cafelio.api.model.BookTag;
 import com.cafelio.api.model.ReadingStatus;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -27,7 +28,11 @@ public record LibraryBookResponse(
 
         Integer pages,
 
-        Instant createdAt
+        Instant createdAt,
+
+        LocalDate startedAt,
+
+        LocalDate finishedAt
 
 ) {
 

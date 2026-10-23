@@ -72,7 +72,9 @@ public class HomeService {
                 livro.getAuthors(),
                 livro.getTags(),
                 livro.getPages(),
-                livro.getCreatedAt()
+                livro.getCreatedAt(),
+                livro.getStartedAt(),
+                livro.getFinishedAt()
         );
     }
 

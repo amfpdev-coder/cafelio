@@ -24,6 +24,7 @@ const DESTINOS_VALIDOS = [
     ...DESTINOS_PRINCIPAIS.map((d) => d.id),
     ...DESTINOS_EXPLORAR.map((d) => d.id),
     DESTINO_PERFIL.id,
+    "buscar",
 ];
 
 const ROTAS_DE_ENTRADA = {
@@ -67,7 +68,8 @@ function aplicarRota() {
     const rota = rotaAtual();
 
     if (usuarioAtual) {
-        navegarPara(DESTINOS_VALIDOS.includes(rota) ? rota : "inicio");
+        // "livro/<id>" é a única rota com parte variável
+        navegarPara(DESTINOS_VALIDOS.includes(rota) || rota.startsWith("livro/") ? rota : "inicio");
         return;
     }
 
@@ -714,6 +716,16 @@ function renderDestino() {
 
     if (destinoAtual === "estante") {
         renderEstante(conteudo);
+        return;
+    }
+
+    if (destinoAtual === "buscar") {
+        renderBuscar(conteudo);
+        return;
+    }
+
+    if (destinoAtual.startsWith("livro/")) {
+        renderLivro(conteudo, destinoAtual.slice("livro/".length));
         return;
     }
 
@@ -1991,15 +2003,351 @@ function cartaoTematicos() {
 
 // ---- Tela de Início ----
 
+// ---- Buscar livros ----
+
+let resultadosDaBusca = [];
+
+async function renderBuscar(conteudo) {
+    conteudo.innerHTML = `
+        <button type="button" class="botao-link voltar-entrada" id="voltar-estante">
+            <i class="ph-light ph-arrow-left"></i>Estante
+        </button>
+
+        <h2>Buscar livros</h2>
+
+        <form id="form-buscar" class="busca-livros">
+            <div class="campo-busca">
+                <i class="ph-light ph-magnifying-glass"></i>
+                <input id="busca-termo" type="search" placeholder="Título, autoria ou ISBN" required />
+            </div>
+            <button type="submit">Buscar</button>
+        </form>
+
+        <p class="form-message" id="busca-estado"></p>
+
+        <div id="busca-resultados"></div>
+    `;
+
+    document.getElementById("voltar-estante").addEventListener("click", () => irPara("estante"));
+    document.getElementById("form-buscar").addEventListener("submit", handleBuscarLivros);
+
+    document.getElementById("busca-resultados").addEventListener("click", (event) => {
+        const botao = event.target.closest("[data-adicionar]");
+
+        if (botao) {
+            abrirAdicionar(botao.dataset.adicionar);
+        }
+    });
+
+    document.getElementById("busca-termo").focus();
+}
+
+async function handleBuscarLivros(event) {
+    event.preventDefault();
+
+    const estado = document.getElementById("busca-estado");
+    const termo = document.getElementById("busca-termo").value.trim();
+
+    estado.textContent = "Procurando...";
+    document.getElementById("busca-resultados").innerHTML = "";
+
+    try {
+        const resposta = await apiGet(`/books/search?titulo=${encodeURIComponent(termo)}&limit=20`);
+
+        resultadosDaBusca = resposta.books || [];
+        estado.textContent = "";
+
+        preencherResultados(resposta.totalResults);
+    } catch (error) {
+        estado.textContent = error.message;
+    }
+}
+
+function preencherResultados(total) {
+    const area = document.getElementById("busca-resultados");
+
+    if (!resultadosDaBusca.length) {
+        area.innerHTML = `<p class="rascunho">Nenhum livro encontrado. Tente outro termo.</p>`;
+        return;
+    }
+
+    const linhas = resultadosDaBusca.map((livro, i) => `
+        <article class="resultado">
+            ${capaDoLivro(livro)}
+
+            <div class="resultado-texto">
+                <h3>${livro.title}</h3>
+                <p class="resultado-detalhe">
+                    ${[(livro.authors || []).join(", "), livro.firstPublishYear, livro.pages ? `${livro.pages} páginas` : null]
+                        .filter(Boolean).join(" · ")}
+                </p>
+            </div>
+
+            <button type="button" class="botao-secundario" data-adicionar="${i}">
+                <i class="ph-light ph-plus"></i>Adicionar
+            </button>
+        </article>
+    `).join("");
+
+    area.innerHTML = `
+        <p class="overline">${total} ${total === 1 ? "resultado" : "resultados"}</p>
+        <div class="resultados">${linhas}</div>
+    `;
+}
+
+async function abrirAdicionar(indice) {
+    const livro = resultadosDaBusca[indice];
+
+    const status = await escolherStatus(livro);
+
+    if (!status) {
+        return;
+    }
+
+    const estado = document.getElementById("busca-estado");
+
+    estado.textContent = "Adicionando...";
+
+    try {
+        await apiPost("/library-books", {
+            openLibraryId: livro.openLibraryId,
+            title: livro.title,
+            firstPublishYear: livro.firstPublishYear,
+            coverUrl: livro.coverUrl,
+            status: status,
+            authors: livro.authors || [],
+            tags: [],
+            pages: livro.pages,
+        });
+
+        estado.textContent = `"${livro.title}" entrou na sua estante.`;
+    } catch (error) {
+        estado.textContent = error.message;
+    }
+}
+
+// Um diálogo com um botão por status, no lugar de um menu
+function escolherStatus(livro) {
+    return new Promise((resolve) => {
+        const opcoes = Object.entries(STATUS).map(([chave, s]) => `
+            <button type="button" class="pilula pilula-escolha" data-escolha="${chave}">
+<i class="ph-light ph-${s.icone}"></i>${s.rotulo}
+            </button>
+        `).join("");
+
+        document.body.insertAdjacentHTML("beforeend", `
+            <div class="modal-fundo" id="modal-status">
+                <div class="modal" role="dialog" aria-modal="true" aria-label="Adicionar à estante">
+                    <button type="button" class="modal-fechar" id="status-fechar" aria-label="Fechar">
+                        <i class="ph-light ph-x"></i>
+                    </button>
+
+                    <h3>Adicionar à estante</h3>
+                    <p class="modal-texto">${livro.title}</p>
+
+                    <div class="escolhas-status">${opcoes}</div>
+                </div>
+            </div>
+        `);
+
+        const modal = document.getElementById("modal-status");
+
+        function fechar(resposta) {
+            document.removeEventListener("keydown", pelaTecla);
+            modal.remove();
+            resolve(resposta);
+        }
+
+        function pelaTecla(event) {
+            if (event.key === "Escape") {
+                fechar(null);
+            }
+        }
+
+        modal.addEventListener("click", (event) => {
+            const escolha = event.target.closest("[data-escolha]");
+
+            if (escolha) {
+                fechar(escolha.dataset.escolha);
+                return;
+            }
+
+            if (event.target === modal || event.target.closest("#status-fechar")) {
+                fechar(null);
+            }
+        });
+
+        document.addEventListener("keydown", pelaTecla);
+    });
+}
+
+// ---- Detalhe do livro ----
+
+let livroAberto = null;
+
+async function renderLivro(conteudo, id) {
+    conteudo.innerHTML = `<p class="rascunho">Carregando…</p>`;
+
+    try {
+        livroAberto = await apiGet(`/library-books/${id}`);
+    } catch (error) {
+        conteudo.innerHTML = `<p class="form-message">${error.message}</p>`;
+        return;
+    }
+
+    const livro = livroAberto;
+    const status = STATUS[livro.status];
+
+    conteudo.innerHTML = `
+        <button type="button" class="botao-link voltar-entrada" id="voltar-estante">
+            <i class="ph-light ph-arrow-left"></i>Estante
+        </button>
+
+        <div class="detalhe">
+            <div class="detalhe-capa">${capaDoLivro(livro)}</div>
+
+            <div class="detalhe-texto">
+                <h2>${livro.title}</h2>
+                <p class="detalhe-autoria">${(livro.authors || []).join(", ")}</p>
+
+                <p class="detalhe-dados">
+                    ${[livro.firstPublishYear, livro.pages ? `${livro.pages} páginas` : null]
+                        .filter(Boolean).join(" · ")}
+                </p>
+
+                <div class="bloco">
+                    <span class="bloco-titulo"><i class="ph-light ph-bookmark-simple"></i>Status</span>
+                    <div class="escolhas-status" id="detalhe-status">
+                        ${Object.entries(STATUS).map(([chave, s]) => `
+                            <button type="button" class="pilula pilula-escolha ${chave === livro.status ? "pilula-ativa" : ""}"
+                                    data-novo-status="${chave}">
+<i class="ph-light ph-${s.icone}"></i>${s.rotulo}
+                            </button>
+                        `).join("")}
+                    </div>
+                </div>
+
+                <div class="bloco">
+                    <span class="bloco-titulo"><i class="ph-light ph-calendar-blank"></i>Datas</span>
+
+                    <div class="detalhe-datas">
+                        <div class="campo">
+                            <label for="data-inicio">Comecei a ler</label>
+                            <input id="data-inicio" type="date" value="${livro.startedAt || ""}" />
+                        </div>
+
+                        <div class="campo">
+                            <label for="data-fim">Terminei</label>
+                            <input id="data-fim" type="date" value="${livro.finishedAt || ""}" />
+                        </div>
+                    </div>
+
+                    <small>Mudar o status preenche sozinho. Aqui você corrige.</small>
+                </div>
+
+                <div class="bloco">
+                    <span class="bloco-titulo"><i class="ph-light ph-tag"></i>Etiquetas</span>
+                    <div class="escolhas-status" id="detalhe-etiquetas">
+                        ${Object.entries(ETIQUETAS).map(([chave, e]) => `
+                            <button type="button" class="pilula pilula-escolha ${(livro.tags || []).includes(chave) ? "pilula-ativa" : ""}"
+                                    data-etiqueta-livro="${chave}">
+                                <i class="ph-light ph-${e.icone}"></i>${e.rotulo}
+                            </button>
+                        `).join("")}
+                    </div>
+                </div>
+
+                <p class="form-message" id="detalhe-estado"></p>
+
+                <div class="bloco bloco-perigo">
+                    <span class="bloco-titulo"><i class="ph-light ph-trash"></i>Tirar da estante</span>
+                    <p>O livro sai da sua estante. As citações e resenhas ligadas a ele também.</p>
+                    <button type="button" class="btn-perigo" id="remover-livro">Tirar da estante</button>
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.getElementById("voltar-estante").addEventListener("click", () => irPara("estante"));
+
+    document.getElementById("detalhe-status").addEventListener("click", (event) => {
+        const pilula = event.target.closest("[data-novo-status]");
+
+        if (pilula && pilula.dataset.novoStatus !== livroAberto.status) {
+            salvarLivro({ status: pilula.dataset.novoStatus });
+        }
+    });
+
+    document.getElementById("detalhe-etiquetas").addEventListener("click", (event) => {
+        const pilula = event.target.closest("[data-etiqueta-livro]");
+
+        if (!pilula) {
+            return;
+        }
+
+        const etiqueta = pilula.dataset.etiquetaLivro;
+        const atuais = livroAberto.tags || [];
+
+        salvarLivro({
+            tags: atuais.includes(etiqueta)
+                ? atuais.filter((t) => t !== etiqueta)
+                : [...atuais, etiqueta],
+        });
+    });
+
+    document.getElementById("data-inicio").addEventListener("change", (event) => {
+        salvarLivro({ startedAt: event.target.value || null });
+    });
+
+    document.getElementById("data-fim").addEventListener("change", (event) => {
+        salvarLivro({ finishedAt: event.target.value || null });
+    });
+
+    document.getElementById("remover-livro").addEventListener("click", removerLivro);
+}
+
+async function salvarLivro(mudanca) {
+    const estado = document.getElementById("detalhe-estado");
+
+    estado.textContent = "Salvando...";
+
+    try {
+        await apiPatch(`/library-books/${livroAberto.id}`, mudanca);
+        renderLivro(document.getElementById("conteudo"), livroAberto.id);
+    } catch (error) {
+        estado.textContent = error.message;
+    }
+}
+
+async function removerLivro() {
+    const certeza = await perguntar({
+        titulo: "Tirar da estante?",
+        texto: `"${livroAberto.title}" sai da sua estante, junto com o que estiver ligado a ele.`,
+        confirmar: "Tirar da estante",
+        perigo: true,
+    });
+
+    if (!certeza) {
+        return;
+    }
+
+    try {
+        await apiDelete(`/library-books/${livroAberto.id}`);
+        irPara("estante");
+    } catch (error) {
+        document.getElementById("detalhe-estado").textContent = error.message;
+    }
+}
+
 // ---- Estante ----
 
 const STATUS = {
-    READING:      { rotulo: "Lendo",          chave: "lendo" },
-    READ:         { rotulo: "Lido",           chave: "lido" },
-    WANT_TO_READ: { rotulo: "Quero ler",      chave: "quero" },
-    READING_GOAL: { rotulo: "Meta literária", chave: "meta" },
-    REREADING:    { rotulo: "Relendo",        chave: "relendo" },
-    ABANDONED:    { rotulo: "Abandonei",      chave: "abandonei" },
+    READING:      { rotulo: "Lendo",          chave: "lendo",     icone: "book-open" },
+    READ:         { rotulo: "Lido",           chave: "lido",      icone: "check-circle" },
+    WANT_TO_READ: { rotulo: "Quero ler",      chave: "quero",     icone: "bookmark-simple" },
+    READING_GOAL: { rotulo: "Meta literária", chave: "meta",      icone: "target" },
+    REREADING:    { rotulo: "Relendo",        chave: "relendo",   icone: "arrows-clockwise" },
+    ABANDONED:    { rotulo: "Abandonei",      chave: "abandonei", icone: "x-circle" },
 };
 
 const ETIQUETAS = {
@@ -2033,6 +2381,12 @@ async function renderEstante(conteudo) {
         estanteToda = await apiGet("/library-books");
     } catch (error) {
         conteudo.innerHTML = `<h2>Estante</h2><p class="form-message">${error.message}</p>`;
+        return;
+    }
+
+    // Estante vazia não precisa de filtros nem de busca: precisa de um convite
+    if (!estanteToda.length) {
+        renderEstanteVazia(conteudo);
         return;
     }
 
@@ -2076,6 +2430,8 @@ async function renderEstante(conteudo) {
         <div class="grade-livros" id="grade-livros"></div>
     `;
 
+    document.getElementById("estante-adicionar").addEventListener("click", () => irPara("buscar"));
+
     document.getElementById("estante-busca").addEventListener("input", (event) => {
         buscaEstante = event.target.value.trim().toLowerCase();
         preencherEstante();
@@ -2095,6 +2451,14 @@ async function renderEstante(conteudo) {
         }
     });
 
+    document.getElementById("grade-livros").addEventListener("click", (event) => {
+        const livro = event.target.closest("[data-livro]");
+
+        if (livro) {
+            irPara(`livro/${livro.dataset.livro}`);
+        }
+    });
+
     document.querySelector(".filtros-etiqueta").addEventListener("click", (event) => {
         const pilula = event.target.closest("[data-etiqueta]");
 
@@ -2106,6 +2470,25 @@ async function renderEstante(conteudo) {
     });
 
     preencherEstante();
+}
+
+function renderEstanteVazia(conteudo) {
+    conteudo.innerHTML = `
+        <h2>Estante</h2>
+
+        <div class="estado-vazio">
+            <span class="estado-vazio-selo"><i class="ph-light ph-books"></i></span>
+
+            <h3>Sua estante ainda está vazia</h3>
+            <p>Comece pelo livro que está na sua mesa de cabeceira. O resto a gente arruma junto.</p>
+
+            <button type="button" id="estante-primeiro">
+                <i class="ph-light ph-plus"></i>Adicionar o primeiro livro
+            </button>
+        </div>
+    `;
+
+    document.getElementById("estante-primeiro").addEventListener("click", () => irPara("buscar"));
 }
 
 function preencherEstante() {
@@ -2156,7 +2539,7 @@ function pilulasDeStatus() {
         return `
             <button type="button" class="pilula pilula-${s.chave} ${filtroStatus === chave ? "pilula-ativa" : ""}"
                     data-status="${chave}">
-                <span class="ponto-status"></span>${s.rotulo} · ${quantos}
+<i class="ph-light ph-${s.icone}"></i>${s.rotulo} · ${quantos}
             </button>
         `;
     }).join("");
@@ -2178,7 +2561,7 @@ function cartaoDeLivro(livro) {
             <h3 class="livro-titulo">${livro.title}</h3>
 
             <span class="selo-status selo-${status ? status.chave : "lido"}">
-                <span class="ponto-status"></span>${status ? status.rotulo : livro.status}
+                <i class="ph-light ph-${status ? status.icone : "book"}"></i>${status ? status.rotulo : livro.status}
             </span>
         </article>
     `;
@@ -2259,7 +2642,7 @@ function preencherLendoAgora(livros) {
     }
 
     const cartoes = livros.map((livro) => `
-        <article class="livro-lendo">
+        <article class="livro-lendo" data-livro="${livro.id}">
             ${capaDoLivro(livro)}
             <div>
                 <h3>${livro.title}</h3>
@@ -2273,6 +2656,14 @@ function preencherLendoAgora(livros) {
         <span class="overline">Lendo agora</span>
         <div class="livros-lendo">${cartoes}</div>
     `;
+
+    area.addEventListener("click", (event) => {
+        const cartao = event.target.closest("[data-livro]");
+
+        if (cartao) {
+            irPara(`livro/${cartao.dataset.livro}`);
+        }
+    });
 }
 
 // Sem capa, a lombada desenhada com o título já identifica o livro

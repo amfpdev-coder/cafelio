@@ -61,6 +61,10 @@ async function apiPut(path, data) {
     return apiRequest("PUT", path, data);
 }
 
+async function apiPatch(path, data) {
+    return apiRequest("PATCH", path, data);
+}
+
 async function apiDelete(path) {
     return apiRequest("DELETE", path);
 }
