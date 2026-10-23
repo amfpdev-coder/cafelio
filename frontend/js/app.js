@@ -712,6 +712,11 @@ function renderDestino() {
         return;
     }
 
+    if (destinoAtual === "estante") {
+        renderEstante(conteudo);
+        return;
+    }
+
     const destino = [...DESTINOS_PRINCIPAIS, ...DESTINOS_EXPLORAR]
         .find((d) => d.id === destinoAtual);
 
@@ -1985,6 +1990,199 @@ function cartaoTematicos() {
 }
 
 // ---- Tela de Início ----
+
+// ---- Estante ----
+
+const STATUS = {
+    READING:      { rotulo: "Lendo",          chave: "lendo" },
+    READ:         { rotulo: "Lido",           chave: "lido" },
+    WANT_TO_READ: { rotulo: "Quero ler",      chave: "quero" },
+    READING_GOAL: { rotulo: "Meta literária", chave: "meta" },
+    REREADING:    { rotulo: "Relendo",        chave: "relendo" },
+    ABANDONED:    { rotulo: "Abandonei",      chave: "abandonei" },
+};
+
+const ETIQUETAS = {
+    FAVORITE: { rotulo: "Favorito",  icone: "heart" },
+    WANTED:   { rotulo: "Desejado",  icone: "sparkle" },
+    OWNED:    { rotulo: "Tenho",     icone: "check-circle" },
+    LENT:     { rotulo: "Emprestei", icone: "handshake" },
+};
+
+const ORDENACOES = {
+    recentes: { rotulo: "Adicionados recentemente", ordenar: (a, b) => 0 },
+    titulo:   { rotulo: "Título (A–Z)", ordenar: (a, b) => a.title.localeCompare(b.title, "pt-BR") },
+    autoria:  { rotulo: "Autoria (A–Z)", ordenar: (a, b) => primeiraAutoria(a).localeCompare(primeiraAutoria(b), "pt-BR") },
+    ano:      { rotulo: "Mais antigos", ordenar: (a, b) => (a.firstPublishYear || 0) - (b.firstPublishYear || 0) },
+};
+
+let estanteToda = [];
+let filtroStatus = "todos";
+let filtroEtiqueta = null;
+let buscaEstante = "";
+let ordemEstante = "recentes";
+
+function primeiraAutoria(livro) {
+    return (livro.authors && livro.authors[0]) || "";
+}
+
+async function renderEstante(conteudo) {
+    conteudo.innerHTML = `<h2>Estante</h2><p class="rascunho">Carregando…</p>`;
+
+    try {
+        estanteToda = await apiGet("/library-books");
+    } catch (error) {
+        conteudo.innerHTML = `<h2>Estante</h2><p class="form-message">${error.message}</p>`;
+        return;
+    }
+
+    filtroStatus = "todos";
+    filtroEtiqueta = null;
+    buscaEstante = "";
+
+    conteudo.innerHTML = `
+        <div class="estante-topo">
+            <h2>Estante <small id="estante-total"></small></h2>
+
+            <div class="estante-ferramentas">
+                <div class="campo-busca">
+                    <i class="ph-light ph-magnifying-glass"></i>
+                    <input id="estante-busca" type="search" placeholder="Buscar na estante" />
+                </div>
+
+                <select id="estante-ordem">
+                    ${Object.entries(ORDENACOES)
+                        .map(([chave, o]) => `<option value="${chave}">${o.rotulo}</option>`)
+                        .join("")}
+                </select>
+
+                <button type="button" id="estante-adicionar">
+                    <i class="ph-light ph-plus"></i>Adicionar
+                </button>
+            </div>
+        </div>
+
+        <div class="filtros-status" id="filtros-status"></div>
+
+        <div class="filtros-etiqueta">
+            <span class="overline">Etiquetas</span>
+            ${Object.entries(ETIQUETAS).map(([chave, e]) => `
+                <button type="button" class="pilula" data-etiqueta="${chave}">
+                    <i class="ph-light ph-${e.icone}"></i>${e.rotulo}
+                </button>
+            `).join("")}
+        </div>
+
+        <div class="grade-livros" id="grade-livros"></div>
+    `;
+
+    document.getElementById("estante-busca").addEventListener("input", (event) => {
+        buscaEstante = event.target.value.trim().toLowerCase();
+        preencherEstante();
+    });
+
+    document.getElementById("estante-ordem").addEventListener("change", (event) => {
+        ordemEstante = event.target.value;
+        preencherEstante();
+    });
+
+    document.getElementById("filtros-status").addEventListener("click", (event) => {
+        const pilula = event.target.closest("[data-status]");
+
+        if (pilula) {
+            filtroStatus = pilula.dataset.status;
+            preencherEstante();
+        }
+    });
+
+    document.querySelector(".filtros-etiqueta").addEventListener("click", (event) => {
+        const pilula = event.target.closest("[data-etiqueta]");
+
+        if (pilula) {
+            // Clicar na etiqueta já ativa desliga o filtro
+            filtroEtiqueta = filtroEtiqueta === pilula.dataset.etiqueta ? null : pilula.dataset.etiqueta;
+            preencherEstante();
+        }
+    });
+
+    preencherEstante();
+}
+
+function preencherEstante() {
+    const visiveis = estanteToda
+        .filter((livro) => filtroStatus === "todos" || livro.status === filtroStatus)
+        .filter((livro) => !filtroEtiqueta || (livro.tags || []).includes(filtroEtiqueta))
+        .filter((livro) => combinaComABusca(livro))
+        .sort(ORDENACOES[ordemEstante].ordenar);
+
+    document.getElementById("estante-total").textContent =
+        `${estanteToda.length} ${estanteToda.length === 1 ? "livro" : "livros"}`;
+
+    document.getElementById("filtros-status").innerHTML = pilulasDeStatus();
+
+    [...document.querySelectorAll("[data-etiqueta]")].forEach((p) => {
+        p.classList.toggle("pilula-ativa", p.dataset.etiqueta === filtroEtiqueta);
+    });
+
+    document.getElementById("grade-livros").innerHTML = visiveis.length
+        ? visiveis.map(cartaoDeLivro).join("")
+        : `<p class="rascunho">Nenhum livro com esses filtros.</p>`;
+}
+
+function combinaComABusca(livro) {
+    if (!buscaEstante) {
+        return true;
+    }
+
+    const alvo = `${livro.title} ${(livro.authors || []).join(" ")}`.toLowerCase();
+
+    return alvo.includes(buscaEstante);
+}
+
+function pilulasDeStatus() {
+    const todos = `
+        <button type="button" class="pilula ${filtroStatus === "todos" ? "pilula-ativa" : ""}" data-status="todos">
+            Todos · ${estanteToda.length}
+        </button>
+    `;
+
+    const demais = Object.entries(STATUS).map(([chave, s]) => {
+        const quantos = estanteToda.filter((livro) => livro.status === chave).length;
+
+        if (!quantos) {
+            return "";
+        }
+
+        return `
+            <button type="button" class="pilula pilula-${s.chave} ${filtroStatus === chave ? "pilula-ativa" : ""}"
+                    data-status="${chave}">
+                <span class="ponto-status"></span>${s.rotulo} · ${quantos}
+            </button>
+        `;
+    }).join("");
+
+    return todos + demais;
+}
+
+function cartaoDeLivro(livro) {
+    const status = STATUS[livro.status];
+    const favorito = (livro.tags || []).includes("FAVORITE");
+
+    return `
+        <article class="livro" data-livro="${livro.id}">
+            <div class="livro-capa">
+                ${capaDoLivro(livro)}
+                ${favorito ? `<span class="livro-favorito"><i class="ph-fill ph-heart"></i></span>` : ""}
+            </div>
+
+            <h3 class="livro-titulo">${livro.title}</h3>
+
+            <span class="selo-status selo-${status ? status.chave : "lido"}">
+                <span class="ponto-status"></span>${status ? status.rotulo : livro.status}
+            </span>
+        </article>
+    `;
+}
 
 async function renderInicio(conteudo) {
     const user = usuarioAtual;
