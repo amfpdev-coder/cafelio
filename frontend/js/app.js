@@ -2010,7 +2010,7 @@ const ETIQUETAS = {
 };
 
 const ORDENACOES = {
-    recentes: { rotulo: "Adicionados recentemente", ordenar: (a, b) => 0 },
+    recentes: { rotulo: "Adicionados recentemente", ordenar: (a, b) => new Date(b.createdAt) - new Date(a.createdAt) },
     titulo:   { rotulo: "Título (A–Z)", ordenar: (a, b) => a.title.localeCompare(b.title, "pt-BR") },
     autoria:  { rotulo: "Autoria (A–Z)", ordenar: (a, b) => primeiraAutoria(a).localeCompare(primeiraAutoria(b), "pt-BR") },
     ano:      { rotulo: "Mais antigos", ordenar: (a, b) => (a.firstPublishYear || 0) - (b.firstPublishYear || 0) },

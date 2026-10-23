@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.time.Instant;
 import java.time.LocalDate;
 
 @Entity
@@ -77,6 +78,10 @@ public class LibraryBook {
         this.tags = tags;
     }
 
+    public Instant getCreatedAt() {
+        return createdAt;
+    }
+
     public Integer getPages() {
         return pages;
     }
@@ -112,6 +117,9 @@ public class LibraryBook {
 
     @Column(name = "pages")
     private Integer pages;
+
+    @Column(name = "created_at", nullable = false)
+    private Instant createdAt = Instant.now();
 
     @Column(name = "cover_url")
     private String coverUrl;
