@@ -2354,3 +2354,218 @@ button:not(:disabled):active,
         flex-direction: column-reverse;
     }
 }
+
+/* ---- Estante ---- */
+
+.estante-topo {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.estante-topo h2 {
+    margin: 0;
+}
+
+.estante-topo small {
+    color: var(--color-text-3);
+    font-family: var(--font-body);
+    font-size: 14px;
+    font-weight: 400;
+}
+
+.estante-ferramentas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.campo-busca {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.campo-busca i {
+    position: absolute;
+    left: 12px;
+    color: var(--color-text-3);
+    font-size: 18px;
+    pointer-events: none;
+}
+
+.campo-busca input {
+    width: 240px;
+    padding-left: 38px;
+}
+
+.estante-ferramentas select {
+    height: 46px;
+    padding: 0 12px;
+    border: 1.5px solid var(--color-border-input);
+    border-radius: var(--radius-field);
+    background: var(--color-paper);
+    color: var(--color-sepia);
+    font-family: inherit;
+    font-size: 14px;
+}
+
+.estante-ferramentas button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* ---- Filtros ---- */
+
+.filtros-status,
+.filtros-etiqueta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-top: 18px;
+}
+
+.filtros-etiqueta {
+    margin-top: 10px;
+}
+
+.pilula {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    height: 34px;
+    padding: 0 14px;
+    border-radius: var(--radius-pill);
+    background: var(--color-surface-2);
+    box-shadow: none;
+    color: var(--color-text-2);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.pilula:hover {
+    background: var(--color-areia);
+    color: var(--color-sepia);
+}
+
+.pilula-ativa {
+    background: var(--color-coffee);
+    color: var(--color-cream);
+}
+
+.pilula-ativa:hover {
+    background: var(--color-coffee-hover);
+    color: var(--color-cream);
+}
+
+.ponto-status {
+    width: 7px;
+    height: 7px;
+    border-radius: var(--radius-pill);
+    background: currentColor;
+}
+
+/* ---- Grade de livros ---- */
+
+.grade-livros {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 22px 18px;
+    margin-top: 26px;
+}
+
+.livro {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.livro-capa {
+    position: relative;
+    aspect-ratio: 2 / 3;
+}
+
+.livro-capa .capa {
+    width: 100%;
+    height: 100%;
+    border-radius: 8px;
+}
+
+.livro:hover .capa {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-dark);
+}
+
+.capa {
+    transition: transform .18s ease, box-shadow .18s ease;
+}
+
+.livro-favorito {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border-radius: var(--radius-pill);
+    background: var(--color-paper);
+    color: var(--color-terracota);
+    font-size: 14px;
+    box-shadow: var(--shadow-card);
+}
+
+.livro-titulo {
+    margin: 0;
+    font-family: var(--font-body);
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.25;
+}
+
+.selo-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    align-self: flex-start;
+    padding: 3px 9px;
+    border-radius: var(--radius-pill);
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.selo-lendo     { background: var(--status-lendo-bg);     color: var(--status-lendo-fg); }
+.selo-lido      { background: var(--status-lido-bg);      color: var(--status-lido-fg); }
+.selo-quero     { background: var(--status-quero-bg);     color: var(--status-quero-fg); }
+.selo-meta      { background: var(--status-meta-bg);      color: var(--status-meta-fg); }
+.selo-relendo   { background: var(--status-relendo-bg);   color: var(--status-relendo-fg); }
+.selo-abandonei { background: var(--status-abandonei-bg); color: var(--status-abandonei-fg); }
+
+@media (max-width: 1100px) {
+    .grade-livros {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+@media (max-width: 767px) {
+    .grade-livros {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 18px 14px;
+    }
+
+    .estante-ferramentas {
+        width: 100%;
+    }
+
+    .campo-busca,
+    .campo-busca input {
+        flex: 1;
+        width: auto;
+    }
+}

@@ -44,7 +44,7 @@ public class LibraryBookService {
         }
 
         LibraryBook savedBook = libraryBookRepository.save(libraryBook);
-        LibraryBookResponse libraryBookResponse = new LibraryBookResponse(savedBook.getId(), savedBook.getOpenLibraryId(), savedBook.getTitle(), savedBook.getFirstPublishYear(), savedBook.getCoverUrl(), savedBook.getStatus(), savedBook.getAuthors(), savedBook.getTags(), savedBook.getPages());
+        LibraryBookResponse libraryBookResponse = new LibraryBookResponse(savedBook.getId(), savedBook.getOpenLibraryId(), savedBook.getTitle(), savedBook.getFirstPublishYear(), savedBook.getCoverUrl(), savedBook.getStatus(), savedBook.getAuthors(), savedBook.getTags(), savedBook.getPages(), savedBook.getCreatedAt());
 
         return libraryBookResponse;
     }
@@ -63,7 +63,8 @@ public class LibraryBookService {
                 book.getStatus(),
                 book.getAuthors(),
                 book.getTags(),
-                book.getPages()
+                book.getPages(),
+                book.getCreatedAt()
         )).toList();
 
         return list;
@@ -101,7 +102,8 @@ public class LibraryBookService {
                 updatedBook.getStatus(),
                 updatedBook.getAuthors(),
                 updatedBook.getTags(),
-                updatedBook.getPages());
+                updatedBook.getPages(),
+                updatedBook.getCreatedAt());
 
         return  libraryBookResponse;
     }
@@ -122,7 +124,8 @@ public class LibraryBookService {
                 book.getStatus(),
                 book.getAuthors(),
                 book.getTags(),
-                book.getPages()
+                book.getPages(),
+                book.getCreatedAt()
         );
 
         return response;
@@ -161,7 +164,8 @@ public class LibraryBookService {
                 livroSorteado.getStatus(),
                 livroSorteado.getAuthors(),
                 livroSorteado.getTags(),
-                livroSorteado.getPages()
+                livroSorteado.getPages(),
+                livroSorteado.getCreatedAt()
         );
 
         return readingGoalBook;

@@ -3,6 +3,7 @@ package com.cafelio.api.dto.response;
 import com.cafelio.api.model.BookTag;
 import com.cafelio.api.model.ReadingStatus;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -24,7 +25,9 @@ public record LibraryBookResponse(
 
         Set<BookTag> tags,
 
-        Integer pages
+        Integer pages,
+
+        Instant createdAt
 
 ) {
 
