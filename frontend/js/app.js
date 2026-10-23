@@ -24,6 +24,7 @@ const DESTINOS_VALIDOS = [
     ...DESTINOS_PRINCIPAIS.map((d) => d.id),
     ...DESTINOS_EXPLORAR.map((d) => d.id),
     DESTINO_PERFIL.id,
+    "buscar",
 ];
 
 const ROTAS_DE_ENTRADA = {
@@ -714,6 +715,11 @@ function renderDestino() {
 
     if (destinoAtual === "estante") {
         renderEstante(conteudo);
+        return;
+    }
+
+    if (destinoAtual === "buscar") {
+        renderBuscar(conteudo);
         return;
     }
 
@@ -1991,6 +1997,179 @@ function cartaoTematicos() {
 
 // ---- Tela de Início ----
 
+// ---- Buscar livros ----
+
+let resultadosDaBusca = [];
+
+async function renderBuscar(conteudo) {
+    conteudo.innerHTML = `
+        <h2>Buscar livros</h2>
+
+        <form id="form-buscar" class="busca-livros">
+            <div class="campo-busca">
+                <i class="ph-light ph-magnifying-glass"></i>
+                <input id="busca-termo" type="search" placeholder="Título, autoria ou ISBN" required />
+            </div>
+            <button type="submit">Buscar</button>
+        </form>
+
+        <p class="form-message" id="busca-estado"></p>
+
+        <div id="busca-resultados"></div>
+    `;
+
+    document.getElementById("form-buscar").addEventListener("submit", handleBuscarLivros);
+
+    document.getElementById("busca-resultados").addEventListener("click", (event) => {
+        const botao = event.target.closest("[data-adicionar]");
+
+        if (botao) {
+            abrirAdicionar(botao.dataset.adicionar);
+        }
+    });
+
+    document.getElementById("busca-termo").focus();
+}
+
+async function handleBuscarLivros(event) {
+    event.preventDefault();
+
+    const estado = document.getElementById("busca-estado");
+    const termo = document.getElementById("busca-termo").value.trim();
+
+    estado.textContent = "Procurando...";
+    document.getElementById("busca-resultados").innerHTML = "";
+
+    try {
+        const resposta = await apiGet(`/books/search?titulo=${encodeURIComponent(termo)}&limit=20`);
+
+        resultadosDaBusca = resposta.books || [];
+        estado.textContent = "";
+
+        preencherResultados(resposta.totalResults);
+    } catch (error) {
+        estado.textContent = error.message;
+    }
+}
+
+function preencherResultados(total) {
+    const area = document.getElementById("busca-resultados");
+
+    if (!resultadosDaBusca.length) {
+        area.innerHTML = `<p class="rascunho">Nenhum livro encontrado. Tente outro termo.</p>`;
+        return;
+    }
+
+    const linhas = resultadosDaBusca.map((livro, i) => `
+        <article class="resultado">
+            ${capaDoLivro(livro)}
+
+            <div class="resultado-texto">
+                <h3>${livro.title}</h3>
+                <p class="resultado-detalhe">
+                    ${[(livro.authors || []).join(", "), livro.firstPublishYear, livro.pages ? `${livro.pages} páginas` : null]
+                        .filter(Boolean).join(" · ")}
+                </p>
+            </div>
+
+            <button type="button" class="botao-secundario" data-adicionar="${i}">
+                <i class="ph-light ph-plus"></i>Adicionar
+            </button>
+        </article>
+    `).join("");
+
+    area.innerHTML = `
+        <p class="overline">${total} ${total === 1 ? "resultado" : "resultados"}</p>
+        <div class="resultados">${linhas}</div>
+    `;
+}
+
+async function abrirAdicionar(indice) {
+    const livro = resultadosDaBusca[indice];
+
+    const status = await escolherStatus(livro);
+
+    if (!status) {
+        return;
+    }
+
+    const estado = document.getElementById("busca-estado");
+
+    estado.textContent = "Adicionando...";
+
+    try {
+        await apiPost("/library-books", {
+            openLibraryId: livro.openLibraryId,
+            title: livro.title,
+            firstPublishYear: livro.firstPublishYear,
+            coverUrl: livro.coverUrl,
+            status: status,
+            authors: livro.authors || [],
+            tags: [],
+            pages: livro.pages,
+        });
+
+        estado.textContent = `"${livro.title}" entrou na sua estante.`;
+    } catch (error) {
+        estado.textContent = error.message;
+    }
+}
+
+// Um diálogo com um botão por status, no lugar de um menu
+function escolherStatus(livro) {
+    return new Promise((resolve) => {
+        const opcoes = Object.entries(STATUS).map(([chave, s]) => `
+            <button type="button" class="pilula pilula-escolha" data-escolha="${chave}">
+                <span class="ponto-status"></span>${s.rotulo}
+            </button>
+        `).join("");
+
+        document.body.insertAdjacentHTML("beforeend", `
+            <div class="modal-fundo" id="modal-status">
+                <div class="modal" role="dialog" aria-modal="true" aria-label="Adicionar à estante">
+                    <button type="button" class="modal-fechar" id="status-fechar" aria-label="Fechar">
+                        <i class="ph-light ph-x"></i>
+                    </button>
+
+                    <h3>Adicionar à estante</h3>
+                    <p class="modal-texto">${livro.title}</p>
+
+                    <div class="escolhas-status">${opcoes}</div>
+                </div>
+            </div>
+        `);
+
+        const modal = document.getElementById("modal-status");
+
+        function fechar(resposta) {
+            document.removeEventListener("keydown", pelaTecla);
+            modal.remove();
+            resolve(resposta);
+        }
+
+        function pelaTecla(event) {
+            if (event.key === "Escape") {
+                fechar(null);
+            }
+        }
+
+        modal.addEventListener("click", (event) => {
+            const escolha = event.target.closest("[data-escolha]");
+
+            if (escolha) {
+                fechar(escolha.dataset.escolha);
+                return;
+            }
+
+            if (event.target === modal || event.target.closest("#status-fechar")) {
+                fechar(null);
+            }
+        });
+
+        document.addEventListener("keydown", pelaTecla);
+    });
+}
+
 // ---- Estante ----
 
 const STATUS = {
@@ -2075,6 +2254,8 @@ async function renderEstante(conteudo) {
 
         <div class="grade-livros" id="grade-livros"></div>
     `;
+
+    document.getElementById("estante-adicionar").addEventListener("click", () => irPara("buscar"));
 
     document.getElementById("estante-busca").addEventListener("input", (event) => {
         buscaEstante = event.target.value.trim().toLowerCase();
