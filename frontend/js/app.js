@@ -2131,7 +2131,7 @@ function escolherStatus(livro) {
     return new Promise((resolve) => {
         const opcoes = Object.entries(STATUS).map(([chave, s]) => `
             <button type="button" class="pilula pilula-escolha" data-escolha="${chave}">
-<i class="ph-light ph-${s.icone}"></i>${s.rotulo}
+                                <i class="ph-light ph-${s.icone}"></i>${s.rotulo}
             </button>
         `).join("");
 
@@ -2221,7 +2221,7 @@ async function renderLivro(conteudo, id) {
                         ${Object.entries(STATUS).map(([chave, s]) => `
                             <button type="button" class="pilula pilula-escolha ${chave === livro.status ? "pilula-ativa" : ""}"
                                     data-novo-status="${chave}">
-<i class="ph-light ph-${s.icone}"></i>${s.rotulo}
+                                <i class="ph-light ph-${s.icone}"></i>${s.rotulo}
                             </button>
                         `).join("")}
                     </div>
@@ -2255,6 +2255,44 @@ async function renderLivro(conteudo, id) {
                             </button>
                         `).join("")}
                     </div>
+                </div>
+
+                <div class="bloco">
+                    <span class="bloco-titulo"><i class="ph-light ph-compass"></i>Para os desafios</span>
+
+                    <div class="detalhe-datas">
+                        <div class="campo">
+                            <label for="livro-pais">País</label>
+                            <select id="livro-pais">
+                                <option value="">—</option>
+                                ${Object.entries(PAISES).map(([sigla, nome]) => `
+                                    <option value="${sigla}" ${sigla === livro.country ? "selected" : ""}>${nome}</option>
+                                `).join("")}
+                            </select>
+                        </div>
+
+                        <div class="campo">
+                            <label for="livro-estado">Estado da autoria</label>
+                            <select id="livro-estado">
+                                <option value="">—</option>
+                                ${Object.entries(ESTADOS).map(([sigla, nome]) => `
+                                    <option value="${sigla}" ${sigla === livro.authorState ? "selected" : ""}>${nome}</option>
+                                `).join("")}
+                            </select>
+                        </div>
+
+                        <div class="campo">
+                            <label for="livro-genero">Gênero literário</label>
+                            <select id="livro-genero">
+                                <option value="">—</option>
+                                ${Object.entries(GENEROS).map(([chave, nome]) => `
+                                    <option value="${chave}" ${chave === livro.literaryGenre ? "selected" : ""}>${nome}</option>
+                                `).join("")}
+                            </select>
+                        </div>
+                    </div>
+
+                    <small>O que você marca aqui alimenta os desafios temáticos.</small>
                 </div>
 
                 <p class="form-message" id="detalhe-estado"></p>
@@ -2296,24 +2334,41 @@ async function renderLivro(conteudo, id) {
     });
 
     document.getElementById("data-inicio").addEventListener("change", (event) => {
-        salvarLivro({ startedAt: event.target.value || null });
+        salvarLivro({ startedAt: event.target.value || null }, false);
     });
 
     document.getElementById("data-fim").addEventListener("change", (event) => {
-        salvarLivro({ finishedAt: event.target.value || null });
+        salvarLivro({ finishedAt: event.target.value || null }, false);
+    });
+
+    document.getElementById("livro-pais").addEventListener("change", (event) => {
+        salvarLivro({ country: event.target.value || null }, false);
+    });
+
+    document.getElementById("livro-estado").addEventListener("change", (event) => {
+        salvarLivro({ authorState: event.target.value || null }, false);
+    });
+
+    document.getElementById("livro-genero").addEventListener("change", (event) => {
+        salvarLivro({ literaryGenre: event.target.value || null }, false);
     });
 
     document.getElementById("remover-livro").addEventListener("click", removerLivro);
 }
 
-async function salvarLivro(mudanca) {
+async function salvarLivro(mudanca, redesenhar = true) {
     const estado = document.getElementById("detalhe-estado");
 
     estado.textContent = "Salvando...";
 
     try {
-        await apiPatch(`/library-books/${livroAberto.id}`, mudanca);
-        renderLivro(document.getElementById("conteudo"), livroAberto.id);
+        livroAberto = await apiPatch(`/library-books/${livroAberto.id}`, mudanca);
+
+        if (redesenhar) {
+            renderLivro(document.getElementById("conteudo"), livroAberto.id);
+        } else {
+            estado.textContent = "Salvo";
+        }
     } catch (error) {
         estado.textContent = error.message;
     }
@@ -2362,6 +2417,49 @@ const ORDENACOES = {
     titulo:   { rotulo: "Título (A–Z)", ordenar: (a, b) => a.title.localeCompare(b.title, "pt-BR") },
     autoria:  { rotulo: "Autoria (A–Z)", ordenar: (a, b) => primeiraAutoria(a).localeCompare(primeiraAutoria(b), "pt-BR") },
     ano:      { rotulo: "Mais antigos", ordenar: (a, b) => (a.firstPublishYear || 0) - (b.firstPublishYear || 0) },
+};
+
+const GENEROS = {
+    ROMANCE: "Romance",
+    CONTO: "Conto",
+    CRONICA: "Crônica",
+    POESIA: "Poesia",
+    TEATRO: "Teatro",
+    FANTASIA: "Fantasia",
+    FICCAO_CIENTIFICA: "Ficção científica",
+    TERROR: "Terror",
+    SUSPENSE: "Suspense",
+    POLICIAL: "Policial",
+    HISTORICO: "Histórico",
+    BIOGRAFIA: "Biografia",
+    ENSAIO: "Ensaio",
+    INFANTOJUVENIL: "Infantojuvenil",
+    QUADRINHOS: "Quadrinhos",
+    AUTOAJUDA: "Autoajuda",
+    TECNICO: "Técnico",
+};
+
+const ESTADOS = {
+    AC: "Acre", AL: "Alagoas", AP: "Amapá", AM: "Amazonas", BA: "Bahia",
+    CE: "Ceará", DF: "Distrito Federal", ES: "Espírito Santo", GO: "Goiás",
+    MA: "Maranhão", MT: "Mato Grosso", MS: "Mato Grosso do Sul", MG: "Minas Gerais",
+    PA: "Pará", PB: "Paraíba", PR: "Paraná", PE: "Pernambuco", PI: "Piauí",
+    RJ: "Rio de Janeiro", RN: "Rio Grande do Norte", RS: "Rio Grande do Sul",
+    RO: "Rondônia", RR: "Roraima", SC: "Santa Catarina", SP: "São Paulo",
+    SE: "Sergipe", TO: "Tocantins",
+};
+
+const PAISES = {
+    AO: "Angola", AR: "Argentina", AU: "Austrália", AT: "Áustria", BE: "Bélgica",
+    BO: "Bolívia", BR: "Brasil", CA: "Canadá", CL: "Chile", CN: "China",
+    CO: "Colômbia", KR: "Coreia do Sul", CU: "Cuba", DK: "Dinamarca", EG: "Egito",
+    ES: "Espanha", US: "Estados Unidos", FR: "França", GH: "Gana", GR: "Grécia",
+    GW: "Guiné-Bissau", NL: "Holanda", HU: "Hungria", IN: "Índia", IE: "Irlanda",
+    IS: "Islândia", IL: "Israel", IT: "Itália", JP: "Japão", MA: "Marrocos",
+    MX: "México", MZ: "Moçambique", NG: "Nigéria", NO: "Noruega", NZ: "Nova Zelândia",
+    PE: "Peru", PL: "Polônia", PT: "Portugal", KE: "Quênia", GB: "Reino Unido",
+    CZ: "República Tcheca", RO: "Romênia", RU: "Rússia", SN: "Senegal", SE: "Suécia",
+    CH: "Suíça", TR: "Turquia", UA: "Ucrânia", UY: "Uruguai", VE: "Venezuela",
 };
 
 let estanteToda = [];

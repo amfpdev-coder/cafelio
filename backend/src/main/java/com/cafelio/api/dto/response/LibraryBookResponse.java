@@ -37,7 +37,7 @@ public record LibraryBookResponse(
 
         String country,
 
-        String authorSafe,
+        String authorState,
 
         LiteraryGenre literaryGenre
 
