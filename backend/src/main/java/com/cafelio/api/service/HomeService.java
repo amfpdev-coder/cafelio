@@ -1,5 +1,12 @@
 package com.cafelio.api.service;
 
+import java.time.Clock;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.UUID;
+
+import org.springframework.stereotype.Service;
+
 import com.cafelio.api.dto.HomeResponse;
 import com.cafelio.api.dto.response.LibraryBookResponse;
 import com.cafelio.api.model.LibraryBook;
@@ -7,12 +14,6 @@ import com.cafelio.api.model.ReadingStatus;
 import com.cafelio.api.model.User;
 import com.cafelio.api.repository.LibraryBookRepository;
 import com.cafelio.api.repository.UserRepository;
-import org.springframework.stereotype.Service;
-
-import java.time.Clock;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.UUID;
 
 @Service
 public class HomeService {
@@ -74,7 +75,10 @@ public class HomeService {
                 livro.getPages(),
                 livro.getCreatedAt(),
                 livro.getStartedAt(),
-                livro.getFinishedAt()
+                livro.getFinishedAt(),
+                livro.getCountry(),
+                livro.getAuthorState(),
+                livro.getLiteraryGenre()
         );
     }
 

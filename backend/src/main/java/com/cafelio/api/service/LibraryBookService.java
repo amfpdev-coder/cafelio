@@ -1,5 +1,14 @@
 package com.cafelio.api.service;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.List;
+import java.util.Optional;
+import java.util.Random;
+import java.util.UUID;
+
+import org.springframework.stereotype.Service;
+
 import com.cafelio.api.dto.request.LibraryBookCreateRequest;
 import com.cafelio.api.dto.request.LibraryBookUpdateRequest;
 import com.cafelio.api.dto.response.LibraryBookResponse;
@@ -10,14 +19,6 @@ import com.cafelio.api.model.LibraryBook;
 import com.cafelio.api.model.ReadingStatus;
 import com.cafelio.api.model.User;
 import com.cafelio.api.repository.LibraryBookRepository;
-import org.springframework.stereotype.Service;
-
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.util.List;
-import java.util.Optional;
-import java.util.Random;
-import java.util.UUID;
 
 @Service
 public class LibraryBookService {
@@ -44,7 +45,8 @@ public class LibraryBookService {
         }
 
         LibraryBook savedBook = libraryBookRepository.save(libraryBook);
-        LibraryBookResponse libraryBookResponse = new LibraryBookResponse(savedBook.getId(), savedBook.getOpenLibraryId(), savedBook.getTitle(), savedBook.getFirstPublishYear(), savedBook.getCoverUrl(), savedBook.getStatus(), savedBook.getAuthors(), savedBook.getTags(), savedBook.getPages(), savedBook.getCreatedAt(), savedBook.getStartedAt(), savedBook.getFinishedAt());
+        LibraryBookResponse libraryBookResponse = new LibraryBookResponse(savedBook.getId(), savedBook.getOpenLibraryId(), savedBook.getTitle(), savedBook.getFirstPublishYear(), savedBook.getCoverUrl(), savedBook.getStatus(), savedBook.getAuthors(), savedBook.getTags(), savedBook.getPages(), savedBook.getCreatedAt(), savedBook.getStartedAt(), savedBook.getFinishedAt(), savedBook.getCountry(), savedBook.getAuthorState(), savedBook.getLiteraryGenre());
+
 
         return libraryBookResponse;
     }
@@ -66,7 +68,10 @@ public class LibraryBookService {
                 book.getPages(),
                 book.getCreatedAt(),
                 book.getStartedAt(),
-                book.getFinishedAt()
+                book.getFinishedAt(),
+                book.getCountry(),
+                book.getAuthorState(),
+                book.getLiteraryGenre()
         )).toList();
 
         return list;
@@ -103,6 +108,18 @@ public class LibraryBookService {
             book.setFinishedAt(libraryBookUpdateRequest.finishedAt());
         }
 
+        if (libraryBookUpdateRequest.country() != null) {
+            book.setCountry(libraryBookUpdateRequest.country());
+        }
+
+        if (libraryBookUpdateRequest.authorState() != null) {
+            book.setAuthorState(libraryBookUpdateRequest.authorState());
+        }
+
+        if (libraryBookUpdateRequest.literaryGenre() != null) {
+            book.setLiteraryGenre(libraryBookUpdateRequest.literaryGenre());
+        }
+
         if (libraryBookUpdateRequest.tags() != null){
             book.setTags(libraryBookUpdateRequest.tags());
         }
@@ -120,7 +137,10 @@ public class LibraryBookService {
                 updatedBook.getPages(),
                 updatedBook.getCreatedAt(),
                 updatedBook.getStartedAt(),
-                updatedBook.getFinishedAt());
+                updatedBook.getFinishedAt(),
+                updatedBook.getCountry(),
+                updatedBook.getAuthorState(),
+                updatedBook.getLiteraryGenre());
 
         return  libraryBookResponse;
     }
@@ -144,7 +164,10 @@ public class LibraryBookService {
                 book.getPages(),
                 book.getCreatedAt(),
                 book.getStartedAt(),
-                book.getFinishedAt()
+                book.getFinishedAt(),
+                book.getCountry(),
+                book.getAuthorState(),
+                book.getLiteraryGenre()
         );
 
         return response;
@@ -186,7 +209,10 @@ public class LibraryBookService {
                 livroSorteado.getPages(),
                 livroSorteado.getCreatedAt(),
                 livroSorteado.getStartedAt(),
-                livroSorteado.getFinishedAt()
+                livroSorteado.getFinishedAt(),
+                livroSorteado.getCountry(),
+                livroSorteado.getAuthorState(),
+                livroSorteado.getLiteraryGenre()
         );
 
         return readingGoalBook;
