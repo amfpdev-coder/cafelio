@@ -106,6 +106,30 @@ public class LibraryBook {
         this.finishedAt = finishedAt;
     }
 
+    public String getCountry() {
+        return country;
+    }
+
+    public void setCountry(String country) {
+        this.country = country;
+    }
+
+    public String getAuthorState() {
+        return authorState;
+    }
+
+    public void setAuthorState(String authorState) {
+        this.authorState = authorState;
+    }
+
+    public LiteraryGenre getLiteraryGenre() {
+        return literaryGenre;
+    }
+
+    public void setLiteraryGenre(LiteraryGenre literaryGenre) {
+        this.literaryGenre = literaryGenre;
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
@@ -141,6 +165,16 @@ public class LibraryBook {
 
     @Column(name = "finished_at")
     private LocalDate finishedAt;
+
+    @Column(name = "country", length = 2)
+    private String country;
+
+    @Column(name = "author_state", length = 2)
+    private String authorState;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "literary_genre", length = 40)
+    private LiteraryGenre literaryGenre;
 
     @ElementCollection
     @CollectionTable(

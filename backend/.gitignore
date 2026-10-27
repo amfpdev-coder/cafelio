@@ -37,4 +37,4 @@ application-local.yaml
 ### Environment variables ###
 .env
 .env.*
-!.env.example
+!.env.exampleerro.txt

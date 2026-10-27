@@ -2,6 +2,7 @@ package com.cafelio.api.dto.response;
 
 import com.cafelio.api.model.BookTag;
 import com.cafelio.api.model.ReadingStatus;
+import com.cafelio.api.model.LiteraryGenre;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -32,9 +33,13 @@ public record LibraryBookResponse(
 
         LocalDate startedAt,
 
-        LocalDate finishedAt
+        LocalDate finishedAt,
+
+        String country,
+
+        String authorState,
+
+        LiteraryGenre literaryGenre
 
 ) {
-
-
 }

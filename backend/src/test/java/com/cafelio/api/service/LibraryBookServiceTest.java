@@ -1,5 +1,20 @@
 package com.cafelio.api.service;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
 import com.cafelio.api.dto.request.LibraryBookCreateRequest;
 import com.cafelio.api.dto.request.LibraryBookUpdateRequest;
 import com.cafelio.api.dto.response.LibraryBookResponse;
@@ -11,20 +26,6 @@ import com.cafelio.api.model.LibraryBook;
 import com.cafelio.api.model.ReadingStatus;
 import com.cafelio.api.model.User;
 import com.cafelio.api.repository.LibraryBookRepository;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class LibraryBookServiceTest {
@@ -164,7 +165,11 @@ public class LibraryBookServiceTest {
                         ReadingStatus.READ,
                         null,
                         null,
+                        null,
+                        null,
+                        null,
                         null
+
                 );
 
         when(authService.findById(userId)).thenReturn(user);
@@ -203,11 +208,14 @@ public class LibraryBookServiceTest {
 
         LibraryBookUpdateRequest request =
                 new LibraryBookUpdateRequest(
-                        null,
-                        Set.of(BookTag.WANTED),
-                        null,
-                        null
-                );
+                    null,
+                    Set.of(BookTag.WANTED),
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+        );
 
         when(authService.findById(userId)).thenReturn(user);
 
