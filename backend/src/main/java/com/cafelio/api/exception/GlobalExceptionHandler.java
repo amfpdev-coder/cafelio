@@ -31,9 +31,9 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
     }
 
-    @ExceptionHandler(OpenLibraryUnavailableException.class)
-    public ResponseEntity<Map<String, String>> handleOpenLibraryUnavailable(
-            OpenLibraryUnavailableException ex
+    @ExceptionHandler(GoogleBooksUnavailableException.class)
+    public ResponseEntity<Map<String, String>> handleGoogleBooksUnavailable(
+            GoogleBooksUnavailableException ex
     ) {
 
         Map<String, String> error = Map.of(

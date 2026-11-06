@@ -13,7 +13,7 @@ import java.util.UUID;
 public record LibraryBookResponse(
         UUID id,
 
-        String openLibraryId,
+        String googleBooksId,
 
         String title,
 

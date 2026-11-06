@@ -65,7 +65,7 @@ public class HomeService {
     private LibraryBookResponse paraResposta(LibraryBook livro) {
         return new LibraryBookResponse(
                 livro.getId(),
-                livro.getOpenLibraryId(),
+                livro.getGoogleBooksId(),
                 livro.getTitle(),
                 livro.getFirstPublishYear(),
                 livro.getCoverUrl(),

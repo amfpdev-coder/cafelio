@@ -11,7 +11,7 @@ import java.util.Set;
 
 public record LibraryBookCreateRequest (
         @NotBlank
-        String openLibraryId,
+        String googleBooksId,
 
         @NotBlank
         String title,
