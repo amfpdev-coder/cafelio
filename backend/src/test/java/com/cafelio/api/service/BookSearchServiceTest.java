@@ -29,6 +29,7 @@ class BookSearchServiceTest {
     void shouldReturnNullCoverUrlWhenBookHasNoCover() {
         GoogleBooksSearchResponse.VolumeInfo volumeInfo = new GoogleBooksSearchResponse.VolumeInfo(
                 "Livro sem capa",
+                "pt",
                 List.of("Autor Teste"),
                 "2000",
                 320,

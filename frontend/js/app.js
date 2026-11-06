@@ -2110,7 +2110,7 @@ async function abrirAdicionar(indice) {
 
     try {
         await apiPost("/library-books", {
-            openLibraryId: livro.openLibraryId,
+            googleBooksId: livro.googleBooksId,
             title: livro.title,
             firstPublishYear: livro.firstPublishYear,
             coverUrl: livro.coverUrl,

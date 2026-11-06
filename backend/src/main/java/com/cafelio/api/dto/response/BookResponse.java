@@ -6,6 +6,7 @@ import java.util.List;
 public record BookResponse(
         String googleBooksId,
         String title,
+        String language,
         List<String> authors,
         Integer firstPublishYear,
         String coverUrl,

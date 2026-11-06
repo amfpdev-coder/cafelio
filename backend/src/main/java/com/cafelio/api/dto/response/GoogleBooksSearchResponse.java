@@ -13,6 +13,7 @@ public record GoogleBooksSearchResponse(
 
         public record VolumeInfo(
                 String title,
+                String language,
                 List<String> authors,
                 String publishedDate,
                 Integer pageCount,

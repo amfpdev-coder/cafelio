@@ -66,6 +66,7 @@ public class BookSearchService {
         return new BookResponse(
                 item.id(),           // ID do livro no Google Books
                 info.title(),        // Título
+                info.language(),
                 authors,             // Autores formatados
                 year,                // Ano extraído
                 coverUrl,            // URL da capa
