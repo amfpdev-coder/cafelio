@@ -59,11 +59,11 @@ public class LibraryBookServiceTest {
         );
 
 
-        when(libraryBookRepository.existsByUserAndOpenLibraryId(user, request.openLibraryId())).thenReturn(false);
+        when(libraryBookRepository.existsByUserAndGoogleBooksId(user, request.googleBooksId())).thenReturn(false);
 
         LibraryBook savedBook = new LibraryBook(
                 user,
-                request.openLibraryId(),
+                request.googleBooksId(),
                 request.title(),
                 request.firstPublishYear(),
                 request.coverUrl(),
@@ -79,7 +79,7 @@ public class LibraryBookServiceTest {
 
         assertNotNull(response);
         assertEquals(request.title(), response.title());
-        assertEquals(request.openLibraryId(), response.openLibraryId());
+        assertEquals(request.googleBooksId(), response.googleBooksId());
         assertEquals(request.firstPublishYear(), response.firstPublishYear());
         assertEquals(request.status(), response.status());
         assertEquals(request.authors(), response.authors());
@@ -105,9 +105,9 @@ public class LibraryBookServiceTest {
                 320
         );
 
-        when(libraryBookRepository.existsByUserAndOpenLibraryId(
+        when(libraryBookRepository.existsByUserAndGoogleBooksId(
                 user,
-                request.openLibraryId()
+                request.googleBooksId()
         )).thenReturn(true);
 
         LibraryBookAlreadyExistsException exception = assertThrows(

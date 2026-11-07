@@ -22,7 +22,7 @@ public interface LibraryBookRepository extends JpaRepository<LibraryBook, UUID> 
         LocalDate fim
     );
 
-    boolean existsByUserAndOpenLibraryId(User user, String openLibraryId);
+    boolean existsByUserAndGoogleBooksId(User user, String openLibraryId);
 
     List<LibraryBook> findByUser(User user);
 

@@ -15,8 +15,8 @@ spring:
   mail:
     host: smtp.gmail.com
     port: 587
-    username: ${MAIL_USERNAME}
-    password: ${MAIL_PASSWORD}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
     properties:
       mail:
         smtp:
@@ -26,6 +26,15 @@ spring:
 server:
   port: 8000
 
+cloudinary:
+  cloud-name: ${CLOUDINARY_CLOUD_NAME:}
+  api-key: ${CLOUDINARY_API_KEY:}
+  api-secret: ${CLOUDINARY_API_SECRET:}
+
 cafelio:
   frontend-url: http://127.0.0.1:5500/frontend
 
+google:
+  books:
+    api-key: ${GOOGLE_BOOKS_API_KEY:}
+    url: https://www.googleapis.com/books/v1/volumes

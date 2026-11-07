@@ -1,10 +1,9 @@
 package com.cafelio.api.service;
 
-import com.cafelio.api.client.OpenLibraryClient;
+import com.cafelio.api.client.GoogleBooksClient;
 import com.cafelio.api.dto.response.BookResponse;
 import com.cafelio.api.dto.response.BookSearchResponse;
-import com.cafelio.api.dto.response.OpenLibraryBookResponse;
-import com.cafelio.api.dto.response.OpenLibrarySearchResponse;
+import com.cafelio.api.dto.response.GoogleBooksSearchResponse;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -19,38 +18,41 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class BookSearchServiceTest {
+
     @Mock
-    private OpenLibraryClient openLibraryClient;
+    private GoogleBooksClient googleBooksClient;
 
     @InjectMocks
     private BookSearchService bookSearchService;
 
     @Test
     void shouldReturnNullCoverUrlWhenBookHasNoCover() {
-        OpenLibraryBookResponse book = new OpenLibraryBookResponse(
-                "/works/OL123W",
+        GoogleBooksSearchResponse.VolumeInfo volumeInfo = new GoogleBooksSearchResponse.VolumeInfo(
                 "Livro sem capa",
+                "pt",
                 List.of("Autor Teste"),
-                2000,
-                null,
-                320
+                "2000",
+                320,
+                null // sem imagem de capa
         );
 
-        OpenLibrarySearchResponse openLibraryResponse =
-                new OpenLibrarySearchResponse(
-                        1,
-                        0,
-                        true,
-                        List.of(book)
-                );
+        GoogleBooksSearchResponse.GoogleBookItem bookItem = new GoogleBooksSearchResponse.GoogleBookItem(
+                "google-id-123",
+                volumeInfo
+        );
+
+        GoogleBooksSearchResponse googleResponse = new GoogleBooksSearchResponse(
+                1,
+                List.of(bookItem)
+        );
 
         when(
-                openLibraryClient.searchBooks(
+                googleBooksClient.searchBooks(
                         "Livro sem capa",
                         1,
                         10
                 )
-        ).thenReturn(openLibraryResponse);
+        ).thenReturn(googleResponse);
 
         BookSearchResponse result =
                 bookSearchService.search(
@@ -59,11 +61,10 @@ class BookSearchServiceTest {
                         10
                 );
 
-        BookResponse resultBook =
-                result.books().get(0);
+        BookResponse resultBook = result.books().get(0);
 
         assertNull(resultBook.coverUrl());
-        assertEquals("OL123W", resultBook.openLibraryId());
+        assertEquals("google-id-123", resultBook.googleBooksId());
         assertEquals("Livro sem capa", resultBook.title());
     }
 }

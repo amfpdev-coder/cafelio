@@ -26,9 +26,9 @@ public class LibraryBook {
 
     }
 
-    public LibraryBook(User user, String openLibraryId, String title, Integer firstPublishYear, String coverUrl, ReadingStatus status, List<String> authors, Set<BookTag> tags, Integer pages){
+    public LibraryBook(User user, String googleBooksId, String title, Integer firstPublishYear, String coverUrl, ReadingStatus status, List<String> authors, Set<BookTag> tags, Integer pages){
         this.user = user;
-        this.openLibraryId = openLibraryId;
+        this.googleBooksId = googleBooksId;
         this.title = title;
         this.firstPublishYear = firstPublishYear;
         this.coverUrl = coverUrl;
@@ -42,8 +42,8 @@ public class LibraryBook {
         return id;
     }
 
-    public String getOpenLibraryId(){
-        return openLibraryId;
+    public String getGoogleBooksId(){
+        return googleBooksId;
     }
 
     public String getTitle(){
@@ -139,7 +139,7 @@ public class LibraryBook {
     private User user;
 
     @Column(name = "open_library_id", nullable = false)
-    private String openLibraryId;
+    private String googleBooksId;
 
     @Column(nullable = false)
     private String title;

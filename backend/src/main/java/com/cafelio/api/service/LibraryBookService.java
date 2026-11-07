@@ -35,17 +35,17 @@ public class LibraryBookService {
     public LibraryBookResponse createLibraryBook(LibraryBookCreateRequest book, UUID userId){
         User user = authService.findById(userId);
 
-        if(libraryBookRepository.existsByUserAndOpenLibraryId(user, book.openLibraryId())){
+        if(libraryBookRepository.existsByUserAndGoogleBooksId(user, book.googleBooksId())){
             throw new LibraryBookAlreadyExistsException("Livro já adicionado na biblioteca");
         }
 
-        LibraryBook libraryBook = new LibraryBook(user, book.openLibraryId(), book.title(), book.firstPublishYear(), book.coverUrl(), book.status(),book.authors(), book.tags(), book.pages());
+        LibraryBook libraryBook = new LibraryBook(user, book.googleBooksId(), book.title(), book.firstPublishYear(), book.coverUrl(), book.status(),book.authors(), book.tags(), book.pages());
         if (book.status() == ReadingStatus.READ) {
             libraryBook.setFinishedAt(LocalDate.now(FUSO));
         }
 
         LibraryBook savedBook = libraryBookRepository.save(libraryBook);
-        LibraryBookResponse libraryBookResponse = new LibraryBookResponse(savedBook.getId(), savedBook.getOpenLibraryId(), savedBook.getTitle(), savedBook.getFirstPublishYear(), savedBook.getCoverUrl(), savedBook.getStatus(), savedBook.getAuthors(), savedBook.getTags(), savedBook.getPages(), savedBook.getCreatedAt(), savedBook.getStartedAt(), savedBook.getFinishedAt(), savedBook.getCountry(), savedBook.getAuthorState(), savedBook.getLiteraryGenre());
+        LibraryBookResponse libraryBookResponse = new LibraryBookResponse(savedBook.getId(), savedBook.getGoogleBooksId(), savedBook.getTitle(), savedBook.getFirstPublishYear(), savedBook.getCoverUrl(), savedBook.getStatus(), savedBook.getAuthors(), savedBook.getTags(), savedBook.getPages(), savedBook.getCreatedAt(), savedBook.getStartedAt(), savedBook.getFinishedAt(), savedBook.getCountry(), savedBook.getAuthorState(), savedBook.getLiteraryGenre());
 
 
         return libraryBookResponse;
@@ -58,7 +58,7 @@ public class LibraryBookService {
 
         List<LibraryBookResponse> list = listOfBooks.stream().map(book -> new LibraryBookResponse(
                 book.getId(),
-                book.getOpenLibraryId(),
+                book.getGoogleBooksId(),
                 book.getTitle(),
                 book.getFirstPublishYear(),
                 book.getCoverUrl(),
@@ -127,7 +127,7 @@ public class LibraryBookService {
         LibraryBook updatedBook = libraryBookRepository.save(book);
         LibraryBookResponse libraryBookResponse = new LibraryBookResponse(
                 updatedBook.getId(),
-                updatedBook.getOpenLibraryId(),
+                updatedBook.getGoogleBooksId(),
                 updatedBook.getTitle(),
                 updatedBook.getFirstPublishYear(),
                 updatedBook.getCoverUrl(),
@@ -154,7 +154,7 @@ public class LibraryBookService {
 
         LibraryBookResponse response = new LibraryBookResponse(
                 book.getId(),
-                book.getOpenLibraryId(),
+                book.getGoogleBooksId(),
                 book.getTitle(),
                 book.getFirstPublishYear(),
                 book.getCoverUrl(),
@@ -199,7 +199,7 @@ public class LibraryBookService {
 
         LibraryBookResponse readingGoalBook = new LibraryBookResponse(
                 livroSorteado.getId(),
-                livroSorteado.getOpenLibraryId(),
+                livroSorteado.getGoogleBooksId(),
                 livroSorteado.getTitle(),
                 livroSorteado.getFirstPublishYear(),
                 livroSorteado.getCoverUrl(),
