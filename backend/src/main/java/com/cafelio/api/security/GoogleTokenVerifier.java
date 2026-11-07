@@ -17,7 +17,7 @@ public class GoogleTokenVerifier {
     private final GoogleIdTokenVerifier verifier;
 
     public GoogleTokenVerifier(
-            @Value("${spring.security.oauth2.client.registration.google.client-id}") String clientId
+            @Value("${google.oauth.client-id}") String clientId
     ) {
         this.verifier = new GoogleIdTokenVerifier.Builder(new NetHttpTransport(), GsonFactory.getDefaultInstance())
                 .setAudience(Collections.singletonList(clientId))
