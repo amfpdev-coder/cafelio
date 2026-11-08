@@ -22,6 +22,7 @@ public class BookSearchService {
 
         List<BookResponse> books = (response.items() != null)
                 ? response.items().stream()
+                  .filter(this::isValidBook) // <-- Nossos filtros de qualidade entram aqui!
                   .map(this::toBookResponse)
                   .toList()
                 : List.of();
@@ -34,26 +35,52 @@ public class BookSearchService {
         );
     }
 
+    private boolean isValidBook(GoogleBooksSearchResponse.GoogleBookItem item) {
+        if (item.volumeInfo() == null) return false;
+        var info = item.volumeInfo();
+
+        // 1. Validar se tem título
+        if (info.title() == null || info.title().isBlank()) {
+            return false;
+        }
+
+        // 2. Filtrar termos proibidos no título (convertendo para minúsculas para comparar)
+        String titleLower = info.title().toLowerCase();
+        if (titleLower.contains("resumo de") ||
+                titleLower.contains("guia de estudo") ||
+                titleLower.contains("study guide") ||
+                titleLower.contains("sparknotes")) {
+            return false;
+        }
+
+        // 3. Exigir capa (imageLinks e thumbnail válidos)
+        if (info.imageLinks() == null || info.imageLinks().thumbnail() == null || info.imageLinks().thumbnail().isBlank()) {
+            return false;
+        }
+
+        // 4. Exigir número mínimo de páginas (ex: 50 páginas)
+        if (info.pageCount() == null || info.pageCount() < 50) {
+            return false;
+        }
+
+        // 5. Exigir autores
+        if (info.authors() == null || info.authors().isEmpty()) {
+            return false;
+        }
+
+        return true;
+    }
+
     private BookResponse toBookResponse(GoogleBooksSearchResponse.GoogleBookItem item) {
         var info = item.volumeInfo();
 
-        // Tratamento para autores (o Google retorna uma lista de strings, vamos juntar com vírgula ou pegar padrão)
-        List<String> authors = (info.authors() != null && !info.authors().isEmpty())
-                ? info.authors()
-                : List.of("Autor desconhecido");
+        List<String> authors = info.authors();
 
-        // Tratamento da imagem de capa, se existir nos links do Google
-        String coverUrl = null;
-        if (info.imageLinks() != null) {
-            coverUrl = info.imageLinks().thumbnail();
-            // Opcional: o Google costuma mandar 'http://', se quiser garantir HTTPS:
-            if (coverUrl != null) {
-                coverUrl = coverUrl.replace("http://", "https://");
-            }
+        String coverUrl = info.imageLinks().thumbnail();
+        if (coverUrl != null) {
+            coverUrl = coverUrl.replace("http://", "https://");
         }
 
-        // Tratamento do ano de publicação (o Google manda uma string tipo "2020-05-12" ou só "2020",
-        // pegamos os 4 primeiros caracteres se precisar de Integer, ou ajustamos conforme seu BookResponse espera)
         Integer year = null;
         if (info.publishedDate() != null && info.publishedDate().length() >= 4) {
             try {
@@ -64,13 +91,13 @@ public class BookSearchService {
         }
 
         return new BookResponse(
-                item.id(),           // ID do livro no Google Books
-                info.title(),        // Título
+                item.id(),
+                info.title(),
                 info.language(),
-                authors,             // Autores formatados
-                year,                // Ano extraído
-                coverUrl,            // URL da capa
-                info.pageCount()     // Número de páginas
+                authors,
+                year,
+                coverUrl,
+                info.pageCount()
         );
     }
 }
